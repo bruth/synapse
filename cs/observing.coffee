@@ -73,27 +73,6 @@ class ObservableView extends Backbone.View
 
             ``convertBack``: a function that takes the value provided by the
             model and converts into something palatable for the element
-
-        Example declaration of bindings:
-
-        bindings:
-            '[name=first-name] keyup': 'firstName'
-            '[name=last-name]': 'lastName'
-
-            '#name':
-                # the '#name' element observes 'firstName' and 'lastName'
-                observes: ['firstName', 'lastName']
-                handler: 'getFullName'
-                interface: 'text'
-
-            '#onTwitter':
-                observes: 'onTwitter'
-                handler: 'visible'
-
-            '#other-name':
-                observes: ['firstName', 'lastName']
-                handler: 'getFancyFullName'
-                interface: 'html'
     ###
 
     setupBindings: ->
