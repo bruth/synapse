@@ -17,21 +17,30 @@
         <link rel="shortcut icon" href="/favicon.ico">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+        <style>
+            div {
+                margin: 10px;
+                padding: 10px;
+                background: #eee;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                display: inline-block;
+                font-family: sans-serif;
+            }
+
+            .meta {
+                font-size: 0.8em;
+                color: #999;
+            }
+        </style>
+
         <script src="js/jquery.js"></script>
         <script src="js/underscore.js"></script>
         <script src="js/backbone.js"></script>
-        <script src="js/observing.js"></script>
+        <script src="js/kvo.js"></script>
         <script src="js/test.js"></script>
 
     </head>
     <body>        
-        <div>
-            First Name: <input type="text" name="first-name"><br>
-            Last Name: <input type="text" name="last-name">
-            <label><input type="checkbox" name="onTwitter"> On Twitter?</label>
-
-            <p><strong>Hi, my name is <span id="name"></span>
-                <span id="onTwitter">and I am on Twitter</span></strong></p>
-        </div>
     </body>
 </html>
