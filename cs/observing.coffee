@@ -3,13 +3,13 @@ setupBinding = (element, config, view) ->
     model = view.model
 
     # make it easier to work with for multiple observees
-    if not $.isArray(config.observes)
+    if not $.isArray config.observes
         config.observes = [config.observes]
 
     handler = convert = convertBack = null
 
     # get the interface for interacting with the DOM element.
-    [getter, setter] = InterfaceRegistry.get(config.interface)
+    [getter, setter] = InterfaceRegistry.get config.interface
 
     # a handler can be define which will be used to supply a value
     # provided by the view or model instance. this is needed for
@@ -49,9 +49,9 @@ setupBinding = (element, config, view) ->
         # passed in value. this is typically necessary when observing
         # multiple attibutes.
         value = if handler then handler() else value
-        value = if convertBack then convertBack(value) else value
+        value = if convertBack then convertBack value else value
 
-        setter(element, value)
+        setter element, value
 
     for attr in config.observes
         # if config.event is defined, this adds the second binding to make this
@@ -64,7 +64,7 @@ setupBinding = (element, config, view) ->
                 options = {}
 
                 value = getter(element)
-                value = if convert then convert(value) else value
+                value = if convert then convert value else value
 
                 attrs[attr] = value
 
@@ -78,13 +78,13 @@ setupBinding = (element, config, view) ->
 
             element.bind config.event, toModel
 
-        model.bind("change:#{attr}", toElement)
-        model.trigger("change:#{attr}", model, model.get(attr))
+        model.bind "change:#{attr}", toElement
+        model.trigger "change:#{attr}", model, model.get(attr)
 
 
 class ObservableView extends Backbone.View
     setupBindings: ->
         for config in @bindings
-            element = $(config.selector, @el)
-            setupBinding(element, config, @)
+            element = $ config.selector, @el
+            setupBinding element, config, @
 
