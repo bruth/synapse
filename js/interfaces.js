@@ -1,62 +1,86 @@
-var InterfaceRegistry;
-InterfaceRegistry = (function() {
-  var unregister;
-  function InterfaceRegistry() {}
-  InterfaceRegistry.prototype.interfaces = {};
-  InterfaceRegistry.prototype.get = function(name) {
-    var interface;
-    interface = this.interfaces[name];
-    return [interface.get, interface.set];
+var bkvo;
+this.bkvo = bkvo = {};
+bkvo.interfaces = (function() {
+  return {
+    registry: {},
+    get: function(name) {
+      var interface;
+      interface = this.registry[name];
+      return [interface.get, interface.set];
+    },
+    register: function(props) {
+      return this.registry[props.name] = props;
+    },
+    unregister: function(name) {
+      return delete this.registry[name];
+    }
   };
-  InterfaceRegistry.prototype.register = function(name, getter, setter) {
-    return this.interfaces[name] = {
-      get: getter,
-      set: setter
-    };
-  };
-  unregister = function(name) {
-    return delete this.interfaces[name];
-  };
-  return InterfaceRegistry;
 })();
-InterfaceRegistry = new InterfaceRegistry;
-InterfaceRegistry.register('visible', function(element) {}, function(element, value) {
-  if (value) {
-    return element.show();
-  } else {
-    return element.hide();
+bkvo.interfaces.register({
+  name: 'visible',
+  get: function(element) {},
+  set: function(element, value) {
+    if (value) {
+      return element.show();
+    } else {
+      return element.hide();
+    }
   }
 });
-InterfaceRegistry.register('text', function(element) {
-  return element.text();
-}, function(element, value) {
-  value || (value = '');
-  return element.text(value.toString());
+bkvo.interfaces.register({
+  name: 'text',
+  get: function(element) {
+    return element.text();
+  },
+  set: function(element, value) {
+    value || (value = '');
+    return element.text(value.toString());
+  }
 });
-InterfaceRegistry.register('html', function(element) {
-  return element.html();
-}, function(element, value) {
-  value || (value = '');
-  return element.html(value.toString());
+bkvo.interfaces.register({
+  name: 'html',
+  get: function(element) {
+    return element.html();
+  },
+  set: function(element, value) {
+    value || (value = '');
+    return element.html(value.toString());
+  }
 });
-InterfaceRegistry.register('value', function(element) {
-  return element.val();
-}, function(element, value) {
-  value || (value = '');
-  return element.val(value);
+bkvo.interfaces.register({
+  name: 'value',
+  get: function(element) {
+    return element.val();
+  },
+  set: function(element, value) {
+    value || (value = '');
+    return element.val(value);
+  }
 });
-InterfaceRegistry.register('enabled', function(element) {
-  return element.prop('disabled');
-}, function(element, value) {
-  return element.prop('disabled', !Boolean(value));
+bkvo.interfaces.register({
+  name: 'enabled',
+  get: function(element) {
+    return element.prop('disabled');
+  },
+  set: function(element, value) {
+    return element.prop('disabled', !Boolean(value));
+  }
 });
-InterfaceRegistry.register('disabled', function(element) {
-  return element.prop('disabled');
-}, function(element, value) {
-  return element.prop('disabled', Boolean(value));
+bkvo.interfaces.register({
+  name: 'disabled',
+  get: function(element) {
+    return element.prop('disabled');
+  },
+  set: function(element, value) {
+    return element.prop('disabled', Boolean(value));
+  }
 });
-InterfaceRegistry.register('checked', function(element) {
-  return element.prop('checked');
-}, function(element, value) {
-  return element.prop('checked', Boolean(value));
+bkvo.interfaces.register({
+  name: 'checked',
+  get: function(element) {
+    return element.prop('checked');
+  },
+  set: function(element, value) {
+    return element.prop('checked', Boolean(value));
+  }
 });
