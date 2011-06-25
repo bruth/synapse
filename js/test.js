@@ -13,8 +13,6 @@ Person = (function() {
   }
   __extends(Person, Backbone.Model);
   Person.prototype.defaults = {
-    firstName: 'Joe',
-    lastName: 'Smith',
     onTwitter: false
   };
   return Person;
@@ -52,12 +50,12 @@ PersonView = (function() {
       observes: 'onTwitter',
       interface: 'checked'
     }, {
-      selector: '#name',
+      selector: '.name',
       observes: ['firstName', 'lastName'],
       interface: 'html',
       handler: 'getFullName'
     }, {
-      selector: '#onTwitter',
+      selector: '.onTwitter',
       observes: 'onTwitter',
       interface: 'visible'
     }, {
@@ -71,18 +69,14 @@ PersonView = (function() {
       handler: 'getDate'
     }
   ];
-  PersonView.prototype.template = _.template("<div>\n    <h3><span id=\"name\"></span> <span id=\"onTwitter\">is on Twitter</span></h3>\n\n\n    <table>\n        <tr>\n            <th>First Name:</th>\n            <td><input type=\"text\" name=\"first-name\"></td>\n        </tr>\n        <tr>\n            <th>Last Name:</th>\n            <td><input type=\"text\" name=\"last-name\"></td>\n        </tr>\n        <tr>\n            <td></td>\n            <td><label>On Twitter? <input type=\"checkbox\" name=\"onTwitter\"></label></td>\n        </tr>\n    </table>\n\n    <p class=\"meta\">Last updated: <span class=\"date\"><%= date %></span></p>\n</div>");
-  PersonView.prototype.initialize = function() {
-    this.render();
+  PersonView.prototype.initialize = function(options) {
+    this.render(options.template);
     return this.setupBindings();
   };
-  PersonView.prototype.render = function() {
-    return this.el = $(this.template({
+  PersonView.prototype.render = function(template) {
+    return this.el = $(template({
       date: new Date
     }));
-  };
-  PersonView.prototype.quoteString = function(value) {
-    return "\"" + value + "\"";
   };
   PersonView.prototype.getFullName = function() {
     var first, last;
@@ -100,21 +94,44 @@ PersonView = (function() {
 })();
 PersonCollectionView = (function() {
   function PersonCollectionView() {
-    var i, model, view;
-    for (i = 1; i <= 10; i++) {
-      this.collection = new PersonCollection;
-      model = this.collection.create({
-        lastName: "Smith " + i
-      });
-      view = new PersonView({
-        model: model
-      });
-      $('body').append(view.el);
-    }
+    this.addPerson = __bind(this.addPerson, this);;
+    this.createPerson = __bind(this.createPerson, this);;    PersonCollectionView.__super__.constructor.apply(this, arguments);
   }
-  __extends(PersonCollectionView, Backbone.View);
+  __extends(PersonCollectionView, ObservableView);
+  PersonCollectionView.prototype.initialize = function(options) {
+    this.el = $('#people');
+    this.template = options.template;
+    this.collection = new PersonCollection;
+    this.collection.bind('refresh', __bind(function(collection) {
+      return this.collection.each(__bind(function(model) {
+        return this.addPerson(model);
+      }, this));
+    }, this));
+    this.collection.bind('add', __bind(function(model) {
+      return this.addPerson(model);
+    }, this));
+    this.collection.fetch();
+    return $('#add-person').bind('click', this.createPerson);
+  };
+  PersonCollectionView.prototype.createPerson = function() {
+    var model;
+    model = new Person;
+    return this.collection.add(model);
+  };
+  PersonCollectionView.prototype.addPerson = function(model) {
+    var view;
+    view = new PersonView({
+      template: this.template,
+      model: model
+    });
+    return this.el.prepend(view.el);
+  };
   return PersonCollectionView;
 })();
 $(function() {
-  return new PersonCollectionView;
+  var template;
+  template = _.template($('#template').html());
+  return new PersonCollectionView({
+    template: template
+  });
 });

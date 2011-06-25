@@ -1,7 +1,5 @@
 class Person extends Backbone.Model
     defaults:
-        firstName: 'Joe'
-        lastName: 'Smith'
         onTwitter: false
 
 
@@ -29,12 +27,12 @@ class PersonView extends ObservableView
             observes: 'onTwitter'
             interface: 'checked'
         },{
-            selector: '#name'
+            selector: '.name'
             observes: ['firstName', 'lastName']
             interface: 'html'
             handler: 'getFullName'
         }, {
-            selector: '#onTwitter'
+            selector: '.onTwitter'
             observes: 'onTwitter'
             interface: 'visible'
         }, {
@@ -49,39 +47,12 @@ class PersonView extends ObservableView
         }
     ]
 
-    template: _.template """
-        <div>
-            <h3><span id="name"></span> <span id="onTwitter">is on Twitter</span></h3>
-
-
-            <table>
-                <tr>
-                    <th>First Name:</th>
-                    <td><input type="text" name="first-name"></td>
-                </tr>
-                <tr>
-                    <th>Last Name:</th>
-                    <td><input type="text" name="last-name"></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td><label>On Twitter? <input type="checkbox" name="onTwitter"></label></td>
-                </tr>
-            </table>
-
-            <p class="meta">Last updated: <span class="date"><%= date %></span></p>
-        </div>
-    """
-
-    initialize: ->
-        @render()
+    initialize: (options) ->
+        @render(options.template)
         @setupBindings()
 
-    render: ->
-        @el = $ @template(date: new Date)
-
-    quoteString: (value) ->
-        "\"#{value}\""
+    render: (template) ->
+        @el = $ template(date: new Date)
 
     getFullName: =>
         if @model.get('firstName') or @model.get('lastName')
@@ -94,21 +65,37 @@ class PersonView extends ObservableView
         new Date
 
 
-class PersonCollectionView extends Backbone.View
-    constructor: ->
-        for i in [1..10]
+class PersonCollectionView extends ObservableView
 
-            @collection = new PersonCollection
+    initialize: (options) ->
+        @el = $('#people')
+        @template = options.template
+        @collection = new PersonCollection
 
-            model = @collection.create
-                lastName: "Smith #{i}"
+        @collection.bind 'refresh', (collection) =>
+            @collection.each (model) =>
+                @addPerson model
 
-            view = new PersonView
-                model: model
+        @collection.bind 'add', (model) =>
+            @addPerson model
 
-            $('body').append(view.el)
+        @collection.fetch()
 
+        $('#add-person').bind 'click', @createPerson
+
+    createPerson: =>
+        model = new Person
+        @collection.add(model)
+
+    addPerson: (model) =>
+        view = new PersonView
+            template: @template
+            model: model
+
+        @el.prepend(view.el)
 
 # initialize..
 $ ->
+    template = _.template $('#template').html()
     new PersonCollectionView
+        template: template

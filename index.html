@@ -8,7 +8,7 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         
-        <title>Themes</title>
+        <title>Backbone KVO</title>
         <meta name="description" content="">
         <meta name="author" content="">
         
@@ -18,14 +18,44 @@
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         <style>
-            div {
-                margin: 10px;
+            body {
+                font-family: 'droid sans', sans-serif;
+            }
+
+            pre, code {
+                font-family: monospace;
+                padding: 2px 3px;
+                color: #f9f9f9;
+                background: #333;
+                border: 1px solid #000;
+                font-weight: 500;
+            }
+
+            img {
+                vertical-align: top;
+            }
+
+            pre {
+                margin: 10px 0;
+                padding: 10px;
+                border-radius: 5px;
+            }
+
+            em {
+                font-size: 0.9em;
+            }
+
+            .example {
+                margin: 10px 10px 10px 0;
                 padding: 10px;
                 background: #eee;
-                border: 1px solid #ccc;
+                border: 1px solid #ccc;           
                 border-radius: 5px;
                 display: inline-block;
-                font-family: sans-serif;
+                font-size: 0.9em;
+            }
+            .example h3 {
+                margin: 0 0 10px 0;
             }
 
             .meta {
@@ -42,5 +72,124 @@
 
     </head>
     <body>        
+
+        <h1>Backbone KVO</h1>
+
+        <h2>Example</h2>
+
+        <button id="add-person">Add Person</button>
+        <div id="people"></div>
+
+        <h2>Details</h2>
+
+<strong>When either the first or last name changes, the display of the name
+    updates.</strong>
+
+<pre>{
+    selector: '[name=first-name]',
+    observes: 'firstName',
+    event: 'keyup',
+    interface: 'value'
+}, {
+    selector: '[name=last-name]',
+    event: 'keyup',
+    observes: 'lastName',
+    interface: 'value',
+}, {
+    selector: '#name'
+    observes: ['firstName', 'lastName']
+    interface: 'html'
+    handler: 'getFullName'
+}</pre>
+
+<strong>When any of the editable fields change, the date updates</strong>
+
+<pre>{
+    selector: '.date'
+    observes: ['firstName', 'lastName', 'onTwitter']
+    interface: 'text'
+    handler: 'getDate'
+}</pre>
+
+<strong>If the first name is empty, the "On Twitter?" checkbox becomes
+disabled.</strong>
+
+<pre>{
+    selector: '[type=checkbox]'
+    observes: 'firstName'
+    interface: 'enabled'
+}</pre>
+
+<strong>When the checkbox is checked, the "is on Twitter" is appended to
+the name display.</strong>
+
+<pre>{
+    selector: 'input[type=checkbox]'
+    event: 'change'
+    observes: 'onTwitter'
+    interface: 'checked'
+}, {
+    selector: '#onTwitter'
+    observes: 'onTwitter'
+    interface: 'visible'
+}</pre>
+
+        <h2>Two-Way Binding (sync)</h2>
+        <p>A two-way binding represents two objects that keep in sync with each
+        no matter the source of the change. That is, if the element triggers the
+        event to change, the model will update itself to reflect that change and
+        vice versa.</p>
+
+        <em>Requires: <code>selector</code> <code>event</code>
+            <code>observes</code> <code>interface</code></em>
+
+        <h2>One-Way Binding (handler)</h2>
+        <p>A one-way binding using a handler (no model attributes being obvserved)
+        has the view (or any object) observing an event from an actionable
+        element such as a button or link. The handler is used to perform some
+        processing indirectly of the model data.</p>
+
+        <p>Note, this is no different than a typical bind using jQuery e.g.
+        <code>$('#mybutton').bind('click', function() { alert('hi')' });</code>.
+        The one difference is that the selector is within the context of the
+        view the bindings are defined on.</p>
+
+        <em>Requires: <code>selector</code> <code>event</code>
+            <code>handler</code></em>
+
+        <h2>One-Way Binding (read-only)</h2>
+        <p>A one-way binding that is read-only (ro) is typically used with an
+        element that is non-actionable. It represents model data in some way
+        and will update itself if the model data changes. There is no way for the
+        user to alter that data using that element.</p>
+
+        <em>Requires: <code>selector</code> <code>observes</code>
+            <code>interface</code></em>
+
+        <h2>One-Way Binding (write-only)</h2>
+        <p>A one-way binding that is write-only (wo) is the opposite of the
+        ready-only binding. The element provides a means of entering data using
+        form fields and it will write to the model, but any changes to the model
+        will not be reflected in the representative element.</p>
+
+        <em>Requires: <code>selector</code> <code>event</code>
+            <code>observes</code> <code>interface</code>
+            <code>loopback=false</code></em>
+
+        <script id="template" type="text/html">
+            <div class="example">
+                <h3>
+                    <span class="name"></span>
+                    <img class="onTwitter" src="twitter.png">
+                </h3>
+                <span>First Name:</span> <input type="text" name="first-name">
+                <span>Last Name:</span> <input type="text" name="last-name">
+                <label>On Twitter? <input type="checkbox" name="onTwitter"></label>
+
+                <p class="meta">Last updated: <span class="date"><%= date %></span></p>
+            </div>
+        </script>
+
     </body>
 </html>
+

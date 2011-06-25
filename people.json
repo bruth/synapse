@@ -1,0 +1,13 @@
+[{
+    "firstName": "Joshua",
+    "lastName": "Walters",
+    "onTwitter": true
+}, {
+    "firstName": "Daniel",
+    "lastName": "Kraft",
+    "onTwitter": true
+}, {
+    "firstName": "Jok",
+    "lastName": "Church",
+    "onTwitter": false
+}]
