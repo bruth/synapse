@@ -1,6 +1,7 @@
 watch:
-	coffee -b -w -o ./js -c ./cs
+	coffee -b -w -o $(CURDIR)/src/js -c $(CURDIR)/src/cs
 
 build:
-	cat ./cs/{interfaces,observing}.coffee | coffee -scb > ./js/kvo.js
-	coffee -b -o ./js -c ./cs
+	cat $(CURDIR)/src/cs/{interfaces,observing}.coffee | coffee -scb > $(CURDIR)/example/js/kvo.js
+	coffee -b -o $(CURDIR)/src/js -c $(CURDIR)/src/cs
+	coffee -b -o $(CURDIR)/example/js -c $(CURDIR)/example/cs
