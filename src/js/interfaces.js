@@ -1,86 +1,247 @@
-var bkvo;
-this.bkvo = bkvo = {};
+var bkvo, exports, parseInterfaceSignature, receiveAttribute, receiveCSS, receiveProperty, sendAttribute, sendCSS, sendProperty;
+var __slice = Array.prototype.slice;
+exports = this;
+exports.bkvo = bkvo = {};
+parseInterfaceSignature = function(sig) {
+  var config, interface, observe, receive, send, _ref;
+  _ref = sig.split(':'), send = _ref[0], interface = _ref[1], observe = _ref[2], receive = _ref[3];
+  return config = {
+    send: send,
+    receive: receive,
+    interface: interface,
+    observes: observe.split(',')
+  };
+};
 bkvo.interfaces = (function() {
   return {
     registry: {},
-    get: function(name) {
-      var interface;
-      interface = this.registry[name];
-      return [interface.get, interface.set];
-    },
-    register: function(props) {
-      return this.registry[props.name] = props;
+    register: function(config) {
+      return this.registry[config.name] = config;
     },
     unregister: function(name) {
       return delete this.registry[name];
+    },
+    send: function() {
+      var args, context, name;
+      name = arguments[0], context = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      return this.registry[name].send.apply(context, args);
+    },
+    receive: function() {
+      var args, context, name;
+      name = arguments[0], context = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      return this.registry[name].receive.apply(context, args);
     }
   };
 })();
+sendProperty = function(key) {
+  if (this.prop != null) {
+    return this.prop(key);
+  } else {
+    return sendAttribute.call(this, key);
+  }
+};
+receiveProperty = function(key, value) {
+  if (this.prop != null) {
+    if (typeof key === 'object') {
+      return this.prop(key);
+    } else {
+      return this.prop(key, value);
+    }
+  } else {
+    return receiveAttribute.call(this, key, value);
+  }
+};
+sendAttribute = function(key) {
+  return this.attr(key);
+};
+receiveAttribute = function(key, value) {
+  if (typeof key === 'object') {
+    return this.attr(key);
+  } else {
+    return this.attr(key, value);
+  }
+};
+sendCSS = function(key) {
+  return this.css(key);
+};
+receiveCSS = function(key, value) {
+  if (typeof key === 'object') {
+    return this.css(key);
+  } else {
+    return this.css(key, value);
+  }
+};
+bkvo.interfaces.register({
+  name: 'prop',
+  send: function(key) {
+    return sendProperty.call(this, key);
+  },
+  receive: function(key, value) {
+    return receiveProperty.call(this, key, value);
+  }
+});
+bkvo.interfaces.register({
+  name: 'attr',
+  send: function(key) {
+    return sendAttribute.call(this, key);
+  },
+  receive: function(key, value) {
+    return receiveAttribute.call(this, key, value);
+  }
+});
+bkvo.interfaces.register({
+  name: 'css',
+  send: function(key) {
+    return sendCSS.call(this, key);
+  },
+  receive: function(key, value) {
+    return receiveCSS.call(this, key, value);
+  }
+});
 bkvo.interfaces.register({
   name: 'visible',
-  get: function(element) {},
-  set: function(element, value) {
+  send: function(key) {},
+  receive: function(key, value) {
     if (value) {
-      return element.show();
+      return this.show();
     } else {
-      return element.hide();
+      return this.hide();
     }
   }
 });
 bkvo.interfaces.register({
   name: 'text',
-  get: function(element) {
-    return element.text();
+  send: function(key) {
+    return this.text();
   },
-  set: function(element, value) {
+  receive: function(key, value) {
     value || (value = '');
-    return element.text(value.toString());
+    return this.text(value.toString());
   }
 });
 bkvo.interfaces.register({
   name: 'html',
-  get: function(element) {
-    return element.html();
+  send: function(key) {
+    return this.html();
   },
-  set: function(element, value) {
+  receive: function(key, value) {
     value || (value = '');
-    return element.html(value.toString());
+    return this.html(value.toString());
   }
 });
 bkvo.interfaces.register({
   name: 'value',
-  get: function(element) {
-    return element.val();
+  send: function(key) {
+    return this.val();
   },
-  set: function(element, value) {
+  receive: function(key, value) {
     value || (value = '');
-    return element.val(value);
+    return this.val(value);
   }
 });
 bkvo.interfaces.register({
   name: 'enabled',
-  get: function(element) {
-    return element.prop('disabled');
+  send: function(key) {
+    return !sendProperty.call(this, 'disabled');
   },
-  set: function(element, value) {
-    return element.prop('disabled', !Boolean(value));
+  receive: function(key, value) {
+    return receiveProperty.call(this, 'disabled', !Boolean(value));
   }
 });
 bkvo.interfaces.register({
   name: 'disabled',
-  get: function(element) {
-    return element.prop('disabled');
+  send: function(key) {
+    return receiveProperty.call(this, 'disabled');
   },
-  set: function(element, value) {
-    return element.prop('disabled', Boolean(value));
+  receive: function(key, value) {
+    return receiveProperty.call(this, 'disabled', Boolean(value));
   }
 });
 bkvo.interfaces.register({
   name: 'checked',
-  get: function(element) {
-    return element.prop('checked');
+  send: function(key) {
+    return sendProperty.call(this, 'checked');
   },
-  set: function(element, value) {
-    return element.prop('checked', Boolean(value));
+  receive: function(key, value) {
+    return receiveProperty.call(this, 'checked', Boolean(value));
   }
 });
+/*
+
+config =
+    # two-way
+    '[name=first-name]':
+        keyup:
+            value: 'firstName'
+
+    # two-way
+    '[name=last-name] keyup':
+        value: 'lastName'
+ 
+    # one-way ro
+    '.name':
+        html: 'firstName,lastName:getFullName'
+
+    # one-way ro
+    '.date':
+        text: 'firstName,lastName,onTwitter:getDate'
+
+    # one-way ro
+    '[name=on-twitter]':
+        enabled: 'firstName'
+
+    # two-way
+    '[name=on-twitter] change':
+        prop:
+            checked: 'onTwitter'
+
+    # one-way ro
+    '.twitter': visible: 'onTwitter'
+
+    # one-way ro
+    '.permalink':
+        attr:
+            href: 'url'
+            title: 'firstName,lastName:getFullName'
+
+
+'[name=first-name]'
+    keyup: ':value:firstName:'
+
+'[name=last-name]'
+    keyup: ':value:lastName:'
+
+'.name'
+    noevent: ':html:firstName,lastName:getFullName'
+
+'.date'
+    noevent: ':text:firstName,lastName,onTwitter:getDate'
+
+'[name=on-twitter]'
+    noevent: ':prop:disabled=firstName:istrue'
+    change: ':prop:checked=onTwitter:isfalse'
+
+'.twitter'
+    noevent: ':visible:onTwitter:'
+
+'.permalink'
+    noevent: [':attr:href=url:', ':attr:firstName,lastName:getFullName']
+
+    
+
+<selector> : <event>
+
+<event> : <interface> | attr | prop | css
+
+<proxy> : <interface> +
+
+<interface> : <config>
+
+<config> : 'attr1[,attr2,...][:receive]' |
+    <observes> : string | array
+    <send> : string | function
+    <receive> : string | function
+    ...
+
+
+*/

@@ -1,4 +1,10 @@
-var BINDING_TYPES, ObservableView, setupBinding;
+/*
+
+shorthand syntax:
+
+    event : 'interfaceName[:sendHandler][:key1=attr1,key2=attr2][:receiveHandler]'
+
+*/var ObservableView, parseBindings, setupBinding;
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
   for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
   function ctor() { this.constructor = child; }
@@ -7,112 +13,110 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   child.__super__ = parent.prototype;
   return child;
 };
-BINDING_TYPES = {
-  0: {
-    name: 'two-way (sync)',
-    requires: ['selector', 'interface', 'event', 'observes']
-  },
-  1: {
-    name: 'one-way (handler)',
-    requires: ['selector', 'event', 'handler']
-  },
-  2: {
-    name: 'one-way (ro)',
-    requires: ['selector', 'interface', 'observes']
-  },
-  3: {
-    name: 'one-way (wo)',
-    requires: ['selector', 'interface', 'event', 'observes', 'loopback']
+parseBindings = function(bindings) {
+  var config, configs, element, event, events, selector, _results;
+  _results = [];
+  for (selector in bindings) {
+    events = bindings[selector];
+    element = this.$(selector);
+    _results.push((function() {
+      var _results2;
+      _results2 = [];
+      for (event in events) {
+        configs = events[event];
+        if (!$.isArray(configs)) {
+          configs = [configs];
+        }
+        if (event === 'noevent') {
+          event = null;
+        }
+        _results2.push((function() {
+          var _i, _len, _results3;
+          _results3 = [];
+          for (_i = 0, _len = configs.length; _i < _len; _i++) {
+            config = configs[_i];
+            if (typeof config === 'string') {
+              config = parseInterfaceSignature(config);
+            }
+            if (!$.isArray(config.observes)) {
+              config.observes = [config.observes];
+            }
+            _results3.push(setupBinding.call(this, element, event, config));
+          }
+          return _results3;
+        }).call(this));
+      }
+      return _results2;
+    }).call(this));
   }
+  return _results;
 };
-setupBinding = function(element, config, view) {
-  var attr, convert, convertBack, getter, handler, model, setter, toElement, _i, _len, _ref, _ref2, _results;
-  model = view.model;
-  handler = convert = convertBack = null;
-  if (config.observes != null) {
-    if (!$.isArray(config.observes)) {
-      config.observes = [config.observes];
-    }
+setupBinding = function(element, event, config) {
+  var attr, interface, key, model, observee, observes, receive, send, toElement, _i, _len, _ref, _results;
+  model = this.model;
+  send = config.send;
+  interface = config.interface;
+  observes = config.observes;
+  receive = config.receive;
+  if ((send != null) && typeof send !== 'function') {
+    send = this[send] || model[send];
   }
-  if (config.handler != null) {
-    if (typeof config.handler === 'function') {
-      handler = config.handler;
-    } else {
-      handler = view[config.handler] || model[config.handler];
-    }
+  if ((receive != null) && typeof receive !== 'function') {
+    receive = this[receive] || model[receive];
   }
-  if (config.convert != null) {
-    if (typeof config.convert === 'function') {
-      convert = config.convert;
-    } else {
-      convert = view[config.convert] || model[config.convert];
-    }
-  }
-  if (config.convertBack != null) {
-    if (typeof config.convertBack === 'function') {
-      convertBack = config.convertBack;
-    } else {
-      convertBack = view[config.convertBack] || model[config.convertBack];
-    }
-  }
-  if (config.interface != null) {
-    _ref = bkvo.interfaces.get(config.interface), getter = _ref[0], setter = _ref[1];
+  if (observes != null) {
     toElement = __bind(function(model, value, options) {
-      if (options && options.loopback === false) {
+      if ((options != null) && options.loopback === false) {
         if (options.callee === element) {
           return;
         }
       }
-      value = handler ? handler() : value;
-      value = convertBack ? convertBack(value) : value;
-      return setter(element, value);
+      value = receive ? receive(value) : value;
+      return bkvo.interfaces.receive(interface, element, key, value);
     }, this);
-    _ref2 = config.observes;
     _results = [];
-    for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-      attr = _ref2[_i];
-      if (config.event) {
-        __bind(function(attr) {
+    for (_i = 0, _len = observes.length; _i < _len; _i++) {
+      observee = observes[_i];
+      _ref = observee.split('='), attr = _ref[0], key = _ref[1];
+      if (!(key != null)) {
+        key = attr;
+      }
+      if (event) {
+        __bind(function(attr, key) {
           var toModel;
           toModel = __bind(function(evt, params) {
-            var attrs, options, value;
-            attrs = {};
-            options = {};
-            value = getter(element);
-            value = convert ? convert(value) : value;
-            attrs[attr] = value;
+            var data, options, value;
+            data = {};
+            options = {
+              attr: attr
+            };
+            value = bkvo.interfaces.send(interface, element, key);
+            value = send ? send(value) : value;
+            data[attr] = value;
             if (config.loopback != null) {
               options.callee = element;
               options.loopback = config.loopback;
             }
-            return model.set(attrs, options);
+            return model.set(data, options);
           }, this);
-          return element.bind(config.event, toModel);
-        }, this)(attr);
+          return element.bind(event, toModel);
+        }, this)(attr, key);
       }
       model.bind("change:" + attr, toElement);
       _results.push(model.trigger("change:" + attr, model, model.get(attr)));
     }
     return _results;
   } else {
-    return element.bind(config.event, handler);
+    return element.bind(event, send);
   }
 };
 ObservableView = (function() {
   function ObservableView() {
-    ObservableView.__super__.constructor.apply(this, arguments);
+    this.setupBindings = __bind(this.setupBindings, this);;    ObservableView.__super__.constructor.apply(this, arguments);
   }
   __extends(ObservableView, Backbone.View);
   ObservableView.prototype.setupBindings = function() {
-    var config, element, _i, _len, _ref, _results;
-    _ref = this.bindings;
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      config = _ref[_i];
-      element = $(config.selector, this.el);
-      _results.push(setupBinding(element, config, this));
-    }
-    return _results;
+    return parseBindings.call(this, this.bindings);
   };
   return ObservableView;
 })();

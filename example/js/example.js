@@ -32,43 +32,56 @@ PersonView = (function() {
     this.getFullName = __bind(this.getFullName, this);;    PersonView.__super__.constructor.apply(this, arguments);
   }
   __extends(PersonView, ObservableView);
-  PersonView.prototype.bindings = [
-    {
-      selector: '[name=first-name]',
-      observes: 'firstName',
-      event: 'keyup',
-      interface: 'value'
-    }, {
-      selector: '[name=last-name]',
-      event: 'keyup',
-      observes: 'lastName',
-      interface: 'value',
-      loopback: false
-    }, {
-      selector: 'input[type=checkbox]',
-      event: 'change',
-      observes: 'onTwitter',
-      interface: 'checked'
-    }, {
-      selector: '.name',
-      observes: ['firstName', 'lastName'],
-      interface: 'html',
-      handler: 'getFullName'
-    }, {
-      selector: '.onTwitter',
-      observes: 'onTwitter',
-      interface: 'visible'
-    }, {
-      selector: '[type=checkbox]',
-      observes: 'firstName',
-      interface: 'enabled'
-    }, {
-      selector: '.date',
-      observes: ['firstName', 'lastName', 'onTwitter'],
-      interface: 'text',
-      handler: 'getDate'
+  PersonView.prototype.bindings = {
+    '[name=first-name]': {
+      keyup: {
+        observes: 'firstName',
+        interface: 'value'
+      }
+    },
+    '[name=last-name]': {
+      keyup: {
+        observes: 'lastName',
+        interface: 'value',
+        loopback: false
+      }
+    },
+    'input[type=checkbox]': {
+      change: {
+        observes: 'onTwitter',
+        interface: 'checked'
+      }
+    },
+    '.name': {
+      noevent: {
+        observes: ['firstName', 'lastName'],
+        interface: 'html',
+        receive: 'getFullName'
+      }
+    },
+    '.onTwitter': {
+      noevent: {
+        observes: 'onTwitter',
+        interface: 'visible'
+      }
+    },
+    '[type=checkbox]': {
+      noevent: {
+        observes: 'firstName=disabled',
+        interface: 'prop',
+        receive: function(value) {
+          return !Boolean(value);
+        }
+      }
+    },
+    '.date': {
+      noevent: {
+        observes: ['firstName', 'lastName', 'onTwitter'],
+        interface: 'text',
+        receive: 'getDate'
+      }
     }
-  ];
+  };
   PersonView.prototype.initialize = function(options) {
     this.render(options.template);
     return this.setupBindings();
