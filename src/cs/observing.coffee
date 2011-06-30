@@ -156,12 +156,28 @@ Object Type-specific options:
 
 do ->
 
-    this.BKVO = BKVO =
+    # user can predefine BKVO as an object defining options.
+    # this object will be augmented during execution
+    this.BKVO = this.BKVO or {}
+
+    BKVO = this.BKVO
+
+    # default options
+    defaults =
         autoExtendObjects: true
+        debug: false
+
+    # fill in
+    _.defaults(BKVO, defaults)
+
+    if this.console?
+        BKVO.log = (msg) -> console.log(msg)
+    else
+        BKVO.log = (msg) -> alert(msg)
 
 
     # an enumeration of supported object types
-    TYPES =
+    types =
         jquery: 0
         evented: 1
         view: 2
@@ -169,71 +185,69 @@ do ->
         model: 4
         collection: 5
 
-
     # determines the object type
     getObjectType = (object) ->
 
         if object instanceof $
-            return TYPES.jquery
+            return types.jquery
 
         if object instanceof Backbone.View
-            return TYPES.view
+            return types.view
 
         if object instanceof Backbone.Collection
-            return TYPES.collection
+            return types.collection
 
         if object instanceof Backbone.Model
-            return TYPES.model
+            return types.model
 
         if object instanceof Backbone.Controller
-            return TYPES.controller
+            return types.controller
 
         # ensure this object contains the necessary methods
         for method in ['bind', 'unbind', 'trigger']
             if not object[method]
-                if not BKVO.autoExtendObjects:
-                    throw Error("object does not have a #{method} method. ensure
-                        the object has been extend from Backbone.Events")
+
+                if not BKVO.autoExtendObjects
+                    throw Error("""Object does not have a #{method} method. ensure
+                        the object has been extended from Backbone.Events or set
+                        BKVO.autoExtendObjects to true.""")
+
                 _.extend(object, Backbone.Events)
+                if BKVO.debug then BKVO.log("#{object} extended with Backbone.Events")
+
                 break
    
-        return TYPES.evented
+        return types.evented
 
-
-    autodetectElementInterface = (object) ->
+    detectObjectInterface = (object) ->
         tag = object.prop('tagName').toLowerCase()
 
         if tag is 'input'
             type = object.prop('type').toLowerCase()
 
-            if type is 'checkbox' or type is 'radio'
-                return 'prop:checked'
+            if type is 'checkbox' or type is 'radio' then return 'prop:checked'
             return 'value'
         
-        if tag is 'select'
-            return 'value'
-
-
+        if tag is 'select' then return 'value'
 
 
     registerObserver = (observer, subject, options) ->
 
         if typeof observer is 'string'
             observer = $(observer)
-            observerType = TYPES.jquery
+            observerType = types.jquery
         else
             observerType = getObjectType(observer)
 
         if typeof subject is 'string'
             subject = $(subject)
-            subjectType = TYPES.jquery
+            subjectType = types.jquery
         else
             subjectType = getObjectType(subject)
 
-        if subjectType in [TYPES.model, TYPES.collection]
-            for property in options.targetProperties do (property) ->
+        if subjectType in [types.model, types.collection]
+            for property in options.targetProperties then do (property) ->
                 subject.bind "change:#{property}", (object, value, options) ->
-                    observer.
 
 
     notifyObservers = (subject) ->
@@ -244,7 +258,10 @@ do ->
     jQuery.fn.observe = (object, options) ->
 
 
-
+    if BKVO.debug
+        BKVO.types = types
+        BKVO.getObjectType = getObjectType
+        BKVO.detectObjectInterface = detectObjectInterface
 
 # parseBindings = (bindings) ->
 #     for selector, events of bindings
