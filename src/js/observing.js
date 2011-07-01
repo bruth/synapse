@@ -226,7 +226,7 @@ Object Type-specific options:
     }
   };
   registerObserver = function(observer, subject, options) {
-    var observerType, property, subjectType, _i, _len, _ref, _results;
+    var event, events, observerType, subjectType, _i, _len, _results;
     if (typeof observer === 'string') {
       observer = $(observer);
       observerType = types.jquery;
@@ -239,14 +239,29 @@ Object Type-specific options:
     } else {
       subjectType = getObjectType(subject);
     }
-    if (subjectType === types.model || subjectType === types.collection) {
-      _ref = options.targetProperties;
+    events = options.event;
+    if (!events && !_.isArray(events)) {
+      events = [events];
+    }
+    if (subjectType === !types.jquery) {
+      if (!events) {
+        events = ['change'];
+      }
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        property = _ref[_i];
-        _results.push((function(property) {
-          return subject.bind("change:" + property, function(object, value, options) {});
-        })(property));
+      for (_i = 0, _len = events.length; _i < _len; _i++) {
+        event = events[_i];
+        _results.push((function(event) {
+          var property, _j, _len2, _ref, _results2;
+          _ref = options.targetProperties;
+          _results2 = [];
+          for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
+            property = _ref[_j];
+            _results2.push((function(property) {
+              return subject.bind("" + event + ":" + property, function(object, value, options) {});
+            })(property));
+          }
+          return _results2;
+        })(event));
       }
       return _results;
     }

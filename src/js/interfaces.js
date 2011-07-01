@@ -1,18 +1,6 @@
-var bkvo, exports, parseInterfaceSignature, receiveAttribute, receiveCSS, receiveProperty, sendAttribute, sendCSS, sendProperty;
+var receiveAttribute, receiveCSS, receiveProperty, sendAttribute, sendCSS, sendProperty;
 var __slice = Array.prototype.slice;
-exports = this;
-exports.bkvo = bkvo = {};
-parseInterfaceSignature = function(sig) {
-  var config, interface, observe, receive, send, _ref;
-  _ref = sig.split(':'), send = _ref[0], interface = _ref[1], observe = _ref[2], receive = _ref[3];
-  return config = {
-    send: send,
-    receive: receive,
-    interface: interface,
-    observes: observe.split(',')
-  };
-};
-bkvo.interfaces = (function() {
+BKVO.interfaces = (function() {
   return {
     registry: {},
     register: function(config) {
@@ -71,7 +59,7 @@ receiveCSS = function(key, value) {
     return this.css(key, value);
   }
 };
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'prop',
   send: function(key) {
     return sendProperty.call(this, key);
@@ -80,7 +68,7 @@ bkvo.interfaces.register({
     return receiveProperty.call(this, key, value);
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'attr',
   send: function(key) {
     return sendAttribute.call(this, key);
@@ -89,7 +77,7 @@ bkvo.interfaces.register({
     return receiveAttribute.call(this, key, value);
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'css',
   send: function(key) {
     return sendCSS.call(this, key);
@@ -98,7 +86,7 @@ bkvo.interfaces.register({
     return receiveCSS.call(this, key, value);
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'visible',
   send: function(key) {},
   receive: function(key, value) {
@@ -109,7 +97,7 @@ bkvo.interfaces.register({
     }
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'text',
   send: function(key) {
     return this.text();
@@ -119,7 +107,7 @@ bkvo.interfaces.register({
     return this.text(value.toString());
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'html',
   send: function(key) {
     return this.html();
@@ -129,7 +117,7 @@ bkvo.interfaces.register({
     return this.html(value.toString());
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'value',
   send: function(key) {
     return this.val();
@@ -139,7 +127,7 @@ bkvo.interfaces.register({
     return this.val(value);
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'enabled',
   send: function(key) {
     return !sendProperty.call(this, 'disabled');
@@ -148,7 +136,7 @@ bkvo.interfaces.register({
     return receiveProperty.call(this, 'disabled', !Boolean(value));
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'disabled',
   send: function(key) {
     return receiveProperty.call(this, 'disabled');
@@ -157,7 +145,7 @@ bkvo.interfaces.register({
     return receiveProperty.call(this, 'disabled', Boolean(value));
   }
 });
-bkvo.interfaces.register({
+BKVO.interfaces.register({
   name: 'checked',
   send: function(key) {
     return sendProperty.call(this, 'checked');
@@ -166,82 +154,3 @@ bkvo.interfaces.register({
     return receiveProperty.call(this, 'checked', Boolean(value));
   }
 });
-/*
-
-config =
-    # two-way
-    '[name=first-name]':
-        keyup:
-            value: 'firstName'
-
-    # two-way
-    '[name=last-name] keyup':
-        value: 'lastName'
- 
-    # one-way ro
-    '.name':
-        html: 'firstName,lastName:getFullName'
-
-    # one-way ro
-    '.date':
-        text: 'firstName,lastName,onTwitter:getDate'
-
-    # one-way ro
-    '[name=on-twitter]':
-        enabled: 'firstName'
-
-    # two-way
-    '[name=on-twitter] change':
-        prop:
-            checked: 'onTwitter'
-
-    # one-way ro
-    '.twitter': visible: 'onTwitter'
-
-    # one-way ro
-    '.permalink':
-        attr:
-            href: 'url'
-            title: 'firstName,lastName:getFullName'
-
-
-'[name=first-name]'
-    keyup: ':value:firstName:'
-
-'[name=last-name]'
-    keyup: ':value:lastName:'
-
-'.name'
-    noevent: ':html:firstName,lastName:getFullName'
-
-'.date'
-    noevent: ':text:firstName,lastName,onTwitter:getDate'
-
-'[name=on-twitter]'
-    noevent: ':prop:disabled=firstName:istrue'
-    change: ':prop:checked=onTwitter:isfalse'
-
-'.twitter'
-    noevent: ':visible:onTwitter:'
-
-'.permalink'
-    noevent: [':attr:href=url:', ':attr:firstName,lastName:getFullName']
-
-    
-
-<selector> : <event>
-
-<event> : <interface> | attr | prop | css
-
-<proxy> : <interface> +
-
-<interface> : <config>
-
-<config> : 'attr1[,attr2,...][:receive]' |
-    <observes> : string | array
-    <send> : string | function
-    <receive> : string | function
-    ...
-
-
-*/

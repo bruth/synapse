@@ -219,13 +219,15 @@ do ->
    
         return types.evented
 
+
     detectObjectInterface = (object) ->
         tag = object.prop('tagName').toLowerCase()
 
         if tag is 'input'
             type = object.prop('type').toLowerCase()
 
-            if type is 'checkbox' or type is 'radio' then return 'prop:checked'
+            if type is 'checkbox' or type is 'radio'
+                return 'prop:checked'
             return 'value'
         
         if tag is 'select' then return 'value'
@@ -245,14 +247,24 @@ do ->
         else
             subjectType = getObjectType(subject)
 
-        if subjectType in [types.model, types.collection]
-            for property in options.targetProperties then do (property) ->
-                subject.bind "change:#{property}", (object, value, options) ->
+        events = options.event
+
+        if not events and not _.isArray(events)
+            events = [events]
+
+        if subjectType is not types.jquery
+            if not events then events = ['change']
+
+            for event in events then do (event) ->
+                for property in options.targetProperties then do (property) ->
+                    subject.bind "#{event}:#{property}", (object, value, options) ->
+
 
 
     notifyObservers = (subject) ->
         if subject instanceof $
             observers = subject.data('_observers') or {}
+
 
     # Registers the jQuery object as an observer of another object
     jQuery.fn.observe = (object, options) ->
@@ -262,6 +274,7 @@ do ->
         BKVO.types = types
         BKVO.getObjectType = getObjectType
         BKVO.detectObjectInterface = detectObjectInterface
+
 
 # parseBindings = (bindings) ->
 #     for selector, events of bindings
