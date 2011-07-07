@@ -1,4 +1,4 @@
-var receiveAttribute, receiveCSS, receiveProperty, sendAttribute, sendCSS, sendProperty;
+var getAttribute, getProperty, getStyle, setAttribute, setProperty, setStyle;
 var __slice = Array.prototype.slice;
 BKVO.interfaces = (function() {
   return {
@@ -9,88 +9,159 @@ BKVO.interfaces = (function() {
     unregister: function(name) {
       return delete this.registry[name];
     },
-    send: function() {
-      var args, context, name;
-      name = arguments[0], context = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-      return this.registry[name].send.apply(context, args);
+    get: function() {
+      var args, context, key, name, _ref;
+      context = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      _ref = name.split(':'), name = _ref[0], key = _ref[1];
+      if (key != null) {
+        args = [key].concat(args);
+      }
+      return this.registry[name].get.apply(context, args);
     },
-    receive: function() {
-      var args, context, name;
-      name = arguments[0], context = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-      return this.registry[name].receive.apply(context, args);
+    set: function() {
+      var args, context, key, name, _ref;
+      context = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      _ref = name.split(':'), name = _ref[0], key = _ref[1];
+      if (key != null) {
+        args = [key].concat(args);
+      }
+      return this.registry[name].set.apply(context, args);
     }
   };
 })();
-sendProperty = function(key) {
+getProperty = function(key) {
   if (this.prop != null) {
     return this.prop(key);
-  } else {
-    return sendAttribute.call(this, key);
   }
+  return getAttribute.call(this, key);
 };
-receiveProperty = function(key, value) {
+setProperty = function(key, value) {
   if (this.prop != null) {
     if (typeof key === 'object') {
       return this.prop(key);
-    } else {
-      return this.prop(key, value);
     }
-  } else {
-    return receiveAttribute.call(this, key, value);
+    return this.prop(key, value);
   }
+  return setAttribute.call(this, key, value);
 };
-sendAttribute = function(key) {
+getAttribute = function(key) {
   return this.attr(key);
 };
-receiveAttribute = function(key, value) {
+setAttribute = function(key, value) {
   if (typeof key === 'object') {
     return this.attr(key);
-  } else {
-    return this.attr(key, value);
   }
+  return this.attr(key, value);
 };
-sendCSS = function(key) {
+getStyle = function(key) {
   return this.css(key);
 };
-receiveCSS = function(key, value) {
+setStyle = function(key, value) {
   if (typeof key === 'object') {
     return this.css(key);
-  } else {
-    return this.css(key, value);
   }
+  return this.css(key, value);
 };
 BKVO.interfaces.register({
   name: 'prop',
-  send: function(key) {
-    return sendProperty.call(this, key);
+  get: function(key) {
+    return getProperty.call(this, key);
   },
-  receive: function(key, value) {
-    return receiveProperty.call(this, key, value);
+  set: function(key, value) {
+    return setProperty.call(this, key, value);
   }
 });
 BKVO.interfaces.register({
   name: 'attr',
-  send: function(key) {
-    return sendAttribute.call(this, key);
+  get: function(key) {
+    return getAttribute.call(this, key);
   },
-  receive: function(key, value) {
-    return receiveAttribute.call(this, key, value);
+  set: function(key, value) {
+    return setAttribute.call(this, key, value);
   }
 });
 BKVO.interfaces.register({
-  name: 'css',
-  send: function(key) {
-    return sendCSS.call(this, key);
+  name: 'style',
+  get: function(key) {
+    return getStyle.call(this, key);
   },
-  receive: function(key, value) {
-    return receiveCSS.call(this, key, value);
+  set: function(key, value) {
+    return setStyle.call(this, key, value);
+  }
+});
+BKVO.interfaces.register({
+  name: 'text',
+  get: function() {
+    return this.text();
+  },
+  set: function(value) {
+    return this.text((value || (value = '')).toString());
+  }
+});
+BKVO.interfaces.register({
+  name: 'html',
+  get: function() {
+    return this.html();
+  },
+  set: function(value) {
+    return this.html((value || (value = '')).toString());
+  }
+});
+BKVO.interfaces.register({
+  name: 'value',
+  get: function() {
+    return this.val();
+  },
+  set: function(value) {
+    return this.val(value || (value = ''));
+  }
+});
+BKVO.interfaces.register({
+  name: 'enabled',
+  get: function() {
+    return !getProperty.call(this, 'disabled');
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    return setProperty.call(this, 'disabled', !Boolean(value));
+  }
+});
+BKVO.interfaces.register({
+  name: 'disabled',
+  get: function() {
+    return getProperty.call(this, 'disabled');
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    return setProperty.call(this, 'disabled', Boolean(value));
+  }
+});
+BKVO.interfaces.register({
+  name: 'checked',
+  get: function() {
+    return getProperty.call(this, 'checked');
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    return setProperty.call(this, 'checked', Boolean(value));
   }
 });
 BKVO.interfaces.register({
   name: 'visible',
-  send: function(key) {},
-  receive: function(key, value) {
-    if (value) {
+  get: function() {
+    return getStyle.call(this, 'display') === !'none';
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    if (Boolean(value)) {
       return this.show();
     } else {
       return this.hide();
@@ -98,59 +169,18 @@ BKVO.interfaces.register({
   }
 });
 BKVO.interfaces.register({
-  name: 'text',
-  send: function(key) {
-    return this.text();
+  name: 'hidden',
+  get: function() {
+    return getStyle.call(this, 'display') === 'none';
   },
-  receive: function(key, value) {
-    value || (value = '');
-    return this.text(value.toString());
-  }
-});
-BKVO.interfaces.register({
-  name: 'html',
-  send: function(key) {
-    return this.html();
-  },
-  receive: function(key, value) {
-    value || (value = '');
-    return this.html(value.toString());
-  }
-});
-BKVO.interfaces.register({
-  name: 'value',
-  send: function(key) {
-    return this.val();
-  },
-  receive: function(key, value) {
-    value || (value = '');
-    return this.val(value);
-  }
-});
-BKVO.interfaces.register({
-  name: 'enabled',
-  send: function(key) {
-    return !sendProperty.call(this, 'disabled');
-  },
-  receive: function(key, value) {
-    return receiveProperty.call(this, 'disabled', !Boolean(value));
-  }
-});
-BKVO.interfaces.register({
-  name: 'disabled',
-  send: function(key) {
-    return receiveProperty.call(this, 'disabled');
-  },
-  receive: function(key, value) {
-    return receiveProperty.call(this, 'disabled', Boolean(value));
-  }
-});
-BKVO.interfaces.register({
-  name: 'checked',
-  send: function(key) {
-    return sendProperty.call(this, 'checked');
-  },
-  receive: function(key, value) {
-    return receiveProperty.call(this, 'checked', Boolean(value));
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    if (Boolean(value)) {
+      return this.hide();
+    } else {
+      return this.show();
+    }
   }
 });

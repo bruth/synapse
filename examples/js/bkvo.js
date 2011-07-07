@@ -1,159 +1,3 @@
-var receiveAttribute, receiveCSS, receiveProperty, sendAttribute, sendCSS, sendProperty;
-var __slice = Array.prototype.slice;
-BKVO.interfaces = (function() {
-  return {
-    registry: {},
-    register: function(config) {
-      return this.registry[config.name] = config;
-    },
-    unregister: function(name) {
-      return delete this.registry[name];
-    },
-    send: function() {
-      var args, context, name;
-      name = arguments[0], context = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-      return this.registry[name].send.apply(context, args);
-    },
-    receive: function() {
-      var args, context, name;
-      name = arguments[0], context = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-      return this.registry[name].receive.apply(context, args);
-    }
-  };
-})();
-sendProperty = function(key) {
-  if (this.prop != null) {
-    return this.prop(key);
-  } else {
-    return sendAttribute.call(this, key);
-  }
-};
-receiveProperty = function(key, value) {
-  if (this.prop != null) {
-    if (typeof key === 'object') {
-      return this.prop(key);
-    } else {
-      return this.prop(key, value);
-    }
-  } else {
-    return receiveAttribute.call(this, key, value);
-  }
-};
-sendAttribute = function(key) {
-  return this.attr(key);
-};
-receiveAttribute = function(key, value) {
-  if (typeof key === 'object') {
-    return this.attr(key);
-  } else {
-    return this.attr(key, value);
-  }
-};
-sendCSS = function(key) {
-  return this.css(key);
-};
-receiveCSS = function(key, value) {
-  if (typeof key === 'object') {
-    return this.css(key);
-  } else {
-    return this.css(key, value);
-  }
-};
-BKVO.interfaces.register({
-  name: 'prop',
-  send: function(key) {
-    return sendProperty.call(this, key);
-  },
-  receive: function(key, value) {
-    return receiveProperty.call(this, key, value);
-  }
-});
-BKVO.interfaces.register({
-  name: 'attr',
-  send: function(key) {
-    return sendAttribute.call(this, key);
-  },
-  receive: function(key, value) {
-    return receiveAttribute.call(this, key, value);
-  }
-});
-BKVO.interfaces.register({
-  name: 'css',
-  send: function(key) {
-    return sendCSS.call(this, key);
-  },
-  receive: function(key, value) {
-    return receiveCSS.call(this, key, value);
-  }
-});
-BKVO.interfaces.register({
-  name: 'visible',
-  send: function(key) {},
-  receive: function(key, value) {
-    if (value) {
-      return this.show();
-    } else {
-      return this.hide();
-    }
-  }
-});
-BKVO.interfaces.register({
-  name: 'text',
-  send: function(key) {
-    return this.text();
-  },
-  receive: function(key, value) {
-    value || (value = '');
-    return this.text(value.toString());
-  }
-});
-BKVO.interfaces.register({
-  name: 'html',
-  send: function(key) {
-    return this.html();
-  },
-  receive: function(key, value) {
-    value || (value = '');
-    return this.html(value.toString());
-  }
-});
-BKVO.interfaces.register({
-  name: 'value',
-  send: function(key) {
-    return this.val();
-  },
-  receive: function(key, value) {
-    value || (value = '');
-    return this.val(value);
-  }
-});
-BKVO.interfaces.register({
-  name: 'enabled',
-  send: function(key) {
-    return !sendProperty.call(this, 'disabled');
-  },
-  receive: function(key, value) {
-    return receiveProperty.call(this, 'disabled', !Boolean(value));
-  }
-});
-BKVO.interfaces.register({
-  name: 'disabled',
-  send: function(key) {
-    return receiveProperty.call(this, 'disabled');
-  },
-  receive: function(key, value) {
-    return receiveProperty.call(this, 'disabled', Boolean(value));
-  }
-});
-BKVO.interfaces.register({
-  name: 'checked',
-  send: function(key) {
-    return sendProperty.call(this, 'checked');
-  },
-  receive: function(key, value) {
-    return receiveProperty.call(this, 'checked', Boolean(value));
-  }
-});
 /*
 
 Backbone KVO (BKVO) implements a basic _observer pattern_ in which there is a
@@ -200,7 +44,7 @@ Example scenarios:
 
             ....Evented Object....
            /         |            \ 
-        Model    Controller    DOM Element
+        Model    Router    DOM Element
 
 
 API use:
@@ -274,7 +118,7 @@ Object Types:
     all the same options a jQuery object would use. If there are templates
     being used or custom handlers a view should be used.
 
-    An event-ready object such as a Backbone Model, Collection, or Controller.
+    An event-ready object such as a Backbone Model, Collection, or Router.
     Any object can become event-ready. Simply extend the object with the
     Backbone.Event model:
 
@@ -308,9 +152,15 @@ Object Type-specific options:
     event(s) (DOM): an event or list of events that will be trigger a
     notification to all observers.
 
-*/
+*/var getAttribute, getProperty, getStyle, setAttribute, setProperty, setStyle;
+var __slice = Array.prototype.slice;
 (function() {
-  var BKVO, defaults, detectObjectInterface, getObjectType, notifyObservers, registerObserver, types;
+  var BKVO, defaultOptions, defaults, detectDomEvent, detectElementInterface, getEvents, getHandlerForType, getObjectType, getTargets, log, types;
+  if (!(_.isObject != null)) {
+    _.isObject = function(object) {
+      return object === Object(object);
+    };
+  }
   this.BKVO = this.BKVO || {};
   BKVO = this.BKVO;
   defaults = {
@@ -318,20 +168,41 @@ Object Type-specific options:
     debug: false
   };
   _.defaults(BKVO, defaults);
+  BKVO.defaultElementInterfaces = {
+    _: 'text',
+    input: 'value',
+    select: 'value',
+    textarea: 'value',
+    checkbox: 'checked',
+    radio: 'checked'
+  };
+  BKVO.defaultDomEvents = {
+    input: 'keyup',
+    button: 'click',
+    submit: 'submit',
+    select: 'change',
+    checkbox: 'change',
+    radio: 'change',
+    textarea: 'change'
+  };
   if (this.console != null) {
-    BKVO.log = function(msg) {
-      return console.log(msg);
+    log = function(msg) {
+      if (BKVO.debug) {
+        return console.log(msg);
+      }
     };
   } else {
-    BKVO.log = function(msg) {
-      return alert(msg);
+    log = function(msg) {
+      if (BKVO.debug) {
+        return alert(msg);
+      }
     };
   }
   types = {
     jquery: 0,
     evented: 1,
     view: 2,
-    controller: 3,
+    router: 3,
     model: 4,
     collection: 5
   };
@@ -349,8 +220,8 @@ Object Type-specific options:
     if (object instanceof Backbone.Model) {
       return types.model;
     }
-    if (object instanceof Backbone.Controller) {
-      return types.controller;
+    if (object instanceof Backbone.Router) {
+      return types.router;
     }
     _ref = ['bind', 'unbind', 'trigger'];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -360,79 +231,387 @@ Object Type-specific options:
           throw Error("Object does not have a " + method + " method. ensure\nthe object has been extended from Backbone.Events or set\nBKVO.autoExtendObjects to true.");
         }
         _.extend(object, Backbone.Events);
-        if (BKVO.debug) {
-          BKVO.log("" + object + " extended with Backbone.Events");
-        }
+        log("" + object + " extended with Backbone.Events");
         break;
       }
     }
     return types.evented;
   };
-  detectObjectInterface = function(object) {
-    var tag, type;
+  detectElementInterface = function(object) {
+    var interface, tag, type;
     tag = object.prop('tagName').toLowerCase();
+    interface = BKVO.defaultElementInterfaces[tag];
     if (tag === 'input') {
       type = object.prop('type').toLowerCase();
-      if (type === 'checkbox' || type === 'radio') {
-        return 'prop:checked';
-      }
-      return 'value';
+      interface = BKVO.defaultElementInterfaces[type] || interface;
     }
-    if (tag === 'select') {
-      return 'value';
+    interface || (interface = BKVO.defaultElementInterfaces['_']);
+    if (!interface) {
+      throw new Error('An interface for this element could not be detected');
+    }
+    return interface;
+  };
+  detectDomEvent = function(object) {
+    var event, tag, type;
+    tag = object.prop('tagName').toLowerCase();
+    event = BKVO.defaultDomEvents[tag];
+    if (tag === 'input') {
+      type = object.prop('type').toLowerCase();
+      event = BKVO.defaultDomEvents[type] || event;
+    }
+    event || (event = BKVO.defaultDomEvents['_']);
+    if (!event) {
+      throw new Error('A DOM event for this element could not be detected');
+    }
+    return event;
+  };
+  getEvents = function(event, object, type) {
+    var events;
+    if (!event) {
+      if (type === types.jquery) {
+        events = [detectDomEvent(subject)];
+      } else if (type === types.model) {
+        events = ['change'];
+      } else {
+        throw new Error('No event defined for subject');
+      }
+    } else {
+      if (!_.isArray(event)) {
+        events = [event];
+      } else {
+        events = event;
+      }
+    }
+    return events;
+  };
+  getTargets = function(target, observer, observerType, subject, subjectType) {
+    var targets;
+    targets = null;
+    if (!target) {
+      if (subjectType === types.jquery) {
+        if (subject.attr('name')) {
+          targets = [subject.attr('name')];
+        }
+      } else if (observerType === types.jquery) {
+        if (observer.attr('name')) {
+          targets = [observer.attr('name')];
+        }
+      }
+      if (!targets) {
+        throw new Error('No target could be detected');
+      }
+    } else {
+      if (!_.isArray(target)) {
+        targets = [target];
+      } else {
+        targets = target;
+      }
+    }
+    return targets;
+  };
+  getHandlerForType = function(handler, object, type) {
+    var cache, interface;
+    cache = {};
+    if (type === types.jquery) {
+      interface = detectElementInterface(object);
+      handler = function(key, value) {
+        value = _handler(value);
+        if (value !== cache[key] || _.isEqual(value, cache[key])) {
+          cache[key] = value;
+          return BKVO.interfaces.set(object, interface, value);
+        }
+      };
+    } else if (type === types.model) {
+      handler = function(key, value) {
+        var attrs, cacheKey;
+        cacheKey = _.isObject(value) ? _.keys(value).toString() : key;
+        value = _handler(value);
+        if (value !== cache[key] || _.isEqual(value, cache[key])) {
+          cache[key] = value;
+          if (_.isString(value)) {
+            attrs = {};
+            attrs[key] = value;
+          } else {
+            attrs = value;
+          }
+        }
+        return object.set(attrs);
+      };
+    }
+    return handler;
+  };
+  defaultOptions = {
+    event: null,
+    target: null,
+    handler: function(_) {
+      return _;
     }
   };
-  registerObserver = function(observer, subject, options) {
-    var event, events, observerType, subjectType, _i, _len, _results;
-    if (typeof observer === 'string') {
+  BKVO.registerObserver = function(observer, subject, _options) {
+    var event, events, handler, interface, observerType, options, subjectType, targets, _i, _j, _len, _len2, _results, _results2;
+    options = {};
+    if (_.isString(_options) || _.isArray(_options)) {
+      _options = {
+        target: _options
+      };
+    }
+    _.extend(options, defaultOptions, _options);
+    if (_.isString(observer) || _.isElement(observer)) {
       observer = $(observer);
       observerType = types.jquery;
     } else {
       observerType = getObjectType(observer);
     }
-    if (typeof subject === 'string') {
+    if (_.isString(subject) || _.isElement(subject)) {
       subject = $(subject);
       subjectType = types.jquery;
     } else {
       subjectType = getObjectType(subject);
     }
-    events = options.event;
-    if (!events && !_.isArray(events)) {
-      events = [events];
-    }
-    if (subjectType === !types.jquery) {
-      if (!events) {
-        events = ['change'];
-      }
+    events = getEvents(options.event, subject, subjectType);
+    targets = getTargets(options.target, observer, observerType, subject, subjectType);
+    handler = getHandlerForType(options.handler, observer, observerType);
+    if (subjectType === types.model) {
       _results = [];
       for (_i = 0, _len = events.length; _i < _len; _i++) {
         event = events[_i];
         _results.push((function(event) {
-          var property, _j, _len2, _ref, _results2;
-          _ref = options.targetProperties;
+          var property, _j, _len2, _results2;
           _results2 = [];
-          for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
-            property = _ref[_j];
+          for (_j = 0, _len2 = targets.length; _j < _len2; _j++) {
+            property = targets[_j];
             _results2.push((function(property) {
-              return subject.bind("" + event + ":" + property, function(object, value, options) {});
+              return subject.bind("" + event + ":" + property, function(object, value, options) {
+                var attrs, prop, _k, _len3;
+                if (targets.length > 1) {
+                  attrs = {};
+                  for (_k = 0, _len3 = targets.length; _k < _len3; _k++) {
+                    prop = targets[_k];
+                    attrs[prop] = subject.get(prop);
+                  }
+                } else {
+                  attrs = value;
+                }
+                return handler(property, attrs);
+              });
             })(property));
           }
           return _results2;
         })(event));
       }
       return _results;
+    } else if (subjectType === types.jquery) {
+      interface = detectElementInterface(subject);
+      _results2 = [];
+      for (_j = 0, _len2 = events.length; _j < _len2; _j++) {
+        event = events[_j];
+        _results2.push((function(event) {
+          var property, _k, _len3, _results3;
+          _results3 = [];
+          for (_k = 0, _len3 = targets.length; _k < _len3; _k++) {
+            property = targets[_k];
+            _results3.push((function(property) {
+              return subject.bind(event, function(evt, data) {
+                var value;
+                value = BKVO.interfaces.get(subject, interface);
+                return handler(property, value);
+              });
+            })(property));
+          }
+          return _results3;
+        })(event));
+      }
+      return _results2;
     }
   };
-  notifyObservers = function(subject) {
-    var observers;
-    if (subject instanceof $) {
-      return observers = subject.data('_observers') || {};
-    }
-  };
-  jQuery.fn.observe = function(object, options) {};
   if (BKVO.debug) {
     BKVO.types = types;
     BKVO.getObjectType = getObjectType;
-    return BKVO.detectObjectInterface = detectObjectInterface;
+    BKVO.detectElementInterface = detectElementInterface;
+    return BKVO.detectDomEvent = detectDomEvent;
   }
 })();
+BKVO.interfaces = (function() {
+  return {
+    registry: {},
+    register: function(config) {
+      return this.registry[config.name] = config;
+    },
+    unregister: function(name) {
+      return delete this.registry[name];
+    },
+    get: function() {
+      var args, context, key, name, _ref;
+      context = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      _ref = name.split(':'), name = _ref[0], key = _ref[1];
+      if (key != null) {
+        args = [key].concat(args);
+      }
+      return this.registry[name].get.apply(context, args);
+    },
+    set: function() {
+      var args, context, key, name, _ref;
+      context = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+      _ref = name.split(':'), name = _ref[0], key = _ref[1];
+      if (key != null) {
+        args = [key].concat(args);
+      }
+      return this.registry[name].set.apply(context, args);
+    }
+  };
+})();
+getProperty = function(key) {
+  if (this.prop != null) {
+    return this.prop(key);
+  }
+  return getAttribute.call(this, key);
+};
+setProperty = function(key, value) {
+  if (this.prop != null) {
+    if (typeof key === 'object') {
+      return this.prop(key);
+    }
+    return this.prop(key, value);
+  }
+  return setAttribute.call(this, key, value);
+};
+getAttribute = function(key) {
+  return this.attr(key);
+};
+setAttribute = function(key, value) {
+  if (typeof key === 'object') {
+    return this.attr(key);
+  }
+  return this.attr(key, value);
+};
+getStyle = function(key) {
+  return this.css(key);
+};
+setStyle = function(key, value) {
+  if (typeof key === 'object') {
+    return this.css(key);
+  }
+  return this.css(key, value);
+};
+BKVO.interfaces.register({
+  name: 'prop',
+  get: function(key) {
+    return getProperty.call(this, key);
+  },
+  set: function(key, value) {
+    return setProperty.call(this, key, value);
+  }
+});
+BKVO.interfaces.register({
+  name: 'attr',
+  get: function(key) {
+    return getAttribute.call(this, key);
+  },
+  set: function(key, value) {
+    return setAttribute.call(this, key, value);
+  }
+});
+BKVO.interfaces.register({
+  name: 'style',
+  get: function(key) {
+    return getStyle.call(this, key);
+  },
+  set: function(key, value) {
+    return setStyle.call(this, key, value);
+  }
+});
+BKVO.interfaces.register({
+  name: 'text',
+  get: function() {
+    return this.text();
+  },
+  set: function(value) {
+    return this.text((value || (value = '')).toString());
+  }
+});
+BKVO.interfaces.register({
+  name: 'html',
+  get: function() {
+    return this.html();
+  },
+  set: function(value) {
+    return this.html((value || (value = '')).toString());
+  }
+});
+BKVO.interfaces.register({
+  name: 'value',
+  get: function() {
+    return this.val();
+  },
+  set: function(value) {
+    return this.val(value || (value = ''));
+  }
+});
+BKVO.interfaces.register({
+  name: 'enabled',
+  get: function() {
+    return !getProperty.call(this, 'disabled');
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    return setProperty.call(this, 'disabled', !Boolean(value));
+  }
+});
+BKVO.interfaces.register({
+  name: 'disabled',
+  get: function() {
+    return getProperty.call(this, 'disabled');
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    return setProperty.call(this, 'disabled', Boolean(value));
+  }
+});
+BKVO.interfaces.register({
+  name: 'checked',
+  get: function() {
+    return getProperty.call(this, 'checked');
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    return setProperty.call(this, 'checked', Boolean(value));
+  }
+});
+BKVO.interfaces.register({
+  name: 'visible',
+  get: function() {
+    return getStyle.call(this, 'display') === !'none';
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    if (Boolean(value)) {
+      return this.show();
+    } else {
+      return this.hide();
+    }
+  }
+});
+BKVO.interfaces.register({
+  name: 'hidden',
+  get: function() {
+    return getStyle.call(this, 'display') === 'none';
+  },
+  set: function(value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    if (Boolean(value)) {
+      return this.hide();
+    } else {
+      return this.show();
+    }
+  }
+});
