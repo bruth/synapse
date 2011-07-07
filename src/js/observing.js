@@ -38,7 +38,7 @@ Example scenarios:
     event-ready object triggered => sets an observer attribute
 
         Backbone Hook: a DOM element (input, checkbox, etc.) can provide a
-        value to a Backbone Model targeting a particular attribute. This is
+        value to a Backbone Model interfaceing a particular attribute. This is
         performed via key-value coding (KVC) techniques.
 
 
@@ -55,7 +55,7 @@ API use:
 
     $('#person1').observe(person1, {
         localProperty: 'text',
-        targetProperty: 'name',
+        interfaceProperty: 'name',
     });
 
 
@@ -64,25 +64,25 @@ API use:
 
     person1.observe('#person1 input[name=name]', {
         localProperty: 'name',
-        targetProperty: 'value'
+        interfaceProperty: 'value'
     });
 
 
     # if the parent's home address changes, so does the child's
     child.observe(parent, ['street', 'city', 'state', 'zipcode]);
 
-    # targetProperties is an alias for targetProperty, but if both are
+    # interfaceProperties is an alias for interfaceProperty, but if both are
     # set, the plural form takes precedence
     child.observe(parent, {
-        targetProperties: ['street', 'city', 'state', 'zipcode]
+        interfaceProperties: ['street', 'city', 'state', 'zipcode]
     });
 
 
     # the addressView observes the parent object watches for any one of the
-    # target properties to change. all values (in order) will be passed into
+    # interface properties to change. all values (in order) will be passed into
     # the notifyHandler (that exists on the view) along with subject.
     addressView.observe(parent, {
-        targetProperties: ['street', 'city', 'state', 'zipcode],
+        interfaceProperties: ['street', 'city', 'state', 'zipcode],
         notifyHandler: 'formatAddress'
     });
 
@@ -106,7 +106,7 @@ Arguments:
 
     config := full | [mapping, ...] | mapping
 
-    mapping := 'target' | 'local:target'
+    mapping := 'interface' | 'local:interface'
 
 
 Object Types:
@@ -134,18 +134,18 @@ Object Types:
 General options:
 
     localProperty(-ies): a single or array of local properties that will be
-    updated relative to the subject. Depends on targetProperty(-ies)
+    updated relative to the subject. Depends on interfaceProperty(-ies)
 
-    targetProperty(-ies): a single or array of target properties (located on
+    interfaceProperty(-ies): a single or array of interface properties (located on
     the subject being observed) that the subject will notify the observer of
     when any of them change.
 
-    notifyHandler: a function that takes the value of each targetProperty as
+    notifyHandler: a function that takes the value of each interfaceProperty as
     arguments maps or reduces the values to the localProperty(-ies).
 
 Object Type-specific options:
 
-    localInterface & targetInterface (DOM): by default the interface will be
+    localInterface & interfaceInterface (DOM): by default the interface will be
     determined based on the element type e.g. form fields interface is the
     ``value`` property. the interface can be 'data', 'attr', or 'prop'.
 
@@ -153,7 +153,7 @@ Object Type-specific options:
     notification to all observers.
 
 */(function() {
-  var BKVO, defaultOptions, defaults, detectDomEvent, detectElementInterface, getEvents, getHandlerForType, getObjectType, getTargets, log, types;
+  var BKVO, defaultOptions, defaults, detectDomEvent, detectElementInterface, getEvents, getInterfaces, getObjectType, handlers, log, types;
   if (!(_.isObject != null)) {
     _.isObject = function(object) {
       return object === Object(object);
@@ -203,6 +203,45 @@ Object Type-specific options:
     router: 3,
     model: 4,
     collection: 5
+  };
+  handlers = {
+    0: {
+      subject: function(event, object, interface, handler) {
+        object.bind(event, function() {
+          var value;
+          value = BKVO.interfaces.get(object, interface);
+          return handler(object, value);
+        });
+        return object.trigger(event);
+      },
+      observer: function(object, interface, handler) {
+        return function(subject, value) {
+          if (handler) {
+            value = handler(subject, value);
+          }
+          return BKVO.interfaces.set(object, interface, value);
+        };
+      }
+    },
+    4: {
+      subject: function(event, object, interface, handler) {
+        object.bind("" + event + ":" + interface, function(model, value, options) {
+          return handler(object, value);
+        });
+        return object.trigger("" + event + ":" + interface);
+      },
+      observer: function(object, interface, handler) {
+        return function(subject, value) {
+          var attrs;
+          if (handler) {
+            value = handler(subject, value);
+          }
+          attrs = {};
+          attrs[interface] = value;
+          return object.set(attrs);
+        };
+      }
+    }
   };
   getObjectType = function(object) {
     var method, _i, _len, _ref;
@@ -263,9 +302,10 @@ Object Type-specific options:
     }
     return event;
   };
-  getEvents = function(event, object, type) {
-    var events;
+  getEvents = function(subject, event) {
+    var events, type;
     if (!event) {
+      type = getObjectType(subject);
       if (type === types.jquery) {
         events = [detectDomEvent(subject)];
       } else if (type === types.model) {
@@ -274,158 +314,117 @@ Object Type-specific options:
         throw new Error('No event defined for subject');
       }
     } else {
-      if (!_.isArray(event)) {
-        events = [event];
-      } else {
-        events = event;
-      }
+      events = !_.isArray(event) ? [event] : event;
     }
     return events;
   };
-  getTargets = function(target, observer, observerType, subject, subjectType) {
-    var targets;
-    targets = null;
-    if (!target) {
-      if (subjectType === types.jquery) {
-        if (subject.attr('name')) {
-          targets = [subject.attr('name')];
-        }
-      } else if (observerType === types.jquery) {
-        if (observer.attr('name')) {
-          targets = [observer.attr('name')];
+  getInterfaces = function(observer, subject, interface) {
+    var interfaces, key, oType, sType, value;
+    interfaces = {};
+    oType = getObjectType(observer);
+    sType = getObjectType(subject);
+    if (!interface) {
+      key = null;
+      value = null;
+      if (sType === types.jquery) {
+        value = detectElementInterface(subject);
+        if (oType === types.model) {
+          key = subject.attr('name');
         }
       }
-      if (!targets) {
-        throw new Error('No target could be detected');
-      }
-    } else {
-      if (!_.isArray(target)) {
-        targets = [target];
+      if (oType === types.jquery) {
+        key = detectElementInterface(observer);
+        if (!value) {
+          value = observer.attr('name');
+        }
       } else {
-        targets = target;
+        key = value;
+      }
+      if (!key || !value) {
+        throw new Error('The interface could be detected');
+      }
+      interfaces[key] = value;
+    } else {
+      if (_.isString(interface) || _.isArray(interface)) {
+        value = interface;
+        if (oType === types.jquery) {
+          key = detectElementInterface(observer);
+        } else if (_.isString(interface)) {
+          key = value;
+        } else {
+          throw new Error('The observer interface could not be determined');
+        }
+        interfaces[key] = value;
+      } else {
+        interfaces = interface;
       }
     }
-    return targets;
-  };
-  getHandlerForType = function(handler, object, type) {
-    var cache, interface;
-    cache = {};
-    if (type === types.jquery) {
-      interface = detectElementInterface(object);
-      handler = function(key, value) {
-        value = _handler(value);
-        if (value !== cache[key] || _.isEqual(value, cache[key])) {
-          cache[key] = value;
-          return BKVO.interfaces.set(object, interface, value);
-        }
-      };
-    } else if (type === types.model) {
-      handler = function(key, value) {
-        var attrs, cacheKey;
-        cacheKey = _.isObject(value) ? _.keys(value).toString() : key;
-        value = _handler(value);
-        if (value !== cache[key] || _.isEqual(value, cache[key])) {
-          cache[key] = value;
-          if (_.isString(value)) {
-            attrs = {};
-            attrs[key] = value;
-          } else {
-            attrs = value;
-          }
-        }
-        return object.set(attrs);
-      };
-    }
-    return handler;
+    return interfaces;
   };
   defaultOptions = {
     event: null,
-    target: null,
-    handler: function(_) {
-      return _;
-    }
+    interface: null,
+    handler: null
   };
   BKVO.registerObserver = function(observer, subject, _options) {
-    var event, events, handler, interface, observerType, options, subjectType, targets, _i, _j, _len, _len2, _results, _results2;
+    var event, events, handler, interfaces, oInterface, oType, observerHandler, options, sInterface, sType, si, subjectHandler, _i, _len, _results;
     options = {};
     if (_.isString(_options) || _.isArray(_options)) {
       _options = {
-        target: _options
+        interface: _options
       };
     }
     _.extend(options, defaultOptions, _options);
     if (_.isString(observer) || _.isElement(observer)) {
       observer = $(observer);
-      observerType = types.jquery;
-    } else {
-      observerType = getObjectType(observer);
     }
     if (_.isString(subject) || _.isElement(subject)) {
       subject = $(subject);
-      subjectType = types.jquery;
-    } else {
-      subjectType = getObjectType(subject);
     }
-    events = getEvents(options.event, subject, subjectType);
-    targets = getTargets(options.target, observer, observerType, subject, subjectType);
-    handler = getHandlerForType(options.handler, observer, observerType);
-    if (subjectType === types.model) {
-      _results = [];
-      for (_i = 0, _len = events.length; _i < _len; _i++) {
-        event = events[_i];
-        _results.push((function(event) {
-          var property, _j, _len2, _results2;
-          _results2 = [];
-          for (_j = 0, _len2 = targets.length; _j < _len2; _j++) {
-            property = targets[_j];
-            _results2.push((function(property) {
-              return subject.bind("" + event + ":" + property, function(object, value, options) {
-                var attrs, prop, _k, _len3;
-                if (targets.length > 1) {
-                  attrs = {};
-                  for (_k = 0, _len3 = targets.length; _k < _len3; _k++) {
-                    prop = targets[_k];
-                    attrs[prop] = subject.get(prop);
-                  }
-                } else {
-                  attrs = value;
-                }
-                return handler(property, attrs);
-              });
-            })(property));
-          }
-          return _results2;
-        })(event));
-      }
-      return _results;
-    } else if (subjectType === types.jquery) {
-      interface = detectElementInterface(subject);
-      _results2 = [];
-      for (_j = 0, _len2 = events.length; _j < _len2; _j++) {
-        event = events[_j];
-        _results2.push((function(event) {
-          var property, _k, _len3, _results3;
-          _results3 = [];
-          for (_k = 0, _len3 = targets.length; _k < _len3; _k++) {
-            property = targets[_k];
-            _results3.push((function(property) {
-              return subject.bind(event, function(evt, data) {
-                var value;
-                value = BKVO.interfaces.get(subject, interface);
-                return handler(property, value);
-              });
-            })(property));
-          }
-          return _results3;
-        })(event));
-      }
-      return _results2;
+    events = getEvents(subject, options.event);
+    interfaces = getInterfaces(observer, subject, options.interface);
+    oType = getObjectType(observer);
+    sType = getObjectType(subject);
+    handler = options.handler;
+    if (handler && !_.isFunction(handler)) {
+      handler = observer[handler];
     }
+    observerHandler = handlers[oType].observer;
+    subjectHandler = handlers[sType].subject;
+    _results = [];
+    for (_i = 0, _len = events.length; _i < _len; _i++) {
+      event = events[_i];
+      _results.push((function() {
+        var _results2;
+        _results2 = [];
+        for (oInterface in interfaces) {
+          sInterface = interfaces[oInterface];
+          handler = observerHandler(observer, oInterface, handler);
+          _results2.push((function() {
+            var _j, _len2, _results3;
+            if (_.isArray(sInterface)) {
+              _results3 = [];
+              for (_j = 0, _len2 = sInterface.length; _j < _len2; _j++) {
+                si = sInterface[_j];
+                _results3.push(subjectHandler(event, subject, si, handler));
+              }
+              return _results3;
+            } else {
+              return subjectHandler(event, subject, sInterface, handler);
+            }
+          })());
+        }
+        return _results2;
+      })());
+    }
+    return _results;
   };
   if (BKVO.debug) {
     BKVO.types = types;
     BKVO.getObjectType = getObjectType;
     BKVO.detectElementInterface = detectElementInterface;
-    return BKVO.detectDomEvent = detectDomEvent;
+    BKVO.detectDomEvent = detectDomEvent;
+    BKVO.getEvents = getEvents;
+    return BKVO.getInterfaces = getInterfaces;
   }
 })();

@@ -8,17 +8,17 @@ var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, par
   return child;
 };
 PersonView = (function() {
+  __extends(PersonView, Backbone.View);
   function PersonView() {
     PersonView.__super__.constructor.apply(this, arguments);
   }
-  __extends(PersonView, Backbone.View);
   return PersonView;
 })();
 Person = (function() {
+  __extends(Person, Backbone.Model);
   function Person() {
     Person.__super__.constructor.apply(this, arguments);
   }
-  __extends(Person, Backbone.Model);
   Person.prototype.defaults = {
     'first-name': '',
     'last-name': '',
@@ -30,10 +30,10 @@ $(function() {
   var people;
   people = $('#people');
   return PersonView = (function() {
+    __extends(PersonView, Backbone.View);
     function PersonView() {
       PersonView.__super__.constructor.apply(this, arguments);
     }
-    __extends(PersonView, Backbone.View);
     PersonView.prototype.template = _.template($('#template').html());
     PersonView.prototype.render = function() {
       var attrs;
