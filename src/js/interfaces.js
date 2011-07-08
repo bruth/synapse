@@ -184,3 +184,19 @@ BKVO.interfaces.register({
     }
   }
 });
+BKVO.interfaces.register({
+  name: 'css',
+  get: function(key) {
+    return this.hasClass(key);
+  },
+  set: function(key, value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    if (Boolean(value)) {
+      return this.addClass(key);
+    } else {
+      return this.removeClass(key);
+    }
+  }
+});

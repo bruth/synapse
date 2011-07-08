@@ -31,7 +31,7 @@ and DOM events:
 Example scenarios:
 
     event-ready object triggered => executes observer handler (most basic)
-    
+
         An event is triggered which executes a handler the observer supplied.
         This is useful for executing cutom logic.
 
@@ -43,7 +43,7 @@ Example scenarios:
 
 
             ....Evented Object....
-           /         |            \ 
+           /         |            \
         Model    Router    DOM Element
 
 
@@ -417,26 +417,26 @@ ObserverableModel = void 0;
     for (_i = 0, _len = events.length; _i < _len; _i++) {
       event = events[_i];
       _results.push((function() {
-        var _results2;
-        _results2 = [];
+        var _results;
+        _results = [];
         for (oInterface in interfaces) {
           sInterface = interfaces[oInterface];
           handler = observerHandler(observer, oInterface, handler);
-          _results2.push((function() {
-            var _j, _len2, _results3;
+          _results.push((function() {
+            var _i, _len, _results;
             if (_.isArray(sInterface)) {
-              _results3 = [];
-              for (_j = 0, _len2 = sInterface.length; _j < _len2; _j++) {
-                si = sInterface[_j];
-                _results3.push(subjectHandler(event, subject, si, handler));
+              _results = [];
+              for (_i = 0, _len = sInterface.length; _i < _len; _i++) {
+                si = sInterface[_i];
+                _results.push(subjectHandler(event, subject, si, handler));
               }
-              return _results3;
+              return _results;
             } else {
               return subjectHandler(event, subject, sInterface, handler);
             }
           })());
         }
-        return _results2;
+        return _results;
       })());
     }
     return _results;
@@ -650,6 +650,22 @@ BKVO.interfaces.register({
       return this.hide();
     } else {
       return this.show();
+    }
+  }
+});
+BKVO.interfaces.register({
+  name: 'css',
+  get: function(key) {
+    return this.hasClass(key);
+  },
+  set: function(key, value) {
+    if (_.isArray(value) && value.length === 0) {
+      value = false;
+    }
+    if (Boolean(value)) {
+      return this.addClass(key);
+    } else {
+      return this.removeClass(key);
     }
   }
 });

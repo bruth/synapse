@@ -68,7 +68,7 @@ test('detectElementInterface', function() {
         'radio button');
     equals(BKVO.detectElementInterface(select), 'value',
         'select box');
-    equals(BKVO.detectElementInterface(button), 'text',
+    equals(BKVO.detectElementInterface(button), 'html',
         'button');
     equals(BKVO.detectElementInterface(email), 'value',
         'email (variant of text input)');
@@ -134,16 +134,15 @@ test('getInterfaces - detected', function() {
         'radio observing a text input');
     deepEqual(BKVO.getInterfaces(select, model), {value: 'select'},
         'select box observing a model');
-    deepEqual(BKVO.getInterfaces(model, button), {text: 'text'},
+    deepEqual(BKVO.getInterfaces(model, button), {button: 'html'},
         'model observing a button');
     deepEqual(BKVO.getInterfaces(email, model), {value: 'email'},
         'email observing a model');
-    deepEqual(BKVO.getInterfaces(span, text), {text: 'value'},
+    deepEqual(BKVO.getInterfaces(span, text), {html: 'value'},
         'span observing a text input');
 
-    raises(function() {
-        BKVO.getInterfaces(span, model);
-    }, 'span observing a model.. no interfaces');
+    deepEqual(BKVO.getInterfaces(span, model), {html: ''},
+        'span observing a model.. no interfaces');
 
     raises(function() {
         BKVO.getInterfaces(model, model);
@@ -164,7 +163,7 @@ test('getInterfaces - subject interface', function() {
     deepEqual(BKVO.getInterfaces(text, model, ['first', 'last']), {value: ['first', 'last']},
         'text input observing model.first and model.last');
 
-    deepEqual(BKVO.getInterfaces(span, model, 'title'), {text: 'title'},
+    deepEqual(BKVO.getInterfaces(span, model, 'title'), {html: 'title'},
         'span observing model.title');
 
     raises(function() {
@@ -175,12 +174,12 @@ test('getInterfaces - subject interface', function() {
 
 module('Built-in Interfaces', {
     setup: function() {
-        span.text('Hello World');
+        span.html('Hello World');
         text.val('hello world');
         check.prop('checked', true);
         radio.prop('disabled', true);
         select.hide().val('');
-        button.text('Click Me!');
+        button.html('Click Me!');
     }
 });
 
@@ -384,6 +383,20 @@ test('get hidden', function() {
     expect(2);
     equals(BKVO.interfaces.get(select, 'hidden'), true, 'alias');
     equals(BKVO.interfaces.get(select, 'style:display'), 'none', 'style');
+});
+
+
+test('css', function() {
+    expect(3);
+
+    BKVO.interfaces.set(submit, 'css:fancy', false);
+    equals(BKVO.interfaces.get(submit, 'css:fancy'), false, 'css bool');
+
+    BKVO.interfaces.set(submit, 'css:fancy', 'Hello');
+    equals(BKVO.interfaces.get(submit, 'css:fancy'), true, 'css string');
+
+    BKVO.interfaces.set(submit, 'css:fancy', []);
+    equals(BKVO.interfaces.get(submit, 'css:fancy'), false, 'css empty array');
 });
 
 

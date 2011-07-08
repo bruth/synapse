@@ -41,6 +41,11 @@ $(function() {
       attrs.date = new Date;
       this.el = $(this.template(attrs));
       people.prepend(this.el);
+      this.model.bind('change', function(model) {
+        return model.set({
+          updated: new Date()
+        });
+      });
       this.$('[name=first-name]').sync(this.model);
       this.$('[name=last-name]').sync(this.model);
       this.$('[name=on-twitter]').sync(this.model);
@@ -58,9 +63,7 @@ $(function() {
           enabled: ['first-name', 'last-name']
         }
       });
-      this.$('.date').observe(this.model, function() {
-        return new Date();
-      });
+      this.$('.date').observe(this.model, 'updated');
       return this.$('.on-twitter').observe(this.model, {
         interface: {
           visible: 'on-twitter'

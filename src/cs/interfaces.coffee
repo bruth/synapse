@@ -160,3 +160,12 @@ BKVO.interfaces.register
             value = false
         if Boolean(value) then @hide() else @show()
 
+
+BKVO.interfaces.register
+    name: 'css'
+    get: (key) -> @.hasClass(key)
+    set: (key, value) ->
+        if _.isArray(value) and value.length is 0
+            value = false
+        if Boolean(value) then @addClass(key) else @removeClass(key)
+
