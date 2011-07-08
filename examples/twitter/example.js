@@ -8,17 +8,17 @@ var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, par
   return child;
 };
 PersonView = (function() {
-  __extends(PersonView, Backbone.View);
   function PersonView() {
     PersonView.__super__.constructor.apply(this, arguments);
   }
+  __extends(PersonView, Backbone.View);
   return PersonView;
 })();
 Person = (function() {
-  __extends(Person, Backbone.Model);
   function Person() {
     Person.__super__.constructor.apply(this, arguments);
   }
+  __extends(Person, ObserverableModel);
   Person.prototype.defaults = {
     'first-name': '',
     'last-name': '',
@@ -29,11 +29,11 @@ Person = (function() {
 $(function() {
   var people;
   people = $('#people');
-  return PersonView = (function() {
-    __extends(PersonView, Backbone.View);
+  PersonView = (function() {
     function PersonView() {
       PersonView.__super__.constructor.apply(this, arguments);
     }
+    __extends(PersonView, Backbone.View);
     PersonView.prototype.template = _.template($('#template').html());
     PersonView.prototype.render = function() {
       var attrs;
@@ -41,8 +41,40 @@ $(function() {
       attrs.date = new Date;
       this.el = $(this.template(attrs));
       people.prepend(this.el);
-      return BKVO.registerObserver(this.$('[name=on-twitter]'), this.model);
+      this.$('[name=first-name]').sync(this.model);
+      this.$('[name=last-name]').sync(this.model);
+      this.$('[name=on-twitter]').sync(this.model);
+      this.$('.name').observe(this.model, function(model) {
+        var first, last;
+        first = model.get('first-name');
+        last = model.get('last-name');
+        if (first || last) {
+          return "" + first + " " + last;
+        }
+        return '<em style="color: grey">Name goes here...</em>';
+      });
+      this.$('[name=on-twitter]').observe(this.model, {
+        interface: {
+          enabled: ['first-name', 'last-name']
+        }
+      });
+      this.$('.date').observe(this.model, function() {
+        return new Date();
+      });
+      return this.$('.on-twitter').observe(this.model, {
+        interface: {
+          visible: 'on-twitter'
+        }
+      });
     };
     return PersonView;
   })();
+  return $('#add-person').bind('click', function() {
+    var model, view;
+    model = new Person;
+    view = new PersonView({
+      model: model
+    });
+    return view.render();
+  });
 });

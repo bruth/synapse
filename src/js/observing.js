@@ -152,7 +152,17 @@ Object Type-specific options:
     event(s) (DOM): an event or list of events that will be trigger a
     notification to all observers.
 
-*/(function() {
+*/var ObserverableModel;
+var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+  for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+  function ctor() { this.constructor = child; }
+  ctor.prototype = parent.prototype;
+  child.prototype = new ctor;
+  child.__super__ = parent.prototype;
+  return child;
+};
+ObserverableModel = void 0;
+(function() {
   var BKVO, defaultOptions, defaults, detectDomEvent, detectElementInterface, getEvents, getInterfaces, getObjectType, handlers, log, types;
   if (!(_.isObject != null)) {
     _.isObject = function(object) {
@@ -167,7 +177,7 @@ Object Type-specific options:
   };
   _.defaults(BKVO, defaults);
   BKVO.defaultElementInterfaces = {
-    _: 'text',
+    _: 'html',
     input: 'value',
     select: 'value',
     textarea: 'value',
@@ -225,10 +235,13 @@ Object Type-specific options:
     },
     4: {
       subject: function(event, object, interface, handler) {
-        object.bind("" + event + ":" + interface, function(model, value, options) {
+        if (interface) {
+          event = "" + event + ":" + interface;
+        }
+        object.bind(event, function(model, value, options) {
           return handler(object, value);
         });
-        return object.trigger("" + event + ":" + interface);
+        return object.trigger(event, object, object.get(interface));
       },
       observer: function(object, interface, handler) {
         return function(subject, value) {
@@ -334,13 +347,14 @@ Object Type-specific options:
       }
       if (oType === types.jquery) {
         key = detectElementInterface(observer);
-        if (!value) {
+        if (!value && observer.attr('name')) {
           value = observer.attr('name');
         }
-      } else {
-        key = value;
       }
-      if (!key || !value) {
+      if (!value && sType === types.model) {
+        value = '';
+      }
+      if (key === null || value === null) {
         throw new Error('The interface could be detected');
       }
       interfaces[key] = value;
@@ -366,12 +380,20 @@ Object Type-specific options:
     interface: null,
     handler: null
   };
+  BKVO.registerSync = function(object1, object2) {
+    BKVO.registerObserver(object1, object2);
+    return BKVO.registerObserver(object2, object1);
+  };
   BKVO.registerObserver = function(observer, subject, _options) {
     var event, events, handler, interfaces, oInterface, oType, observerHandler, options, sInterface, sType, si, subjectHandler, _i, _len, _results;
     options = {};
     if (_.isString(_options) || _.isArray(_options)) {
       _options = {
         interface: _options
+      };
+    } else if (_.isFunction(_options)) {
+      _options = {
+        handler: _options
       };
     }
     _.extend(options, defaultOptions, _options);
@@ -419,6 +441,25 @@ Object Type-specific options:
     }
     return _results;
   };
+  jQuery.fn.observe = function(subject, options) {
+    return BKVO.registerObserver(this, subject, options);
+  };
+  jQuery.fn.sync = function(other) {
+    return BKVO.registerSync(this, other);
+  };
+  ObserverableModel = (function() {
+    function ObserverableModel() {
+      ObserverableModel.__super__.constructor.apply(this, arguments);
+    }
+    __extends(ObserverableModel, Backbone.Model);
+    ObserverableModel.prototype.observe = function(subject, options) {
+      return BKVO.registerObserver(this, subject, options);
+    };
+    ObserverableModel.prototype.sync = function(other) {
+      return BKVO.registerSync(other);
+    };
+    return ObserverableModel;
+  })();
   if (BKVO.debug) {
     BKVO.types = types;
     BKVO.getObjectType = getObjectType;

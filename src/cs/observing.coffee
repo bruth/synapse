@@ -154,6 +154,8 @@ Object Type-specific options:
 
 ###
 
+ObserverableModel = undefined
+
 do ->
 
     if not _.isObject?
@@ -176,7 +178,7 @@ do ->
     
     # default element interfaces
     BKVO.defaultElementInterfaces =
-        _: 'text'
+        _: 'html'
         input: 'value'
         select: 'value'
         textarea: 'value'
@@ -226,9 +228,14 @@ do ->
 
         4:
             subject: (event, object, interface, handler) ->
-                object.bind "#{event}:#{interface}", (model, value, options) ->
+                # handle the case where an interface (the model attribute) is
+                # not defined. when anything changes about the model, this will
+                # fire.
+                if interface then event = "#{event}:#{interface}"
+
+                object.bind event, (model, value, options) ->
                     handler(object, value)
-                object.trigger "#{event}:#{interface}"
+                object.trigger event, object, object.get(interface)
 
             observer: (object, interface, handler) ->
                 return (subject, value) ->
@@ -363,12 +370,13 @@ do ->
 
                 # value is still not defined, so use the observer's name if
                 # present.
-                if not value then value = observer.attr('name')
+                if not value and observer.attr('name')
+                    value = observer.attr('name')
 
-            else
-                key = value
+            if not value and sType is types.model
+                value = ''
 
-            if not key or not value
+            if key is null or value is null
                 throw new Error('The interface could be detected')
 
             interfaces[key] = value
@@ -434,6 +442,11 @@ do ->
         handler: null
 
 
+    BKVO.registerSync = (object1, object2) ->
+        BKVO.registerObserver(object1, object2)
+        BKVO.registerObserver(object2, object1)
+
+
     BKVO.registerObserver = (observer, subject, _options) ->
         options = {}
 
@@ -441,6 +454,8 @@ do ->
         # interface(s) directly. 
         if _.isString(_options) or _.isArray(_options)
             _options = interface: _options
+        else if _.isFunction(_options)
+            _options = handler: _options
 
         # user-defined options take precedence, followed by the default options
         _.extend(options, defaultOptions, _options)
@@ -485,6 +500,20 @@ do ->
                         subjectHandler(event, subject, si, handler)
                 else
                     subjectHandler(event, subject, sInterface, handler)
+
+
+    jQuery.fn.observe = (subject, options) ->
+        BKVO.registerObserver(@, subject, options)
+
+    jQuery.fn.sync = (other) ->
+        BKVO.registerSync(@, other)
+
+    class ObserverableModel extends Backbone.Model
+        observe: (subject, options) ->
+            BKVO.registerObserver(@, subject, options)
+
+        sync: (other) ->
+            BKVO.registerSync(other)
 
 
     if BKVO.debug

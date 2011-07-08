@@ -2,6 +2,7 @@ var model, cxt, text, check, radio, select, span, button, email, submit;
 
 $(function() {
     model = new Backbone.Model;
+
     cxt = $('#qunit-fixture');
     text = $('[type=text]', cxt);
     check = $('[type=checkbox]', cxt);
@@ -400,12 +401,12 @@ module('jQuery Observers', {
 
 // jQuery observers have two means of being notified by the subject. 
 test('read-only non-form element', function() {
-    expect(4);
+    expect(5);
 
     // shorthand for specifying a particular interface for the observers
     BKVO.registerObserver(span, model, 'title');
     model.set({title: 'Cool Title'});
-    equals(span.text(), 'Cool Title', 'the span element observers the title attr on the model');
+    equals(span.text(), 'Cool Title', 'the span element observes the title attr on the model');
 
     model.unbind();
 
@@ -417,7 +418,7 @@ test('read-only non-form element', function() {
     });
 
     model.set({title: 'Yet Again!', author: 'John Doe'});
-    equals(span.text(), 'Yet Again! by John Doe', 'the span element observers the title and author attr on the model'); 
+    equals(span.text(), 'Yet Again! by John Doe', 'the span element observes the title and author attr on the model'); 
 
     model.unbind();
 
@@ -426,14 +427,14 @@ test('read-only non-form element', function() {
     });
 
     BKVO.registerObserver(model, model2, 'foo');
+    equals(model.get('foo'), 'Bar', 'initial value');
     model2.set({foo: 'Hello'});
     equals(model.get('foo'), 'Hello', 'model is observing model2');
-
 
     BKVO.registerObserver(text, model);
 
     model.set({text: 'Foo'});
     equals(text.val(), 'Foo');
 
+    model.unbind();
 });
-
