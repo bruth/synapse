@@ -8,99 +8,244 @@
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+        <link rel="stylesheet" href="css/ir_black.css">
+
         <style>
             body {
                 font-family: 'droid sans', sans-serif;
+                background-color: #eee;
+                text-shadow: 0 1px 1px #fff;
             }
 
             pre, code {
                 font-family: monospace;
-                padding: 2px 3px;
-                color: #f9f9f9;
-                background: #333;
-                font-weight: 500;
+                margin: 0;
             }
 
-            img {
-                vertical-align: top;
-            }
-
-            pre {
-                margin: 10px 0;
-                padding: 10px;
+            pre code {
+                text-shadow: none;
                 border-radius: 5px;
+            }
+
+            p > code {
+                border-bottom: 1px solid #ccc;
+                background-color: #f9f9f9;
+                padding: 2px;
+            }
+
+            input {
+                border: 1px solid #999;
+                padding: 3px;
+            }
+
+            input:disabled {
+                border: 1px solid #ccc;
+                background-color: #f9f9f9;
+                color: #aaa;
             }
 
             em {
                 font-size: 0.9em;
             }
 
-            .example {
-                margin: 10px 10px 10px 0;
-                padding: 10px;
-                background: #eee;
-                border: 1px solid #ccc;           
-                border-radius: 5px;
-                display: inline-block;
-                font-size: 0.9em;
+            h3 {
+                margin: 20px 0 10px 0;
             }
-            .example h3 {
-                margin: 0 0 10px 0;
+
+            .example {
+                margin: 10px 0;
+            }
+
+            .example > p {
+                color: #184489;
+                border-bottom: 1px solid #ddd;
+                margin: 0;
+                margin-bottom: 10px;
+                padding-bottom: 10px;
+                line-height: 1.4em;
+            }
+
+            .example > div {
+                display: inline-block;
+                *display: inline;
+                vertical-align: middle;
+                zoom: 1;
+            }
+
+            .example > div:nth-child(odd) {
+                width: 500px;
+                margin-right: 20px;
+            }
+
+            .example > div:nth-child(even) {
+                padding: 10px;
+                background: #fff;
+                border: 1px solid #999;
+                box-shadow: 1px 2px 5px #aaa;
+                min-width: 400px;
             }
 
             .meta {
                 font-size: 0.8em;
                 color: #999;
             }
+
+            input[type=text], .output {
+                width: 150px;
+            }
+
+            .output {
+                display: inline-block;
+                *display: inline;
+                zoom: 1;
+                border-bottom: 1px dotted #666;
+                vertical-align: bottom;
+            }
+
         </style>
+
+        <script src="js/jquery.js"></script>
+        <script src="js/underscore.js"></script>
+        <script src="js/backbone.js"></script>
+        <script src="js/bkvo.js"></script>
+        <script src="js/highlight.pack.js"></script>
+        <script>
+            hljs.tabReplace = '    ';
+            hljs.initHighlightingOnLoad();
+        </script>
+
+        <script>
+            $(function() {
+
+                // example 0
+                var model = new ObserverableModel({ title: 'Hello World' });
+                $('#example0-1 input').sync(model);
+                $('#example0-1 .output').observe(model, 'title');
+                $('#example0-1 .meta').observe(model, function() {
+                    return 'Last updated: ' + (new Date()).toString();
+                });
+
+
+                // example 1 
+                $('#example1-1 span').observe('#example1-1 input');
+                $('#example1-2 input.one').sync('#example1-2 input.two');
+                $('#example1-3 :text').observe('#example1-3 :checkbox',{
+                    interface: {enabled: 'checked'}
+                });
+                $('#example1-4 span').observe('#example1-4 input', function(object, value) {
+                    if (value !== '')
+                        return 'I am a <b>' + value + '</b>';
+                    return '<em class="meta">please type something</em>';
+                });
+            });
+        </script>
 
     </head>
     <body>        
 
         <h1>Backbone KVO</h1>
 
-        <h2>Two-Way Binding (sync)</h2>
-        <p>A two-way binding represents two objects that keep in sync with each
-        no matter the source of the change. That is, if the element triggers the
-        event to change, the model will update itself to reflect that change and
-        vice versa.</p>
+        <h3>DOM to Model</h3>
 
-        <em>Requires: <code>selector</code> <code>event</code>
-            <code>observes</code> <code>interface</code></em>
+        <div class="example">
+            <div>
+<pre class="javascript">
+<code>// initialize a new model object using the ObserverableModel
+// class. it provides two methods ``observe`` and ``sync``.
+var model = new ObserverableModel({ title: 'Hello World' });
 
-        <h2>One-Way Binding (handler)</h2>
-        <p>A one-way binding using a handler (no model attributes being obvserved)
-        has the view (or any object) observing an event from an actionable
-        element such as a button or link. The handler is used to perform some
-        processing indirectly of the model data.</p>
+// the model will observe the value of this input (the attribute
+// is equal to the 'name' attribute on the input, i.e. 'title'
+$('input').sync(model);
 
-        <p>Note, this is no different than a typical bind using jQuery e.g.
-        <code>$('#mybutton').bind('click', function() { alert('hi')' });</code>.
-        The one difference is that the selector is within the context of the
-        view the bindings are defined on.</p>
+// the span will observe the 'title' attribute on this model
+$('span').observe(model, 'title');
 
-        <em>Requires: <code>selector</code> <code>event</code>
-            <code>handler</code></em>
+// if no interface is auto-detected for the model, the observer
+// will be notified when _anything_ changes.
+$('.meta').observe(model, function() {
+    return 'Last updated: ' + (new Date()).toString();
+});
+</code></pre>
+            </div>
 
-        <h2>One-Way Binding (read-only)</h2>
-        <p>A one-way binding that is read-only (ro) is typically used with an
-        element that is non-actionable. It represents model data in some way
-        and will update itself if the model data changes. There is no way for the
-        user to alter that data using that element.</p>
+            <div id="example0-1">
+                <input type="text" name="title">
+                <span class="output"></span><br>
+                <span class="meta"></span>
+            </div>
+        </div>
 
-        <em>Requires: <code>selector</code> <code>observes</code>
-            <code>interface</code></em>
+        <h3>DOM to DOM</h3>
 
-        <h2>One-Way Binding (write-only)</h2>
-        <p>A one-way binding that is write-only (wo) is the opposite of the
-        ready-only binding. The element provides a means of entering data using
-        form fields and it will write to the model, but any changes to the model
-        will not be reflected in the representative element.</p>
+        <p></p>
 
-        <em>Requires: <code>selector</code> <code>event</code>
-            <code>observes</code> <code>interface</code>
-            <code>loopback=false</code></em>
+        <div class="example">
+            <div>
+<pre class="javascript"><code>// the ``span`` observes the ``input``. BKVO autodetects to use
+// the "html" interface for the ``span`` and the "value" of  the
+// ``input``. The event is auto-detected relative to the subject type,
+// which will be "keyup".
+$('span').observe('input');
+</code></pre>
+            </div>
 
+            <div id="example1-1">
+                <input type="text">
+                <span class="output"></span>
+            </div>
+        </div>
+
+        <div class="example">
+            <div>
+<pre class="javascript"><code>// actionable objects (ones that have detectable events) can be 
+// synced. that is, both are observing each other. this merely a
+// convenience syntax and can be accomplished using two ``observe()``
+// calls
+$('input.one').sync('input.two');
+</code></pre>
+            </div>
+
+            <div id="example1-2">
+                <input class="one" type="text">
+                <input class="two" type="text">
+            </div>
+        </div>
+
+        <div class="example">
+            <div>
+<pre class="javascript"><code>// interfaces can be explicitly set. this one reads, the ``:text``
+// input will be "enabled" only when the ``:checkbox`` is "checked".
+$(':text').observe(':checkbox', {
+    interface: {
+        'enabled': 'checked'
+    }
+});</code></pre>
+            </div>
+
+            <div id="example1-3">
+                <input type="checkbox">
+                <input class="one" type="text" value="can you edit me?">
+            </div>
+        </div>
+
+        <div class="example">
+            <div>
+<pre class="javascript"><code>// add a handler that takes the subject and value that has changed
+// state as arguments. the returned values from the handler will be
+// used as the value for the observers interface.
+$('span').observe('input', function(object, value) {
+    if (value !== '')
+        return 'I am a &lt;b&gt;' + value + '&lt;/b&gt;';
+    return '&lt;em class="meta"&gt;please type something&lt;/em&gt;';
+});</code></pre>
+            </div>
+
+            <div id="example1-4">
+                <input type="text">
+                <span class="output"></span>
+            </div>
+        </div>
     </body>
 </html>
 

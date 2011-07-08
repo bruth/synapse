@@ -456,7 +456,7 @@ ObserverableModel = void 0;
       return BKVO.registerObserver(this, subject, options);
     };
     ObserverableModel.prototype.sync = function(other) {
-      return BKVO.registerSync(other);
+      return BKVO.registerSync(this, other);
     };
     return ObserverableModel;
   })();

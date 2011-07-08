@@ -17,4 +17,8 @@ involved for each direction (assuming a two-way binding).
 
 TODO
 ----
+* Add more examples
 * Provide way to unobserve an object
+* Determine if format of options is totally obscure
+* Determine if options can be simplified
+* Implement conditional detection for combinations of objects

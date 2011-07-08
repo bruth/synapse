@@ -513,7 +513,7 @@ do ->
             BKVO.registerObserver(@, subject, options)
 
         sync: (other) ->
-            BKVO.registerSync(other)
+            BKVO.registerSync(@, other)
 
 
     if BKVO.debug
