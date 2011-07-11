@@ -115,28 +115,49 @@
         </script>
 
         <script>
+            function assert(expr) { return Boolean(expr); }
+
             $(function() {
 
+                // example pre
+                var prim = {},
+                    bprim = BKVO(prim);
+                $('#example-pre span').text(assert(prim === bprim.object));
+
                 // example 0
-                var model = new ObserverableModel({ title: 'Hello World' });
-                $('#example0-1 input').sync(model);
-                $('#example0-1 .output').observe(model, 'title');
-                $('#example0-1 .meta').observe(model, function() {
+                var model = new Backbone.Model({ title: 'Hello World' });
+                BKVO('#example0-1 input').sync(model);
+                BKVO('#example0-1 .output').observe(model, 'title');
+                BKVO('#example0-1 .meta').observe(model, function() {
                     return 'Last updated: ' + (new Date()).toString();
                 });
 
 
                 // example 1 
-                $('#example1-1 span').observe('#example1-1 input');
-                $('#example1-2 input.one').sync('#example1-2 input.two');
-                $('#example1-3 :text').observe('#example1-3 :checkbox',{
+                BKVO('#example1-1 span').observe('#example1-1 input');
+                BKVO('#example1-2 input.one').sync('#example1-2 input.two');
+                BKVO('#example1-3 :text').observe('#example1-3 :checkbox',{
                     interface: {enabled: 'checked'}
                 });
-                $('#example1-4 span').observe('#example1-4 input', function(object, value) {
-                    if (value !== '')
-                        return 'I am a <b>' + value + '</b>';
-                    return '<em class="meta">please type something</em>';
+                BKVO('#example1-4 span').observe('#example1-4 input', {
+                    interface: {'html': 'value'},
+                    handler: function(object, value) {
+                        if (value !== '')
+                            return 'I am a <b>' + value + '</b>';
+                        return '<em class="meta">please type something</em>';
+                    }
                 });
+
+                // example 2
+                var bprim = BKVO({}).observe('#example2-1 input').notify('#example2-1 span', {
+                    interface: {text: 'foo'},
+                    event: 'change'
+                });
+
+                setInterval(function() {
+                    bprim.object.trigger('change');
+                }, 100);
+
             });
         </script>
 
@@ -144,6 +165,33 @@
     <body>        
 
         <h1>Backbone KVO</h1>
+
+        <h3>The Basics</h3>
+
+        <div class="example">
+            <div>
+<pre class="javascript">
+<code>// simple constructor to wrap objects for use with the API, returns
+// the BKVO object. 
+var prim = {},
+    bprim = BKVO(prim);
+
+// the original object is a property called ``object``.
+assert(bprim.object === prim);
+
+// the wrapped primitive can now observe, notify or sync with
+// another object
+bprim.observe('foo');
+bprim.notify('bar');
+bprim.sync('baz');
+</code></pre>
+            </div>
+            <div id="example-pre">
+                <code>assert(prim === bprim.object)</code><br>
+                <span class="meta"></span>
+            </div>
+        </div>
+
 
         <h3>DOM to Model</h3>
 
@@ -156,14 +204,14 @@ var model = new ObserverableModel({ title: 'Hello World' });
 
 // the model will observe the value of this input (the attribute
 // is equal to the 'name' attribute on the input, i.e. 'title'
-$('input').sync(model);
+BKVO('input').sync(model);
 
 // the span will observe the 'title' attribute on this model
-$('span').observe(model, 'title');
+BKVO('span').observe(model, 'title');
 
 // if no interface is auto-detected for the model, the observer
 // will be notified when _anything_ changes.
-$('.meta').observe(model, function() {
+BKVO('.meta').observe(model, function() {
     return 'Last updated: ' + (new Date()).toString();
 });
 </code></pre>
@@ -186,7 +234,7 @@ $('.meta').observe(model, function() {
 // the "html" interface for the ``span`` and the "value" of  the
 // ``input``. The event is auto-detected relative to the subject type,
 // which will be "keyup".
-$('span').observe('input');
+BKVO('span').observe('input');
 </code></pre>
             </div>
 
@@ -202,7 +250,7 @@ $('span').observe('input');
 // synced. that is, both are observing each other. this merely a
 // convenience syntax and can be accomplished using two ``observe()``
 // calls
-$('input.one').sync('input.two');
+BKVO('input.one').sync('input.two');
 </code></pre>
             </div>
 
@@ -216,7 +264,7 @@ $('input.one').sync('input.two');
             <div>
 <pre class="javascript"><code>// interfaces can be explicitly set. this one reads, the ``:text``
 // input will be "enabled" only when the ``:checkbox`` is "checked".
-$(':text').observe(':checkbox', {
+BKVO(':text').observe(':checkbox', {
     interface: {
         'enabled': 'checked'
     }
@@ -234,16 +282,43 @@ $(':text').observe(':checkbox', {
 <pre class="javascript"><code>// add a handler that takes the subject and value that has changed
 // state as arguments. the returned values from the handler will be
 // used as the value for the observers interface.
-$('span').observe('input', function(object, value) {
-    if (value !== '')
-        return 'I am a &lt;b&gt;' + value + '&lt;/b&gt;';
-    return '&lt;em class="meta"&gt;please type something&lt;/em&gt;';
+BKVO('span').observe('input', {
+    interface: {'html': 'value'},
+    handler: function(object, value) {
+        if (value !== '')
+            return 'I am a &lt;b&gt;' + value + '&lt;/b&gt;';
+        return '&lt;em class="meta"&gt;please type something&lt;/em&gt;';
+    }
 });</code></pre>
             </div>
 
             <div id="example1-4">
                 <input type="text">
                 <span class="output"></span>
+            </div>
+        </div>
+
+        <h3>Primitives</h3>
+
+        <div class="example">
+            <div>
+<pre class="javascript"><code>// a simple primitive is keeping track of the
+// value of the input field. the property will be the input's name
+// attribute
+var bprim = BKVO({}).observe('input').notify('span', {
+    interface: {'text': 'foo'},
+    event: 'change'
+});
+setInterval(function() {
+    bprim.object.trigger('change');
+}, 100);
+
+</code></pre>
+            </div>
+
+            <div id="example2-1">
+                <input type="text" name="foo">
+                <span></span>
             </div>
         </div>
 

@@ -1,148 +1,97 @@
-var model, cxt, text, check, radio, select, span, button, email, submit;
+var prim, model, view, router, collection, dom, cxt, text, check, radio, select, span, button, email, submit;
 
 $(function() {
-    model = new Backbone.Model;
+    prim = BKVO({});
+    model = BKVO(new Backbone.Model);
+    view = BKVO(new Backbone.View);
+    router = BKVO(new Backbone.Router);
+    collection = BKVO(new Backbone.Collection);
+    dom = BKVO(document.getElementById('text-input'));
 
     cxt = $('#qunit-fixture');
-    text = $('[type=text]', cxt);
-    check = $('[type=checkbox]', cxt);
-    radio = $('[type=radio]', cxt);
-    select = $('select', cxt);
-    span = $('span', cxt);
-    button = $('button', cxt);
-    email = $('[type=email]', cxt);
-    submit = $('[type=submit]', cxt);
+
+    text = BKVO('[type=text]', cxt);
+    check = BKVO('[type=checkbox]', cxt);
+    radio = BKVO('[type=radio]', cxt);
+    select = BKVO('select', cxt);
+    span = BKVO('span', cxt);
+    button = BKVO('button', cxt);
+    email = BKVO('[type=email]', cxt);
+    submit = BKVO('[type=submit]', cxt);
 });
 
 module('Utilities');
 
-test('getObjectType', function() {
+test('object types', function() {
 	expect(8);
 
-    var object;
-
-    object = $('input', cxt)
-    equals(BKVO.getObjectType(object), BKVO.types.jquery,
-        'jQuery object');
-
-    object = {};
-	equals(BKVO.getObjectType(object), BKVO.types.evented,
-        'an object that has been extended with event methods');
-    ok(object.bind && object.unbind && object.trigger,
-        'event methods set');
-
-    // test with autoExtendObjects turned off
-    BKVO.autoExtendObjects = false;
-    object = {};
-	raises(function() {
-        BKVO.getObjectType(object);
-    }, 'the object must be extended already. autoExtendObjects turned off');
-
-    object = new Backbone.View;
-    equals(BKVO.getObjectType(object), BKVO.types.view,
-        'Backbone view');
-
-    object = new Backbone.Router;
-    equals(BKVO.getObjectType(object), BKVO.types.router,
-        'Backbone router');
-
-    object = new Backbone.Model;
-    equals(BKVO.getObjectType(object), BKVO.types.model,
-        'Backbone model');
-
-    object = new Backbone.Collection;
-    equals(BKVO.getObjectType(object), BKVO.types.collection,
-        'Backbone router');
-
+    equals(text.type, BKVO.types.jquery, 'jQuery object');
+    equals(BKVO('input').type, BKVO.types.jquery, 'jQuery object (selector)');
+    equals(dom.type, BKVO.types.jquery, 'DOM element');
+	equals(prim.type, BKVO.types.evented, 'a plain object');
+    equals(view.type, BKVO.types.view, 'Backbone view');
+    equals(router.type, BKVO.types.router, 'Backbone router');
+    equals(model.type, BKVO.types.model, 'Backbone model');
+    equals(collection.type, BKVO.types.collection, 'Backbone collection');
 });
 
 
 test('detectElementInterface', function() {
     expect(7);
 
-    equals(BKVO.detectElementInterface(text), 'value',
-        'text input');
-    equals(BKVO.detectElementInterface(check), 'checked',
-        'checkbox');
-    equals(BKVO.detectElementInterface(radio), 'checked',
-        'radio button');
-    equals(BKVO.detectElementInterface(select), 'value',
-        'select box');
-    equals(BKVO.detectElementInterface(button), 'html',
-        'button');
-    equals(BKVO.detectElementInterface(email), 'value',
-        'email (variant of text input)');
-    equals(BKVO.detectElementInterface(submit), 'value',
-        'submit button');
+    equals(BKVO.detectElementInterface(text), 'value', 'text input');
+    equals(BKVO.detectElementInterface(check), 'checked', 'checkbox');
+    equals(BKVO.detectElementInterface(radio), 'checked', 'radio button');
+    equals(BKVO.detectElementInterface(select), 'value', 'select box');
+    equals(BKVO.detectElementInterface(button), 'html', 'button');
+    equals(BKVO.detectElementInterface(email), 'value', 'email (variant of text input)');
+    equals(BKVO.detectElementInterface(submit), 'value', 'submit button');
 });
 
 
 test('detectDomEvent', function() {
     expect(7);
 
-    equals(BKVO.detectDomEvent(text), 'keyup',
-        'text input');
-    equals(BKVO.detectDomEvent(check), 'change',
-        'checkbox');
-    equals(BKVO.detectDomEvent(radio), 'change',
-        'radio button');
-    equals(BKVO.detectDomEvent(select), 'change',
-        'select box');
-    equals(BKVO.detectDomEvent(button), 'click',
-        'button');
-    equals(BKVO.detectDomEvent(email), 'keyup',
-        'email (variant of text input)');
-    equals(BKVO.detectDomEvent(submit), 'submit',
-        'submit button');
+    equals(BKVO.detectDomEvent(text), 'keyup', 'text input');
+    equals(BKVO.detectDomEvent(check), 'change', 'checkbox');
+    equals(BKVO.detectDomEvent(radio), 'change', 'radio button');
+    equals(BKVO.detectDomEvent(select), 'change', 'select box');
+    equals(BKVO.detectDomEvent(button), 'click', 'button');
+    equals(BKVO.detectDomEvent(email), 'keyup', 'email (variant of text input)');
+    equals(BKVO.detectDomEvent(submit), 'submit', 'submit button');
 });
 
 
 test('getEvents', function() {
     expect(9);
 
-    deepEqual(BKVO.getEvents(text), ['keyup'],
-        'text input');
-    deepEqual(BKVO.getEvents(check), ['change'],
-        'checkbox');
-    deepEqual(BKVO.getEvents(radio), ['change'],
-        'radio button');
-    deepEqual(BKVO.getEvents(select), ['change'],
-        'select box');
-    deepEqual(BKVO.getEvents(button), ['click'],
-        'button');
-    deepEqual(BKVO.getEvents(email), ['keyup'],
-        'email (variant of text input)');
-    deepEqual(BKVO.getEvents(submit), ['submit'],
-        'submit button');
+    deepEqual(BKVO.getEvents(text), ['keyup'], 'text input');
+    deepEqual(BKVO.getEvents(check), ['change'], 'checkbox');
+    deepEqual(BKVO.getEvents(radio), ['change'], 'radio button');
+    deepEqual(BKVO.getEvents(select), ['change'], 'select box');
+    deepEqual(BKVO.getEvents(button), ['click'], 'button');
+    deepEqual(BKVO.getEvents(email), ['keyup'], 'email (variant of text input)');
+    deepEqual(BKVO.getEvents(submit), ['submit'], 'submit button');
 
     raises(function() {
         BKVO.getEvents(span);
     }, 'span element has to default DOM event');
 
-    deepEqual(BKVO.getEvents(new Backbone.Model), ['change']);
+    deepEqual(BKVO.getEvents(model), ['change']);
 });
 
 
 test('getInterfaces - detected', function() {
     expect(9);
 
-    deepEqual(BKVO.getInterfaces(text, model), {value: 'text'},
-        'text input observing a model');
-    deepEqual(BKVO.getInterfaces(check, text), {checked: 'value'},
-        'checkbox observing a text input');
-    deepEqual(BKVO.getInterfaces(radio, text), {checked: 'value'},
-        'radio observing a text input');
-    deepEqual(BKVO.getInterfaces(select, model), {value: 'select'},
-        'select box observing a model');
-    deepEqual(BKVO.getInterfaces(model, button), {button: 'html'},
-        'model observing a button');
-    deepEqual(BKVO.getInterfaces(email, model), {value: 'email'},
-        'email observing a model');
-    deepEqual(BKVO.getInterfaces(span, text), {html: 'value'},
-        'span observing a text input');
-
-    deepEqual(BKVO.getInterfaces(span, model), {html: ''},
-        'span observing a model.. no interfaces');
+    deepEqual(BKVO.getInterfaces(text, model), {value: 'text'}, 'text input observing a model');
+    deepEqual(BKVO.getInterfaces(check, text), {checked: 'value'}, 'checkbox observing a text input');
+    deepEqual(BKVO.getInterfaces(radio, text), {checked: 'value'}, 'radio observing a text input');
+    deepEqual(BKVO.getInterfaces(select, model), {value: 'select'}, 'select box observing a model');
+    deepEqual(BKVO.getInterfaces(model, button), {button: 'html'}, 'model observing a button');
+    deepEqual(BKVO.getInterfaces(email, model), {value: 'email'}, 'email observing a model');
+    deepEqual(BKVO.getInterfaces(span, text), {text: 'value'}, 'span observing a text input');
+    deepEqual(BKVO.getInterfaces(span, model), {text: ''}, 'span observing a model.. no interfaces');
 
     raises(function() {
         BKVO.getInterfaces(model, model);
@@ -154,17 +103,10 @@ test('getInterfaces - detected', function() {
 test('getInterfaces - subject interface', function() {
     expect(5);
 
-    deepEqual(BKVO.getInterfaces(text, model, 'title'), {value: 'title'},
-        'text input observing model.title');
-
-    deepEqual(BKVO.getInterfaces(check, model, 'public'), {checked: 'public'},
-        'checkbox observing model.public');
-
-    deepEqual(BKVO.getInterfaces(text, model, ['first', 'last']), {value: ['first', 'last']},
-        'text input observing model.first and model.last');
-
-    deepEqual(BKVO.getInterfaces(span, model, 'title'), {html: 'title'},
-        'span observing model.title');
+    deepEqual(BKVO.getInterfaces(text, model, 'title'), {value: 'title'}, 'text input observing model.title');
+    deepEqual(BKVO.getInterfaces(check, model, 'public'), {checked: 'public'}, 'checkbox observing model.public');
+    deepEqual(BKVO.getInterfaces(text, model, ['first', 'last']), {value: ['first', 'last']}, 'text input observing model.first and model.last');
+    deepEqual(BKVO.getInterfaces(span, model, 'title'), {text: 'title'}, 'span observing model.title');
 
     raises(function() {
         BKVO.getInterfaces(model, model, ['first', 'last']);
@@ -174,12 +116,12 @@ test('getInterfaces - subject interface', function() {
 
 module('Built-in Interfaces', {
     setup: function() {
-        span.html('Hello World');
-        text.val('hello world');
-        check.prop('checked', true);
-        radio.prop('disabled', true);
-        select.hide().val('');
-        button.html('Click Me!');
+        span.object.html('Hello World');
+        text.object.val('hello world');
+        check.object.prop('checked', true);
+        radio.object.prop('disabled', true);
+        select.object.hide().val('');
+        button.object.html('Click Me!');
     }
 });
 
@@ -403,12 +345,12 @@ test('css', function() {
 
 module('jQuery Observers', {
     setup: function() {
-        span.text('Hello World');
-        text.val('hello world');
-        check.prop('checked', true);
-        radio.prop('disabled', true);
-        select.hide().val('');
-        button.text('Click Me!');
+        span.object.html('Hello World');
+        text.object.val('hello world');
+        check.object.prop('checked', true);
+        radio.object.prop('disabled', true);
+        select.object.hide().val('');
+        button.object.html('Click Me!');
     }
 });
 
@@ -417,37 +359,37 @@ test('read-only non-form element', function() {
     expect(5);
 
     // shorthand for specifying a particular interface for the observers
-    BKVO.registerObserver(span, model, 'title');
-    model.set({title: 'Cool Title'});
-    equals(span.text(), 'Cool Title', 'the span element observes the title attr on the model');
+    span.observe(model, 'title');
+    model.object.set({title: 'Cool Title'});
+    equals(span.object.text(), 'Cool Title', 'the span element observes the title attr on the model');
 
-    model.unbind();
+    model.object.unbind();
 
-    BKVO.registerObserver(span, model, {
+    span.observe(model, {
         interface: ['title', 'author'],
         handler: function() {
-            return model.get('title') + ' by ' + model.get('author');
+            return model.object.get('title') + ' by ' + model.object.get('author');
         }
     });
 
-    model.set({title: 'Yet Again!', author: 'John Doe'});
-    equals(span.text(), 'Yet Again! by John Doe', 'the span element observes the title and author attr on the model'); 
+    model.object.set({title: 'Yet Again!', author: 'John Doe'});
+    equals(span.object.text(), 'Yet Again! by John Doe', 'the span element observes the title and author attr on the model'); 
 
-    model.unbind();
+    model.object.unbind();
 
     var model2 = new Backbone.Model({
         foo: 'Bar'
     });
 
-    BKVO.registerObserver(model, model2, 'foo');
-    equals(model.get('foo'), 'Bar', 'initial value');
+    model.observe(model2, 'foo');
+    equals(model.object.get('foo'), 'Bar', 'initial value');
     model2.set({foo: 'Hello'});
-    equals(model.get('foo'), 'Hello', 'model is observing model2');
+    equals(model.object.get('foo'), 'Hello', 'model is observing model2');
 
-    BKVO.registerObserver(text, model);
+    text.observe(model);
 
-    model.set({text: 'Foo'});
-    equals(text.val(), 'Foo');
+    model.object.set({text: 'Foo'});
+    equals(text.object.val(), 'Foo');
 
-    model.unbind();
+    model.object.unbind();
 });

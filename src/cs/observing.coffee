@@ -47,479 +47,381 @@ Example scenarios:
         Model    Router    DOM Element
 
 
-API use:
+Options:
 
-    # it reads.. the '#person1' element will observe ``person1.name`` and keep
-    # the element's innerText updated
-    $('#person1 .name').observe(person1, 'text:name');
+event: string | array<string> - the event(s) that will trigger the
+notification by the subject to the observer
 
-    $('#person1').observe(person1, {
-        localProperty: 'text',
-        interfaceProperty: 'name',
-    });
+interface: string | object - defines the interface attribute/interface of
+the subject that will be observed. for simple one-interface binds, a
+string can be used, otherwise used an object to define multiple
+interfaces. if a string is used, the observer is assumed to be a DOM
+element and the interface will be auto-detected. each key represents
+the an attribute/interface of the observer, while the corresponding
+value represents the attribute/interface that will be observed on the
+subject. the value can also be an array.
 
+    {
+        'text': ['firstName', 'lastName']
+        'visible': 'visible'
+    }
 
-    # takes an object or CSS selector
-    person1.observe('#person1 input[name=name]', 'name:value');
+if the key is not defined, it is expected the handler will perform any
+necessary tasks or utilize any interfaces. otherwise, the handler will
+act as an pre-processor to the setting or interfacing of that data.
 
-    person1.observe('#person1 input[name=name]', {
-        localProperty: 'name',
-        interfaceProperty: 'value'
-    });
-
-
-    # if the parent's home address changes, so does the child's
-    child.observe(parent, ['street', 'city', 'state', 'zipcode]);
-
-    # interfaceProperties is an alias for interfaceProperty, but if both are
-    # set, the plural form takes precedence
-    child.observe(parent, {
-        interfaceProperties: ['street', 'city', 'state', 'zipcode]
-    });
-
-
-    # the addressView observes the parent object watches for any one of the
-    # interface properties to change. all values (in order) will be passed into
-    # the notifyHandler (that exists on the view) along with subject.
-    addressView.observe(parent, {
-        interfaceProperties: ['street', 'city', 'state', 'zipcode],
-        notifyHandler: 'formatAddress'
-    });
-
-
-    # this element observes any attribute change on person1 and
-    # sets it with the same name in it's $(...).data() hash.
-    $('#person1').observe(person1);
-
-    # same as above except the the properties will be set as element
-    # attributes instead of data values i.e. $(...).attr()
-    $('#person1').observe(person1, {
-        localInterface: 'attr'
-    });
-
-
-Arguments:
-
-    arguments := subject, config
-
-    subject := jQuery | Evented Object
-
-    config := full | [mapping, ...] | mapping
-
-    mapping := 'interface' | 'local:interface'
-
-
-Object Types:
-
-    A jQuery object can be used for simple bindings where no additional logic
-    or rendering is required.
-
-    A Backbone View acts a container/proxy for a jQuery element, thus it uses
-    all the same options a jQuery object would use. If there are templates
-    being used or custom handlers a view should be used.
-
-    An event-ready object such as a Backbone Model, Collection, or Router.
-    Any object can become event-ready. Simply extend the object with the
-    Backbone.Event model:
-
-        var object = {};
-        _.extend(object, Backbone.Events);
-
-    or using jQuery:
-
-        var object = {};
-        $.extend(object, Backbone.Events);
-
-
-General options:
-
-    localProperty(-ies): a single or array of local properties that will be
-    updated relative to the subject. Depends on interfaceProperty(-ies)
-
-    interfaceProperty(-ies): a single or array of interface properties (located on
-    the subject being observed) that the subject will notify the observer of
-    when any of them change.
-
-    notifyHandler: a function that takes the value of each interfaceProperty as
-    arguments maps or reduces the values to the localProperty(-ies).
-
-Object Type-specific options:
-
-    localInterface & interfaceInterface (DOM): by default the interface will be
-    determined based on the element type e.g. form fields interface is the
-    ``value`` property. the interface can be 'data', 'attr', or 'prop'.
-
-    event(s) (DOM): an event or list of events that will be trigger a
-    notification to all observers.
+handler: string | function - defines the handler that will be called
+when the observer is notified of the subject's change in state. the
+subject along with the changed value (or values in order) will be
+passed into the handler. if a string is used, the observer is assumed
+to have a method declared on it of the same name.
 
 ###
+
+# this is in underscore dev
+if not _.isObject?
+    _.isObject = (object) -> object is Object(object)
+
 
 ObserverableModel = undefined
 
 do ->
 
-    if not _.isObject?
-        _.isObject = (object) -> object is Object(object)
+    log = ->
+        if BKVO.debug
+            try
+                console.log.apply(console, arguments)
+            catch e
+                try
+                    opera.postError.apply(opera, arguments)
+                catch e 
+                    alert(Array.prototype.join.call(arguments, ' '))
 
-    # user can predefine BKVO as an object defining options.
-    # this object will be augmented during execution
-    this.BKVO = this.BKVO or {}
+    error = (msg)->  throw new Error(msg)
 
-    BKVO = this.BKVO
 
-    # default options
-    defaults =
+    # default configuration options for BKVO
+    defaultBKVO =
         autoExtendObjects: true
         debug: false
 
-    # fill in
-    _.defaults(BKVO, defaults)
 
-    
-    # default element interfaces
-    BKVO.defaultElementInterfaces =
-        _: 'html'
-        input: 'value'
-        select: 'value'
-        textarea: 'value'
-        checkbox: 'checked'
-        radio: 'checked'
+    # user can predefine BKVO as an object defining options.
+    # this object will be augmented during execution
+    baseBKVO = @BKVO or {}
 
 
-    # default element DOM events
-    BKVO.defaultDomEvents =
-        input: 'keyup'
-        button: 'click'
-        submit: 'submit'
-        select: 'change'
-        checkbox: 'change'
-        radio: 'change'
-        textarea: 'change'
+    # fill in the rest of the default options
+    _.defaults(baseBKVO, defaultBKVO)
 
 
-    if this.console?
-        log = (msg) -> if BKVO.debug then console.log(msg)
-    else
-        log = (msg) -> if BKVO.debug then alert(msg)
+    # assign it to the root context
+    @BKVO = do ->
+
+        # define and build up local copy of BKVO
+        BKVO = (object) -> new BKVO.fn.init(object)
+
+        _.extend(BKVO, baseBKVO)
+
+        # an enumeration of supported object types
+        BKVO.types =
+            jquery: 0
+            evented: 1
+            view: 2
+            router: 3
+            model: 4
+            collection: 5
 
 
-    # an enumeration of supported object types
-    types =
-        jquery: 0
-        evented: 1
-        view: 2
-        router: 3
-        model: 4
-        collection: 5
+        # determines the object type
+        BKVO.getObjectType = (object) ->
 
-    handlers =
-        0:
-            subject: (event, object, interface, handler) ->
-                object.bind event, ->
-                    value = BKVO.interfaces.get(object, interface)
-                    handler(object, value)
-                object.trigger event
+            if object instanceof $
+                return BKVO.types.jquery
 
-            observer: (object, interface, handler) ->
-                return (subject, value) ->
-                    if handler then value = handler(subject, value)
-                    BKVO.interfaces.set(object, interface, value)
+            if object instanceof Backbone.View
+                return BKVO.types.view
+
+            if object instanceof Backbone.Collection
+                return BKVO.types.collection
+
+            if object instanceof Backbone.Model
+                return BKVO.types.model
+
+            if object instanceof Backbone.Router
+                return BKVO.types.router
+ 
+            return BKVO.types.evented
 
 
-        4:
-            subject: (event, object, interface, handler) ->
-                # handle the case where an interface (the model attribute) is
-                # not defined. when anything changes about the model, this will
-                # fire.
-                if interface then event = "#{event}:#{interface}"
-
-                object.bind event, (model, value, options) ->
-                    handler(object, value)
-                object.trigger event, object, object.get(interface)
-
-            observer: (object, interface, handler) ->
-                return (subject, value) ->
-                    if handler then value = handler(subject, value)
-                    attrs = {}
-                    attrs[interface] = value
-                    object.set(attrs)
-                
+        # default element interfaces relative to their selectors. each
+        # item will be iterated over in order and compared against using
+        # the ``jQuery.fn.is()`` method for comparison.
+        BKVO.defaultElementInterfaces = [
+            [':checkbox', 'checked']
+            [':radio', 'checked']
+            ['button', 'html']
+            [':input', 'value']
+            ['*', 'text']
+        ]
 
 
-
-    # determines the object type
-    getObjectType = (object) ->
-
-        if object instanceof $
-            return types.jquery
-
-        if object instanceof Backbone.View
-            return types.view
-
-        if object instanceof Backbone.Collection
-            return types.collection
-
-        if object instanceof Backbone.Model
-            return types.model
-
-        if object instanceof Backbone.Router
-            return types.router
-
-        # ensure this object contains the necessary methods
-        for method in ['bind', 'unbind', 'trigger']
-            if not object[method]
-
-                if not BKVO.autoExtendObjects
-                    throw Error("""Object does not have a #{method} method. ensure
-                        the object has been extended from Backbone.Events or set
-                        BKVO.autoExtendObjects to true.""")
-
-                _.extend(object, Backbone.Events)
-                log("#{object} extended with Backbone.Events")
-
-                break
-   
-        return types.evented
+        # default element DOM events. when a DOM element is declared the
+        # subject of a binding and no event is specified, the element will
+        # be compared to each item in this list in order to determine the
+        # appropriate DOM event to use.
+        BKVO.defaultDomEvents = [
+            ['a,:button,:reset', 'click']
+            ['select,:checkbox,:radio,textarea', 'change']
+            [':submit', 'submit']
+            [':input', 'keyup']
+        ]
 
 
-    # detect the default interface to use for the element
-    detectElementInterface = (object) ->
-        tag = object.prop('tagName').toLowerCase()
-        # this is the starting point
-        interface = BKVO.defaultElementInterfaces[tag]
-
-        # custom handling for input types
-        if tag is 'input'
-            type = object.prop('type').toLowerCase()
-            interface = BKVO.defaultElementInterfaces[type] or interface
-
-        # fallback to the default if it exists
-        interface or= BKVO.defaultElementInterfaces['_']
-
-        if not interface
-            throw new Error('An interface for this element could not be detected')
-
-        return interface
-
-    # detect the default DOM event to use for the element
-    detectDomEvent = (object) ->
-        tag = object.prop('tagName').toLowerCase()
-        # this is the starting point
-        event = BKVO.defaultDomEvents[tag]
-
-        # custom handling for input types
-        if tag is 'input'
-            type = object.prop('type').toLowerCase()
-            event = BKVO.defaultDomEvents[type] or event
-
-        # fallback to the default if it exists
-        event or= BKVO.defaultDomEvents['_']
-
-        if not event
-            throw new Error('A DOM event for this element could not be detected')
-
-        return event
+        # detect the default interface to use for the element
+        BKVO.detectElementInterface = (elem) ->
+            for item in BKVO.defaultElementInterfaces
+                [selector, interface] = item
+                if elem.object.is(selector) then return interface
+            error("Interface for #{elem} could not be detected.")
 
 
-    # return an array of events for the given subject. if ``event`` is not
-    # supplied, attempt to detect the appropriate event for the object type.
-    getEvents = (subject, event) ->
-        # get the event based on the subjectType
-        if not event
-            type = getObjectType(subject)
-
-            if type is types.jquery
-                events = [detectDomEvent(subject)]
-            else if type is types.model
-                events = ['change']
-            else
-                throw new Error('No event defined for subject')
-        else
-            # ensure an array is returned
-            events = if not _.isArray(event) then [event] else event
-
-        return events
+        # detect the default DOM event to use for the element
+        BKVO.detectDomEvent = (elem) ->
+            for item in BKVO.defaultDomEvents
+                [selector, event] = item
+                if elem.object.is(selector) then return event
+            error("Event for #{elem} could not be detected.")
 
 
-    # return an array of interfaces appropriate for the given subject/observer.
-    # if no interface is defined, only if a ``name`` attribute on either the
-    # subject or observer will be used by default (in the case of form fields).
-    getInterfaces = (observer, subject, interface) ->
-        interfaces = {}
-        oType = getObjectType(observer)
-        sType = getObjectType(subject)
+        # the default set of event handlers for the various object types. each
+        # type has a handler for when it is the subject and for when it is
+        # the observer
+        BKVO.handlers =
+            0:
+                subject: (event, object, interface, handler) ->
+                    object.bind event, ->
+                        value = BKVO.interfaces.get(object, interface)
+                        handler(object, value)
+                    object.trigger event
 
-        if not interface
-            key = null
-            value = null
+                observer: (object, interface, handler) ->
+                    return (subject, value) ->
+                        if handler then value = handler(subject, value)
+                        BKVO.interfaces.set(object, interface, value)
 
-            # whenever a DOM element is used, the interface is the detected
-            # interface. if a model is used then the 'name' attribute is used
-            # as the interface for that model (the attribute to be get/set on
-            # that model)
-            if sType is types.jquery
-                value = detectElementInterface(subject)
+            1:
+                subject: (event, object, interface, handler) ->
+                    object.bind event, ->
+                        value = object[interface]
+                        handler(object, value)
+                    object.trigger event
 
-                if oType is types.model
-                    key = subject.attr('name')
+                observer: (object, interface, handler) ->
+                    return (subject, value) ->
+                        if handler then value = handler(subject, value)
+                        object[interface] = value
 
-            if oType is types.jquery
-                # since this a jQuery object, we must detect the interface to
-                # be used
-                key = detectElementInterface(observer)
+            4:
+                subject: (event, object, interface, handler) ->
+                    # handle the case where an interface (the model attribute) is
+                    # not defined. when anything changes about the model, this will
+                    # fire.
+                    if interface then event = "#{event}:#{interface}"
 
-                # value is still not defined, so use the observer's name if
-                # present.
-                if not value and observer.attr('name')
-                    value = observer.attr('name')
+                    object.bind event, (model, value, options) ->
+                        handler(object, value)
+                    object.trigger event, object, object.get(interface)
 
-            if not value and sType is types.model
-                value = ''
+                observer: (object, interface, handler) ->
+                    return (subject, value) ->
+                        if handler then value = handler(subject, value)
+                        attrs = {}
+                        attrs[interface] = value
+                        object.set(attrs)
+                    
 
-            if key is null or value is null
-                throw new Error('The interface could be detected')
 
-            interfaces[key] = value
-
-        else
-            # the observer wants to be notified when one or multiple items have
-            # changed state
-            if _.isString(interface) or _.isArray(interface)
-                value = interface
-
-                if oType is types.jquery
-                    key = detectElementInterface(observer)
-
-                # only if the interface is a string can it also be the attribute/
-                # interface for the observer
-                else if _.isString(interface)
-                    key = value
-
-                # the observer interface is unknown or ambiguous
+        # return an array of events for the given subject. if ``event`` is not
+        # supplied, attempt to detect the appropriate event for the object type.
+        BKVO.getEvents = (subject, event) ->
+            # get the event based on the subjectType
+            if not event
+                if subject.type is BKVO.types.jquery
+                    events = [BKVO.detectDomEvent(subject)]
+                else if subject.type is BKVO.types.model
+                    events = ['change']
                 else
-                    throw new Error('The observer interface could not be determined')
+                    error('No event defined for subject')
+            else
+                # ensure an array is returned
+                events = if not _.isArray(event) then [event] else event
+
+            return events
+
+
+        # return an array of interfaces appropriate for the given subject/observer.
+        # if no interface is defined, only if a ``name`` attribute on either the
+        # subject or observer will be used by default (in the case of form fields).
+        BKVO.getInterfaces = (observer, subject, interface) ->
+            interfaces = {}
+
+            if not interface
+                key = null
+                value = null
+
+                # whenever a DOM element is used, the interface is the detected
+                # interface. if a model is used then the 'name' attribute is used
+                # as the interface for that model (the attribute to be get/set on
+                # that model)
+                if subject.type is BKVO.types.jquery
+                    value = BKVO.detectElementInterface(subject)
+
+                    if observer.type in [BKVO.types.model, BKVO.types.evented]
+                        key = subject.object.attr('name')
+
+                if observer.type is BKVO.types.jquery
+                    # since this a jQuery object, we must detect the interface to
+                    # be used
+                    key = BKVO.detectElementInterface(observer)
+
+                    # value is still not defined, so use the observer's name if
+                    # present. the only time this would be set is if the subject
+                    # is also a jQuery object. in this case, the subject 'name'
+                    # attribute takes precedence
+                    if not value
+                        value = observer.object.attr('name') or null
+
+                # if no value has been set and the subject is a model, assume
+                # the observer wants to observe any change of the model. this
+                # generally assumes a handler of some sorts will be performing
+                # any necessary manipulation
+                if value is null and subject.type is BKVO.types.model
+                    value = ''
+
+                # if none of the above worked,
+                if key is null or value is null
+                    error('The interface could be detected')
 
                 interfaces[key] = value
 
             else
-                interfaces = interface
+                # the observer wants to be notified when one or multiple items
+                # have changed state
+                if _.isString(interface) or _.isArray(interface)
+                    value = interface
 
-        return interfaces
+                    if observer.type is BKVO.types.jquery
+                        key = BKVO.detectElementInterface(observer)
 
-    # Options:
-    # 
-    #   event: string | array<string> - the event(s) that will trigger the
-    #   notification by the subject to the observer
-    #
-    #   interface: string | object - defines the interface attribute/interface of
-    #   the subject that will be observed. for simple one-interface binds, a
-    #   string can be used, otherwise used an object to define multiple
-    #   interfaces. if a string is used, the observer is assumed to be a DOM
-    #   element and the interface will be auto-detected. each key represents
-    #   the an attribute/interface of the observer, while the corresponding
-    #   value represents the attribute/interface that will be observed on the
-    #   subject. the value can also be an array.
-    #
-    #       {
-    #           'text': ['firstName', 'lastName']
-    #           'visible': 'visible'
-    #
-    #       }
-    #
-    #   if the key is not defined, it is expected the handler will perform any
-    #   necessary tasks or utilize any interfaces. otherwise, the handler will
-    #   act as an pre-processor to the setting or interfacing of that data.
-    #
-    #   handler: string | function - defines the handler that will be called
-    #   when the observer is notified of the subject's change in state. the
-    #   subject along with the changed value (or values in order) will be
-    #   passed into the handler. if a string is used, the observer is assumed
-    #   to have a method declared on it of the same name.
+                    # only if the interface is a string can it also be the
+                    # attribute/interface for the observer
+                    else if _.isString(interface)
+                        key = value
 
-    defaultOptions =
-        event: null
-        interface: null
-        handler: null
+                    # the observer interface is unknown or ambiguous
+                    else
+                        error('The observer interface could not be determined')
 
+                    interfaces[key] = value
 
-    BKVO.registerSync = (object1, object2) ->
-        BKVO.registerObserver(object1, object2)
-        BKVO.registerObserver(object2, object1)
-
-
-    BKVO.registerObserver = (observer, subject, _options) ->
-        options = {}
-
-        # the shorthand syntax allows for having the third argument specify the
-        # interface(s) directly. 
-        if _.isString(_options) or _.isArray(_options)
-            _options = interface: _options
-        else if _.isFunction(_options)
-            _options = handler: _options
-
-        # user-defined options take precedence, followed by the default options
-        _.extend(options, defaultOptions, _options)
-
-        # convert into the jQuery object if a string or element
-        if _.isString(observer) or _.isElement(observer)
-            observer = $(observer)
-
-        # convert into the jQuery object if a string or element
-        if _.isString(subject) or _.isElement(subject)
-            subject = $(subject)
-
-        # the subject will be listening for these events to occur. once they
-        # do, the subject will notify all observers of this event and perform
-        # the defined handling
-        events = getEvents(subject, options.event)
-
-        # the interfaces map represents a one-to-one or one-to-many
-        # relationship between the observer and subject. for each entry,
-        # whenever the subject's message changes, the observer will be
-        # notified to handle via it's interface
-        interfaces = getInterfaces(observer, subject, options.interface)
-
-        oType = getObjectType(observer)
-        sType = getObjectType(subject)
-
-        handler = options.handler
-        # if custom behaviors need to occur, a handler can be defined which
-        # will be passed the data by the subject
-        if handler and not _.isFunction(handler)
-            handler = observer[handler]
-
-        observerHandler = handlers[oType].observer
-        subjectHandler = handlers[sType].subject
-
-        for event in events
-            for oInterface, sInterface of interfaces
-                handler = observerHandler(observer, oInterface, handler)
-
-                if _.isArray(sInterface)
-                    for si in sInterface
-                        subjectHandler(event, subject, si, handler)
                 else
-                    subjectHandler(event, subject, sInterface, handler)
+                    interfaces = interface
+
+            return interfaces
 
 
-    jQuery.fn.observe = (subject, options) ->
-        BKVO.registerObserver(@, subject, options)
-
-    jQuery.fn.sync = (other) ->
-        BKVO.registerSync(@, other)
-
-    class ObserverableModel extends Backbone.Model
-        observe: (subject, options) ->
-            BKVO.registerObserver(@, subject, options)
-
-        sync: (other) ->
-            BKVO.registerSync(@, other)
+        defaultOptions =
+            event: null
+            interface: null
+            handler: null
 
 
-    if BKVO.debug
-        BKVO.types = types
-        BKVO.getObjectType = getObjectType
-        BKVO.detectElementInterface = detectElementInterface
-        BKVO.detectDomEvent = detectDomEvent
-        BKVO.getEvents = getEvents
-        BKVO.getInterfaces = getInterfaces
+        BKVO.registerSync = (object1, object2) ->
+            BKVO.registerObserver(object1, object2)
+            BKVO.registerObserver(object2, object1)
+
+
+        BKVO.registerObserver = (observer, subject, _options) ->
+            if not (observer instanceof BKVO) then observer = BKVO(observer)
+            if not (subject instanceof BKVO) then subject = BKVO(subject)
+
+            options = {}
+
+            # the shorthand syntax allows for having the third argument specify the
+            # interface(s) directly. 
+            if _.isString(_options) or _.isArray(_options)
+                _options = interface: _options
+            else if _.isFunction(_options)
+                _options = handler: _options
+
+            # user-defined options take precedence, followed by the default options
+            _.extend(options, defaultOptions, _options)
+
+            # the subject will be listening for these events to occur. once they
+            # do, the subject will notify all observers of this event and perform
+            # the defined handling
+            events = BKVO.getEvents(subject, options.event)
+
+            # the interfaces map represents a one-to-one or one-to-many
+            # relationship between the observer and subject. for each entry,
+            # whenever the subject's message changes, the observer will be
+            # notified to handle via it's interface
+            interfaces = BKVO.getInterfaces(observer, subject, options.interface)
+
+            handler = options.handler
+            # if custom behaviors need to occur, a handler can be defined which
+            # will be passed the data by the subject
+            if handler and not _.isFunction(handler)
+                handler = observer[handler]
+
+            observerHandler = BKVO.handlers[observer.type].observer
+            subjectHandler = BKVO.handlers[subject.type].subject
+
+            for event in events
+                for oInterface, sInterface of interfaces
+                    handler = observerHandler(observer.object, oInterface, handler)
+
+                    if _.isArray(sInterface)
+                        for si in sInterface
+                            subjectHandler(event, subject.object, si, handler)
+                    else
+                        subjectHandler(event, subject.object, sInterface, handler)
+
+
+        BKVO.fn = BKVO.prototype =
+            version: '0.9'
+
+            constructor: BKVO
+
+            init: (object, cxt) ->
+                # already an instance
+                if object instanceof BKVO then return object
+
+                # convert into the jQuery object if a string or element
+                if _.isString(object) or _.isElement(object)
+                    object = $(object, cxt)
+                else if $.isPlainObject(object)
+                    _.extend(object, Backbone.Events)
+
+                @type = BKVO.getObjectType(object)
+                @object = object
+
+                return @
+
+            sync: (other) ->
+                BKVO.registerSync(@, other)
+                return @
+
+            observe: (subject, options) ->
+                BKVO.registerObserver(@, subject, options)
+                return @
+
+            notify: (observer, options) ->
+                BKVO.registerObserver(observer, @, options)
+                return @
+
+
+        BKVO.fn.init.prototype = BKVO.fn
+
+        return BKVO
