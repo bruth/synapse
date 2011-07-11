@@ -18,7 +18,8 @@
             }
 
             pre, code {
-                font-family: monospace;
+                font-family: 'm+ 1m', monospace;
+                font-size: 0.9em;
                 margin: 0;
             }
 
@@ -179,7 +180,7 @@ var prim = {},
 // the original object is a property called ``object``.
 assert(bprim.object === prim);
 
-// the wrapped primitive can now observe, notify or sync with
+// the wrapped object can now observe, notify or sync with
 // another object
 bprim.observe('foo');
 bprim.notify('bar');
@@ -198,9 +199,8 @@ bprim.sync('baz');
         <div class="example">
             <div>
 <pre class="javascript">
-<code>// initialize a new model object using the ObserverableModel
-// class. it provides two methods ``observe`` and ``sync``.
-var model = new ObserverableModel({ title: 'Hello World' });
+<code>// initialize a new model object 
+var model = new Backbone.Model({ title: 'Hello World' });
 
 // the model will observe the value of this input (the attribute
 // is equal to the 'name' attribute on the input, i.e. 'title'
@@ -309,6 +309,8 @@ var bprim = BKVO({}).observe('input').notify('span', {
     interface: {'text': 'foo'},
     event: 'change'
 });
+
+// to emulate the trigger, we just set an interval for every 100ms
 setInterval(function() {
     bprim.object.trigger('change');
 }, 100);
