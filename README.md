@@ -22,10 +22,10 @@ Model instances. The various subject/observer combinations infer different
 interactions between the objects. For example:
 
 ```javascript
-    var A = $('input[name=title]');
-    var B = new Backbone.Model;
+var A = $('input[name=title]');
+var B = new Backbone.Model;
 
-    Synapse(A).addObserver(B);
+Synapse(A).addObserver(B);
 ```
 
 The subject ``A`` is an input element with a name attribute of 'title'.
@@ -42,23 +42,23 @@ Given that ``B`` is a model instance, we assume to store the *message* from
 'title'. Thus the non-Synapse code would look like this:
 
 ```javascript
-    A.bind('keyup', function() {
-        var key = A.attr('name'),
-            value = A.val(),
-            data = {};
+A.bind('keyup', function() {
+    var key = A.attr('name'),
+        value = A.val(),
+        data = {};
 
-        data[key] = value;
+    data[key] = value;
 
-        B.set(data);
-    });
+    B.set(data);
+});
 ```
 
 The above is not difficult to write, but there may be a lot of these depending
 on the types of objects that are interacting. For example:
 
 ```javascript
-    var C = $(':checkbox');
-    Synapse(A).addObserver(C);
+var C = $(':checkbox');
+Synapse(A).addObserver(C);
 ```
 
 The observer in this case is a checkbox. The default behavior (in virtually all
@@ -66,10 +66,10 @@ cases) is to become 'checked' or 'unchecked' depending the *falsy* nature of
 the message sent by the subject. Here is the non-Synapse code:
 
 ```javascript
-     A.bind('keyup', function() {
-        var value = A.val();
-        C.prop('checked', Boolean(value));
-    });
+ A.bind('keyup', function() {
+    var value = A.val();
+    C.prop('checked', Boolean(value));
+});
 ```
 
 That is, ``C`` will only be checked if the value of ``A`` is not the empty
@@ -99,8 +99,8 @@ The observer, ``B``, is a model instance and thus *sets* the property on
 itself.
 
 ```javascript
-    A.trigger('keyup');     // sends the 'value' to observers
-                            // B.get('title') returns the value
+A.trigger('keyup');     // sends the 'value' to observers
+                        // B.get('title') returns the value
 ```javascript
 
 Just like how events are inferred by the objects' types, the *interfaces*
@@ -111,9 +111,8 @@ interfacing with DOM elements (represented as a jQuery instance) for the
 most common behaviors. For example:
 
 ```javascript
-
-    A.get('value');             // $('input[name=title]').val()
-    A.set('value', 'hello')     // $('input[name=title]').val('hello')
+A.get('value');             // $('input[name=title]').val()
+A.set('value', 'hello')     // $('input[name=title]').val('hello')
 ```
 
 The concept was derived from the simple API the Backbone Model class provides
