@@ -7,9 +7,9 @@ Synapse provides a mechanism for defining a communication hub between two
 objects. In order for two objects to communicate, there are three components
 needing to be defined:
 
-    - the event that will trigger the pipeline ``A`` -> ``B``
-    - the function to call on ``A`` that returns a message for ``B``
-    - the function to call on ``B`` that accepts the message from ``A``
+* the event that will trigger the pipeline ``A`` -> ``B``
+* the function to call on ``A`` that returns a message for ``B``
+* the function to call on ``B`` that accepts the message from ``A``
 
 The hub can be defined with respect to either the subject ``A`` or the observer
 ``B`` depending on the system. In either case, whenever a change in state occurs
