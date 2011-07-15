@@ -101,7 +101,7 @@ itself.
 ```javascript
 A.trigger('keyup');     // sends the 'value' to observers
                         // B.get('title') returns the value
-```javascript
+```
 
 Just like how events are inferred by the objects' types, the *interfaces*
 for getting/setting properties are also inferred. ``Synapse.interfaces``
