@@ -2,7 +2,7 @@
     Synapse - The Backbone KVO Library
 
     Version: 0.1
-    Date: Mon Jul 11 09:44:36 2011 -0400
+    Date: Fri Jul 15 11:49:38 2011 -0500
 */var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, parseInterfaces, synapseConf;
@@ -158,83 +158,71 @@
     }
     return events;
   };
-  defaultRegisterOptions = {
-    events: null,
-    interfaces: null,
-    handler: null,
-    notifyInit: true
-  };
-  Synapse.registerSync = function(object1, object2) {
-    Synapse.registerObserver(object1, object2);
-    return Synapse.registerObserver(object2, object1);
-  };
-  Synapse.register = function(obj1, obj2, _options, downstream) {
-    var conn, event, events, handler, i, interfaces, notifier, observer, oi, options, receive, send, si, _i, _len, _receive, _ref, _ref2, _results;
-    if (!(obj1 instanceof Synapse)) {
-      observer = Synapse(obj1);
-    }
-    if (!(obj2 instanceof Synapse)) {
-      notifier = Synapse(obj2);
-    }
-    if (downstream) {
-      _ref = [obj1, obj2], notifier = _ref[0], observer = _ref[1];
-    } else {
-      _ref2 = [obj1, obj2], observer = _ref2[0], notifier = _ref2[1];
-    }
-    if (!notifier.observers[observer.guid]) {
-      notifier.observers[observer.guid] = {};
-    }
-    if (!observer.notifiers[notifier.guid]) {
-      observer.notifiers[notifier.guid] = {};
-    }
-    options = {};
-    if (_.isString(_options) || _.isArray(_options)) {
-      _options = {
-        interface: _options
-      };
-    } else if (_.isFunction(_options)) {
-      _options = {
-        handler: _options
-      };
-    }
-    _.extend(options, defaultRegisterOptions, _options);
-    events = Synapse.getEvents(notifier, options.event);
-    interfaces = Synapse.getInterfaces(notifier, observer, options.interface);
-    handler = options.handler;
-    if (handler && !_.isFunction(handler)) {
-      handler = observer[handler];
-    }
-    receive = Synapse.handlers[observer.type].receive;
-    send = Synapse.handlers[notifier.type].send;
-    _results = [];
-    for (_i = 0, _len = events.length; _i < _len; _i++) {
-      event = events[_i];
-      notifier.observers[observer.guid][event] = true;
-      observer.notifiers[notifier.guid][event] = true;
-      _results.push((function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
-          conn = interfaces[_i];
-          si = conn[0], oi = conn[1];
-          _receive = receive(observer, oi, send);
-          if (!_.isArray(si)) {
-            si = [si];
-          }
-          _results.push((function() {
-            var _i, _len, _results;
-            _results = [];
-            for (_i = 0, _len = si.length; _i < _len; _i++) {
-              i = si[_i];
-              _results.push(send(notifier, event, i, _receive, options.notifyInit));
-            }
-            return _results;
-          })());
+  Synapse.handlers = {
+    0: {
+      send: function(notifier, event, interface, notify, notify) {
+        notifier.bind(event, function() {
+          var value;
+          value = this.get(interface);
+          return notify(this.context, interface, value);
+        });
+        if (notify) {
+          return notifier.context.trigger(event);
         }
-        return _results;
-      })());
+      },
+      receive: function(observer, interface, handler) {
+        return function(notifier, value) {
+          if (handler) {
+            value = handler(observer.context, interface, value);
+          }
+          return observer.set(interface, value);
+        };
+      }
+    },
+    1: {
+      send: function(notifier, event, interface, notify) {
+        notifier.bind(event, function() {
+          var value;
+          value = this.get(interface);
+          return notify(this.context, interface, value);
+        });
+        if (notify) {
+          return notifier.trigger(event);
+        }
+      },
+      receive: function(observer, interface, handler) {
+        return function(notifier, value) {
+          if (handler) {
+            value = handler(this.context, interface, value);
+          }
+          return this.set(interface, value);
+        };
+      }
+    },
+    2: {
+      send: function(notifier, event, interface, notify) {
+        if (interface) {
+          event = "" + event + ":" + interface;
+        }
+        notifier.bind(event, function(model, value, options) {
+          return notify(this.context, interface, value);
+        });
+        if (notify) {
+          return notifier.trigger(event, notifier, notifier.get(interface));
+        }
+      },
+      receive: function(observer, interface, handler) {
+        return function(notifier, value) {
+          var attrs;
+          if (handler) {
+            value = handler(this.context, interface, value);
+          }
+          attrs = {};
+          attrs[interface] = value;
+          return this.set(attrs);
+        };
+      }
     }
-    return _results;
   };
   Synapse.defaultElementInterfaces = [[':checkbox', 'checked'], [':radio', 'checked'], ['button', 'html'], [':input', 'value'], ['*', 'text']];
   Synapse.detectElementInterface = function(syn) {
@@ -508,71 +496,83 @@
       }
     });
   })();
-  Synapse.handlers = {
-    0: {
-      send: function(notifier, event, interface, notify, notify) {
-        notifier.bind(event, function() {
-          var value;
-          value = this.get(interface);
-          return notify(this.context, interface, value);
-        });
-        if (notify) {
-          return notifier.context.trigger(event);
-        }
-      },
-      receive: function(observer, interface, handler) {
-        return function(notifier, value) {
-          if (handler) {
-            value = handler(observer.context, interface, value);
-          }
-          return observer.set(interface, value);
-        };
-      }
-    },
-    1: {
-      send: function(notifier, event, interface, notify) {
-        notifier.bind(event, function() {
-          var value;
-          value = this.get(interface);
-          return notify(this.context, interface, value);
-        });
-        if (notify) {
-          return notifier.trigger(event);
-        }
-      },
-      receive: function(observer, interface, handler) {
-        return function(notifier, value) {
-          if (handler) {
-            value = handler(this.context, interface, value);
-          }
-          return this.set(interface, value);
-        };
-      }
-    },
-    2: {
-      send: function(notifier, event, interface, notify) {
-        if (interface) {
-          event = "" + event + ":" + interface;
-        }
-        notifier.bind(event, function(model, value, options) {
-          return notify(this.context, interface, value);
-        });
-        if (notify) {
-          return notifier.trigger(event, notifier, notifier.get(interface));
-        }
-      },
-      receive: function(observer, interface, handler) {
-        return function(notifier, value) {
-          var attrs;
-          if (handler) {
-            value = handler(this.context, interface, value);
-          }
-          attrs = {};
-          attrs[interface] = value;
-          return this.set(attrs);
-        };
-      }
+  defaultRegisterOptions = {
+    events: null,
+    interfaces: null,
+    handler: null,
+    notifyInit: true
+  };
+  Synapse.registerSync = function(object1, object2) {
+    Synapse.registerObserver(object1, object2);
+    return Synapse.registerObserver(object2, object1);
+  };
+  Synapse.register = function(obj1, obj2, _options, downstream) {
+    var conn, event, events, handler, i, interfaces, notifier, observer, oi, options, receive, send, si, _i, _len, _receive, _ref, _ref2, _results;
+    if (!(obj1 instanceof Synapse)) {
+      observer = Synapse(obj1);
     }
+    if (!(obj2 instanceof Synapse)) {
+      notifier = Synapse(obj2);
+    }
+    if (downstream) {
+      _ref = [obj1, obj2], notifier = _ref[0], observer = _ref[1];
+    } else {
+      _ref2 = [obj1, obj2], observer = _ref2[0], notifier = _ref2[1];
+    }
+    if (!notifier.observers[observer.guid]) {
+      notifier.observers[observer.guid] = {};
+    }
+    if (!observer.notifiers[notifier.guid]) {
+      observer.notifiers[notifier.guid] = {};
+    }
+    options = {};
+    if (_.isString(_options) || _.isArray(_options)) {
+      _options = {
+        interface: _options
+      };
+    } else if (_.isFunction(_options)) {
+      _options = {
+        handler: _options
+      };
+    }
+    _.extend(options, defaultRegisterOptions, _options);
+    events = Synapse.getEvents(notifier, options.event);
+    interfaces = Synapse.getInterfaces(notifier, observer, options.interface);
+    handler = options.handler;
+    if (handler && !_.isFunction(handler)) {
+      handler = observer[handler];
+    }
+    receive = Synapse.handlers[observer.type].receive;
+    send = Synapse.handlers[notifier.type].send;
+    _results = [];
+    for (_i = 0, _len = events.length; _i < _len; _i++) {
+      event = events[_i];
+      notifier.observers[observer.guid][event] = true;
+      observer.notifiers[notifier.guid][event] = true;
+      _results.push((function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
+          conn = interfaces[_i];
+          si = conn[0], oi = conn[1];
+          _receive = receive(observer, oi, send);
+          if (!_.isArray(si)) {
+            si = [si];
+          }
+          _results.push((function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = si.length; _i < _len; _i++) {
+              i = si[_i];
+              _results.push(send(notifier, event, i, _receive, options.notifyInit));
+            }
+            return _results;
+          })());
+        }
+        return _results;
+      })());
+    }
+    return _results;
   };
   return window.Synapse = window.SYN = Synapse;
 })(window);
