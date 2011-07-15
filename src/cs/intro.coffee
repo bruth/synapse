@@ -1,8 +1,9 @@
 ###
-    Synapse - The Backbone KVO Library
+Synapse - The Backbone KVO Library
 
-    Version: @VERSION
-    Date: @DATE
+Author: Byron Ruth
+Version: @VERSION
+Date: @DATE
 ###
 
 do (window) ->

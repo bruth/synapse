@@ -1,8 +1,9 @@
 /*
-    Synapse - The Backbone KVO Library
+Synapse - The Backbone KVO Library
 
-    Version: 0.1
-    Date: Fri Jul 15 12:30:41 2011 -0500
+Author: Byron Ruth
+Version: 0.1
+Date: Fri Jul 15 17:29:02 2011 -0500
 */var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, parseInterfaces, synapseConf;
@@ -67,7 +68,7 @@
       for (key in Backbone.Events) {
         if (!object[key]) {
           if (!Synapse.conf.autoExtendObjects) {
-            throw new Error("object does not support events and                            'autoExtendObjects' is turned off");
+            throw new Error("object does not support events and 'autoExtendObjects' is turned off");
           }
           _.extend(object, Backbone.Events);
           break;
@@ -282,7 +283,7 @@
       (_ref4 = pair[si]) != null ? _ref4 : pair[si] = _si;
       (_ref5 = pair[oi]) != null ? _ref5 : pair[oi] = _oi;
       if (pair[si] === null || pair[oi] === null) {
-        throw new Error("The interfaces between " + notifier + " and                    " + observer + " could be detected");
+        throw new Error("The interfaces between " + notifier + " and " + observer + " could be detected");
       }
     }
     return interfaces;

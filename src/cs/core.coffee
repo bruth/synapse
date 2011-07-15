@@ -23,7 +23,7 @@
     Synapse = do ->
 
         # define and build up local copy of Synapse
-        Synapse = (object) -> new Synapse.fn.init(object) 
+        Synapse = (object) -> new Synapse.fn.init(object)
 
         Synapse.version = '@VERSION'
 
@@ -94,8 +94,7 @@
             for key of Backbone.Events
                 if not object[key]
                     if not Synapse.conf.autoExtendObjects
-                        throw new Error("object does not support events and
-                            'autoExtendObjects' is turned off")
+                        throw new Error("object does not support events and 'autoExtendObjects' is turned off")
 
                     _.extend(object, Backbone.Events)
                     break

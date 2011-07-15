@@ -84,8 +84,7 @@
 
             # if none of the above worked
             if pair[si] is null or pair[oi] is null
-                throw new Error("The interfaces between #{notifier} and
-                    #{observer} could be detected")
+                throw new Error("The interfaces between #{notifier} and #{observer} could be detected")
 
         return interfaces
 
