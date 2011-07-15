@@ -2,7 +2,7 @@
     Synapse - The Backbone KVO Library
 
     Version: 0.1
-    Date: Fri Jul 15 11:49:38 2011 -0500
+    Date: Fri Jul 15 12:30:41 2011 -0500
 */var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, parseInterfaces, synapseConf;
