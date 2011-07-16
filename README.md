@@ -137,10 +137,8 @@ unregistering built-in interfaces and overriding them with custom ones.
 Built-in Interfaces
 -------------------
 
-* ``prop:<key>`` - gets/sets the property ``key``  using ``.prop()``
-* ``attr:<key>`` - gets/sets the attribute ``key``  using ``.attr()``
-* ``style:<key>`` - gets/sets the CSS style ``key``  using ``.css()``
-* ``css:<key>`` - gets/sets CSS class name ``key``
+**Simple**
+
 * ``text`` - gets/sets the innerText value of the DOM element
 * ``html`` - get/sets the innerHTML value of the DOM element
 * ``value`` - gets/sets the value of a form element via ``.val()``
@@ -153,6 +151,14 @@ setting a *falsy* value will remove the disabled property.
 result in the element being hidden
 * ``hidden`` - gets/sets the visibility of an element. a *falsy* value will
 result in the element being visible
+
+**Compound**
+
+* ``prop:<key>`` - gets/sets the property ``key``
+* ``attr:<key>`` - gets/sets the attribute ``key``
+* ``style:<key>`` - gets/sets the CSS style ``key``
+* ``css:<key>`` - gets/sets the CSS class name ``key``
+* ``data:<key>`` - gets/sets arbitrary data ``key`` using jQuery data API
 
 
 Examples

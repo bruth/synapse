@@ -132,28 +132,32 @@
 
                 return @
 
-            bind: -> @.context.bind.apply(@, arguments)
-            unbind: -> @.context.unbind.apply(@, arguments)
-            trigger: -> @.context.trigger.apply(@, arguments)
+            bind: -> @context.bind.apply(@, arguments)
+            unbind: -> @context.unbind.apply(@, arguments)
+            trigger: -> @context.trigger.apply(@, arguments)
 
             get: (key) ->
                 if @context.get
                     return @context.get.call(@context, key)
-                Synapse.interfaces.get(@context, key)
+                if @type is Synapse.types.jquery
+                    return Synapse.interfaces.get(@context, key)
+                @context[key]
 
             set: (key, value) ->
                 if @context.set
                     return @context.set.call(@context, key, value)
-                Synapse.interfaces.set(@context, key, value)
+                if @type is Synapse.types.jquery
+                    return Synapse.interfaces.set(@context, key, value)
+                @context[key] = value
 
             sync: (other) ->
-                @observe(other).notify(other)
+                @addObserver(other).addNotifier(other)
 
-            observe: (notifier, options) ->
+            addNotifier: (notifier, options) ->
                 Synapse.register(@, notifier, options, false)
                 return @
 
-            notify: (observer, options) ->
+            addObserver: (observer, options) ->
                 Synapse.register(observer, @, options, true)
                 return @
 

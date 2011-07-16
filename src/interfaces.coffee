@@ -114,7 +114,7 @@
             @registry[name].set.apply(context, args)
 
 
-# built-in interfaces below
+    # built-in interfaces below
     do ->
 
         # setter/getter for properties
@@ -151,25 +151,6 @@
             if typeof key is 'object'
                 return @css(key)
             @css(key, value)
-
-
-        Synapse.interfaces.register
-            name: 'prop'
-            get: (key) -> getProperty.call(@, key)
-            set: (key, value) -> setProperty.call(@, key, value)
-
-
-        Synapse.interfaces.register
-            name: 'attr'
-            get: (key) -> getAttribute.call(@, key)
-            set: (key, value) -> setAttribute.call(@, key, value)
-
-
-        Synapse.interfaces.register
-            name: 'style'
-            get: (key) -> getStyle.call(@, key)
-            set: (key, value) -> setStyle.call(@, key, value)
-
 
         # Gets and sets the innerText of the element
         Synapse.interfaces.register
@@ -258,12 +239,36 @@
 
 
         Synapse.interfaces.register
+            name: 'prop'
+            get: (key) -> getProperty.call(@, key)
+            set: (key, value) -> setProperty.call(@, key, value)
+
+
+        Synapse.interfaces.register
+            name: 'attr'
+            get: (key) -> getAttribute.call(@, key)
+            set: (key, value) -> setAttribute.call(@, key, value)
+
+
+        Synapse.interfaces.register
+            name: 'style'
+            get: (key) -> getStyle.call(@, key)
+            set: (key, value) -> setStyle.call(@, key, value)
+
+
+        Synapse.interfaces.register
             name: 'css'
-            get: (key) -> @.hasClass(key)
+            get: (key) -> @hasClass(key)
             set: (key, value) ->
                 if _.isArray(value) and value.length is 0
                     value = false
                 if Boolean(value) then @addClass(key) else @removeClass(key)
+
+
+        Synapse.interfaces.register
+            name: 'data'
+            get: (key) -> @data(key)
+            set: (key, value) -> @data(key, value)
 
 
 

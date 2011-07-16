@@ -3,7 +3,7 @@ Synapse - The Backbone KVO Library
 
 Author: Byron Ruth
 Version: 0.1
-Date: Fri Jul 15 23:54:19 2011 -0500
+Date: Sat Jul 16 10:52:12 2011 -0500
 */var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, parseInterfaces, synapseConf;
@@ -108,22 +108,28 @@ Date: Fri Jul 15 23:54:19 2011 -0500
         if (this.context.get) {
           return this.context.get.call(this.context, key);
         }
-        return Synapse.interfaces.get(this.context, key);
+        if (this.type === Synapse.types.jquery) {
+          return Synapse.interfaces.get(this.context, key);
+        }
+        return this.context[key];
       },
       set: function(key, value) {
         if (this.context.set) {
           return this.context.set.call(this.context, key, value);
         }
-        return Synapse.interfaces.set(this.context, key, value);
+        if (this.type === Synapse.types.jquery) {
+          return Synapse.interfaces.set(this.context, key, value);
+        }
+        return this.context[key] = value;
       },
       sync: function(other) {
-        return this.observe(other).notify(other);
+        return this.addObserver(other).addNotifier(other);
       },
-      observe: function(notifier, options) {
+      addNotifier: function(notifier, options) {
         Synapse.register(this, notifier, options, false);
         return this;
       },
-      notify: function(observer, options) {
+      addObserver: function(observer, options) {
         Synapse.register(observer, this, options, true);
         return this;
       }
@@ -359,33 +365,6 @@ Date: Fri Jul 15 23:54:19 2011 -0500
       return this.css(key, value);
     };
     Synapse.interfaces.register({
-      name: 'prop',
-      get: function(key) {
-        return getProperty.call(this, key);
-      },
-      set: function(key, value) {
-        return setProperty.call(this, key, value);
-      }
-    });
-    Synapse.interfaces.register({
-      name: 'attr',
-      get: function(key) {
-        return getAttribute.call(this, key);
-      },
-      set: function(key, value) {
-        return setAttribute.call(this, key, value);
-      }
-    });
-    Synapse.interfaces.register({
-      name: 'style',
-      get: function(key) {
-        return getStyle.call(this, key);
-      },
-      set: function(key, value) {
-        return setStyle.call(this, key, value);
-      }
-    });
-    Synapse.interfaces.register({
       name: 'text',
       get: function() {
         return this.text();
@@ -480,7 +459,34 @@ Date: Fri Jul 15 23:54:19 2011 -0500
         }
       }
     });
-    return Synapse.interfaces.register({
+    Synapse.interfaces.register({
+      name: 'prop',
+      get: function(key) {
+        return getProperty.call(this, key);
+      },
+      set: function(key, value) {
+        return setProperty.call(this, key, value);
+      }
+    });
+    Synapse.interfaces.register({
+      name: 'attr',
+      get: function(key) {
+        return getAttribute.call(this, key);
+      },
+      set: function(key, value) {
+        return setAttribute.call(this, key, value);
+      }
+    });
+    Synapse.interfaces.register({
+      name: 'style',
+      get: function(key) {
+        return getStyle.call(this, key);
+      },
+      set: function(key, value) {
+        return setStyle.call(this, key, value);
+      }
+    });
+    Synapse.interfaces.register({
       name: 'css',
       get: function(key) {
         return this.hasClass(key);
@@ -494,6 +500,15 @@ Date: Fri Jul 15 23:54:19 2011 -0500
         } else {
           return this.removeClass(key);
         }
+      }
+    });
+    return Synapse.interfaces.register({
+      name: 'data',
+      get: function(key) {
+        return this.data(key);
+      },
+      set: function(key, value) {
+        return this.data(key, value);
       }
     });
   })();
