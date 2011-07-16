@@ -124,6 +124,26 @@ will simply get or set the property on the object.
 The interfaces registry can be extended by registering new interfaces or
 unregistering built-in interfaces and overriding them with custom ones.
 
+Built-in Interfaces
+-------------------
+
+* ``prop:<key>`` - gets/sets the property ``key``  using ``.prop()``
+* ``attr:<key>`` - gets/sets the attribute ``key``  using ``.attr()``
+* ``style:<key>`` - gets/sets the CSS style ``key``  using ``.css()``
+* ``text`` - gets/sets the innerText value of the DOM element
+* ``html`` - get/sets the innerHTML value of the DOM element
+* ``value`` - gets/sets the value of a form element via ``.val()``
+* ``enabled`` - gets/sets the "disabled" attribute. setting a *falsy* value
+will add the disabled property.
+* ``disabled`` - gets/sets the "disabled" attribute of an element relative.
+setting a *falsy* value will remove the disabled property.
+* ``checked`` - gets/sets the "checked" property
+* ``visible`` - gets/sets the visibility of an element. a *falsy* value will
+result in the element being hidden
+* ``hidden`` - gets/sets the visibility of an element. a *falsy* value will
+result in the element being visible
+* ``css`` - gets/sets CSS class names
+
 
 Examples
 --------
