@@ -103,7 +103,7 @@ sA.set('attr:foo', 'bar');  // adds an attribute 'foo=bar' on the element
 
 var sB = Synapse(B);        // model
 
-sB.get('foo')               // get the value of the 'foo' property
+sB.get('foo');              // get the value of the 'foo' property
 sB.set('hello', 'moto');    // sets the 'hello' property to 'moto'
 ```
 
