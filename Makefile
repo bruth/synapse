@@ -1,4 +1,4 @@
-SRC_DIR = src/cs
+SRC_DIR = src
 BUILD_DIR = build
 TEST_DIR = test
 EXAMPLES_DIR = examples/js

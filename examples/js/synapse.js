@@ -3,7 +3,7 @@ Synapse - The Backbone KVO Library
 
 Author: Byron Ruth
 Version: 0.1
-Date: Fri Jul 15 17:29:02 2011 -0500
+Date: Fri Jul 15 23:54:19 2011 -0500
 */var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, parseInterfaces, synapseConf;
