@@ -39,7 +39,7 @@ sent by the notification is the value of input element at that current state.
 
 Given that ``B`` is a model instance, we assume to store the *message* from
 ``A`` as a property on ``B``, but under what name? We use the name attribute
-'title'. Thus the non-Synapse code would look like this:
+'title'. Thus the equivalent non-Synapse code would look like this:
 
 ```javascript
 A.bind('keyup', function() {
@@ -63,10 +63,10 @@ Synapse(A).addObserver(C);
 
 The observer in this case is a checkbox. The default behavior (in virtually all
 cases) is to become 'checked' or 'unchecked' depending the *falsy* nature of
-the message sent by the subject. Here is the non-Synapse code:
+the message sent by the subject. Here is the equivalent non-Synapse code:
 
 ```javascript
- A.bind('keyup', function() {
+A.bind('keyup', function() {
     var value = A.val();
     C.prop('checked', Boolean(value));
 });
@@ -82,16 +82,35 @@ behaviors.
 
 Interfaces
 ----------
-The above examples explain the most simple interactions between two
-objects. But how does each object return or accept a message from the
-other object?
+The above examples explain the most simple interactions between two objects.
+But how does each object return or accept a message from the other object?
 
-As stated above, Synapse is aware of each object's type and whether they
-are the subject or observer for a given pipeline. For the cases when an
-object is the subject, the message is typically derived from a subject's
-property to be notified to it's observers. The observer on the other hand,
-must know how to accept the message and usually persists it by storing it
-locally.
+Synapse interfaces provide a way to generically **get** and **set** properties
+on Synapse supported objects. A few examples:
+
+```javascript
+var sA = Synapse(A);        // input element
+
+sA.get('value');            // gets the 'value' property
+sA.get('enabled');          // returns whether the 'disabled' attr is not set
+sA.get('visible');          // returns whether the element is visible
+sA.get('style:background'); // gets the element's CSS background details
+
+sA.set('value', 'foobar');  // sets the 'value' property
+sA.set('visible', false);   // makes the element hidden
+sA.set('disabled', true);   // makes the element disabled
+sA.set('attr:foo', 'bar');  // adds an attribute 'foo=bar' on the element
+
+var sB = Synapse(B);        // model
+
+sB.get('foo')               // get the value of the 'foo' property
+sB.set('hello', 'moto');    // sets the 'hello' property to 'moto'
+```
+
+Due to their greater depth and complexity, DOM element interfaces target
+a variety of APIs on the element including attributes, properties, and styles.
+Models and plain objects are much simplier and simply get/set properties
+on themselves.
 
 Continuing the example from above using ``A`` and ``B``, since ``A`` is the
 subject, the input value will be sent to it's observers every time it changes.
@@ -99,8 +118,10 @@ The observer, ``B``, is a model instance and thus *sets* the property on
 itself.
 
 ```javascript
+A.val('foobar');
 A.trigger('keyup');     // sends the 'value' to observers
-                        // B.get('title') returns the value
+                        // B.set('title', 'foobar') is executed
+                        // B.get('title') now returns the value
 ```
 
 Just like how events are inferred by the objects' types, the *interfaces*
@@ -108,18 +129,7 @@ for getting/setting properties are also inferred. ``Synapse.interfaces``
 is a registry of interfaces by name that each have a ``get`` and ``set``
 method associated with them. Synapse has quite a few built-in ones for
 interfacing with DOM elements (represented as a jQuery instance) for the
-most common behaviors. For example:
-
-```javascript
-A.get('value');             // $('input[name=title]').val()
-A.set('value', 'hello')     // $('input[name=title]').val('hello')
-```
-
-The concept was derived from the simple API the Backbone Model class provides
-for getting/setting attributes. That being said, the ``get`` and ``set``
-methods when used on a wrapped model instance will use the native ones.
-Likewise when ``get`` and ``set`` are called on a wrapped plain object, it
-will simply get or set the property on the object.
+most common behaviors.
 
 The interfaces registry can be extended by registering new interfaces or
 unregistering built-in interfaces and overriding them with custom ones.
@@ -130,6 +140,7 @@ Built-in Interfaces
 * ``prop:<key>`` - gets/sets the property ``key``  using ``.prop()``
 * ``attr:<key>`` - gets/sets the attribute ``key``  using ``.attr()``
 * ``style:<key>`` - gets/sets the CSS style ``key``  using ``.css()``
+* ``css:<key>`` - gets/sets CSS class name ``key``
 * ``text`` - gets/sets the innerText value of the DOM element
 * ``html`` - get/sets the innerHTML value of the DOM element
 * ``value`` - gets/sets the value of a form element via ``.val()``
@@ -142,7 +153,6 @@ setting a *falsy* value will remove the disabled property.
 result in the element being hidden
 * ``hidden`` - gets/sets the visibility of an element. a *falsy* value will
 result in the element being visible
-* ``css`` - gets/sets CSS class names
 
 
 Examples
