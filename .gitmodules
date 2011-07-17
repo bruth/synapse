@@ -7,3 +7,6 @@
 [submodule "src/underscore"]
 	path = src/underscore
 	url = git://github.com/documentcloud/underscore.git
+[submodule "src/qunit"]
+	path = src/qunit
+	url = git://github.com/jquery/qunit.git

@@ -1,11 +1,12 @@
 SRC_DIR = src
 DIST_DIR = dist
-TEST_DIR = test
 EXAMPLES_DIR = examples/js
+TEST_DIR = examples/test
 
 JQUERY_SM = ${SRC_DIR}/jquery
 UNDERSCORE_SM = ${SRC_DIR}/underscore
 BACKBONE_SM = ${SRC_DIR}/backbone
+QUNIT_SM = ${SRC_DIR}/qunit
 
 UGLIFY = `which node` build/uglify.js --unsafe
 COMPILER = `which coffee` -b -s -p
@@ -21,35 +22,50 @@ MODULES = ${SRC_DIR}/intro.coffee \
 VERSION = $(shell cat VERSION)
 DATE = $(shell git log -1 --pretty=format:%ad)
 
-all: update_sm build minify
+LATEST_TAG = `git describe --tags \`git rev-list --tags --max-count=1\``
+
+all: pull jquery underscore backbone qunit build uglify
 
 jquery:
-	@@cd ${JQUERY_SM}
+	@@echo 'Updating jQuery...'
+	@@cd ${JQUERY_SM} && git checkout ${LATEST_TAG}
 	@@cd ${JQUERY_SM} && make
 	@@cp ${JQUERY_SM}/dist/jquery.js ${EXAMPLES_DIR}
 
 underscore:
+	@@echo 'Updating Underscore...'
+	@@cd ${UNDERSCORE_SM} && git checkout ${LATEST_TAG}
 	@@cp ${UNDERSCORE_SM}/underscore.js ${EXAMPLES_DIR}
 
 backbone:
+	@@echo 'Updating Backbone...'
+	@@cd ${BACKBONE_SM} && git checkout ${LATEST_TAG}
 	@@cp ${BACKBONE_SM}/backbone.js ${EXAMPLES_DIR}
 
+qunit:
+	@@echo 'Updating QUnit...'
+	@@cp ${QUNIT_SM}/qunit/qunit.* ${TEST_DIR}
+
 compile:
+	@@echo 'Compiling CoffeeScript...'
 	@@mkdir -p dist
 	@@cat ${MODULES} | \
 		sed 's/@DATE/'"${DATE}"'/' | \
 		sed 's/@VERSION/'"${VERSION}"'/' | \
 		${COMPILER} > ${DIST_DIR}/synapse.js
 
-build: jquery backbone underscore compile
+build: compile
+	@@echo 'Building...'
 	@@cp ${DIST_DIR}/synapse.js ${EXAMPLES_DIR}
 
-minify: compile
+uglify: compile
+	@@echo 'Uglifying...'
 	${UGLIFY} ${DIST_DIR}/synapse.js > ${DIST_DIR}/synapse.min.js
 
-update_sm:
-	@@git submodule foreach "git pull \$$(git config remote.origin.url)"
-	@@git submodule foreach "git checkout \$$(git describe --tags \$$(git rev-list --tags --max-count=1))"
+pull:
+	@@echo 'Pulling latest of everything...'
+	@@git pull origin master
+	@@git submodule foreach "git pull \$$(git config remote.origin.url)"	
 
 clean:
 	@@rm -rf ${DIST_DIR} \
@@ -59,4 +75,4 @@ clean:
 		${EXAMPLES_DIR}/jquery.js
 
 
-.PHONY: all compile build minify update_sm jquery underscore backbone clean
+.PHONY: all compile build uglify pull jquery underscore backbone qunit clean
