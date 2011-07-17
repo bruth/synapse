@@ -28,26 +28,26 @@
 
                 // example pre
                 var prim = {},
-                    bprim = Synapse(prim);
-                $('#example-pre span').text(assert(prim === bprim.object));
+                    sPrim = Synapse(prim);
+                $('#example-pre span').text(assert(prim === sPrim.context));
 
                 // example 0
                 var model = new Backbone.Model({ title: 'Hello World' });
                 Synapse('#example0-1 input').sync(model);
-                Synapse('#example0-1 .output').observe(model, 'title');
-                Synapse('#example0-1 .meta').observe(model, function() {
+                Synapse('#example0-1 .output').addObserver(model, 'title');
+                Synapse('#example0-1 .meta').addObserver(model, function() {
                     return 'Last updated: ' + (new Date()).toString();
                 });
 
 
                 // example 1 
-                Synapse('#example1-1 span').observe('#example1-1 input');
+                Synapse('#example1-1 span').addObserver('#example1-1 input');
                 Synapse('#example1-2 input.one').sync('#example1-2 input.two');
-                Synapse('#example1-3 :text').observe('#example1-3 :checkbox',{
-                    interface: {enabled: 'checked'}
+                Synapse('#example1-3 :text').addObserver('#example1-3 :checkbox', {
+                    interfaces: ['enabled', 'checked']
                 });
-                Synapse('#example1-4 span').observe('#example1-4 input', {
-                    interface: {'html': 'value'},
+                Synapse('#example1-4 span').addObserver('#example1-4 input', {
+                    interfaces: ['html', 'value'],
                     handler: function(object, value) {
                         if (value !== '')
                             return 'I am a <b>' + value + '</b>';
@@ -56,13 +56,13 @@
                 });
 
                 // example 2
-                var bprim = Synapse({}).observe('#example2-1 input').notify('#example2-1 span', {
-                    interface: {text: 'foo'},
-                    event: 'change'
+                var bprim = Synapse({}).addObserver('#example2-1 input').addNotifier('#example2-1 span', {
+                    interfaces: ['text', 'foo'],
+                    events: 'change'
                 });
 
                 setInterval(function() {
-                    bprim.object.trigger('change');
+                    bprim.context.trigger('change');
                 }, 100);
 
             });
@@ -71,7 +71,7 @@
     </head>
     <body>        
 
-        <h1>Backbone KVO</h1>
+        <h1>Synapse (The Backbone KVO Library)</h1>
 
         <h3>The Basics</h3>
 
@@ -83,18 +83,12 @@
 var prim = {},
     bprim = Synapse(prim);
 
-// the original object is a property called ``object``.
-assert(bprim.object === prim);
-
-// the wrapped object can now observe, notify or sync with
-// another object
-bprim.observe('foo');
-bprim.notify('bar');
-bprim.sync('baz');
+// the original object is a property called ``context``.
+assert(bprim.context === prim);
 </code></pre>
             </div>
             <div id="example-pre">
-                <code>assert(prim === bprim.object)</code><br>
+                <code>assert(prim === bprim.context)</code><br>
                 <span class="meta"></span>
             </div>
         </div>
@@ -108,16 +102,16 @@ bprim.sync('baz');
 <code>// initialize a new model object 
 var model = new Backbone.Model({ title: 'Hello World' });
 
-// the model will observe the value of this input (the attribute
+// the model will addObserver the value of this input (the attribute
 // is equal to the 'name' attribute on the input, i.e. 'title'
 Synapse('input').sync(model);
 
-// the span will observe the 'title' attribute on this model
-Synapse('span').observe(model, 'title');
+// the span will addObserver the 'title' attribute on this model
+Synapse('span').addObserver(model, 'title');
 
-// if no interface is auto-detected for the model, the observer
+// if no interface is auto-detected for the model, the addObserverr
 // will be notified when _anything_ changes.
-Synapse('.meta').observe(model, function() {
+Synapse('.meta').addObserver(model, function() {
     return 'Last updated: ' + (new Date()).toString();
 });
 </code></pre>
@@ -136,11 +130,11 @@ Synapse('.meta').observe(model, function() {
 
         <div class="example">
             <div>
-<pre class="javascript"><code>// the ``span`` observes the ``input``. Synapse autodetects to use
+<pre class="javascript"><code>// the ``span`` addObservers the ``input``. Synapse autodetects to use
 // the "html" interface for the ``span`` and the "value" of  the
 // ``input``. The event is auto-detected relative to the subject type,
 // which will be "keyup".
-Synapse('span').observe('input');
+Synapse('span').addObserver('input');
 </code></pre>
             </div>
 
@@ -154,7 +148,7 @@ Synapse('span').observe('input');
             <div>
 <pre class="javascript"><code>// actionable objects (ones that have detectable events) can be 
 // synced. that is, both are observing each other. this merely a
-// convenience syntax and can be accomplished using two ``observe()``
+// convenience syntax and can be accomplished using two ``addObserver()``
 // calls
 Synapse('input.one').sync('input.two');
 </code></pre>
@@ -170,10 +164,8 @@ Synapse('input.one').sync('input.two');
             <div>
 <pre class="javascript"><code>// interfaces can be explicitly set. this one reads, the ``:text``
 // input will be "enabled" only when the ``:checkbox`` is "checked".
-Synapse(':text').observe(':checkbox', {
-    interface: {
-        'enabled': 'checked'
-    }
+Synapse(':text').addObserver(':checkbox', {
+    interface: ['enabled', 'checked']
 });</code></pre>
             </div>
 
@@ -187,9 +179,9 @@ Synapse(':text').observe(':checkbox', {
             <div>
 <pre class="javascript"><code>// add a handler that takes the subject and value that has changed
 // state as arguments. the returned values from the handler will be
-// used as the value for the observers interface.
-Synapse('span').observe('input', {
-    interface: {'html': 'value'},
+// used as the value for the addObserverrs interface.
+Synapse('span').addObserver('input', {
+    interface: ['html', 'value'],
     handler: function(object, value) {
         if (value !== '')
             return 'I am a &lt;b&gt;' + value + '&lt;/b&gt;';
@@ -211,14 +203,14 @@ Synapse('span').observe('input', {
 <pre class="javascript"><code>// a simple primitive is keeping track of the
 // value of the input field. the property will be the input's name
 // attribute
-var bprim = Synapse({}).observe('input').notify('span', {
-    interface: {'text': 'foo'},
+var sPrim = Synapse({}).addObserver('input').addNotifier('span', {
+    interface: ['foo', 'text'],
     event: 'change'
 });
 
 // to emulate the trigger, we just set an interval for every 100ms
 setInterval(function() {
-    bprim.object.trigger('change');
+    sPrim.context.trigger('change');
 }, 100);
 
 </code></pre>
