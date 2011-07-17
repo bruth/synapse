@@ -1,9 +1,13 @@
 SRC_DIR = src
-BUILD_DIR = build
+DIST_DIR = dist
 TEST_DIR = test
 EXAMPLES_DIR = examples/js
 
-MINIFIER = `which node` ${BUILD_DIR}/uglify.js --unsafe
+JQUERY_SM = ${SRC_DIR}/jquery
+UNDERSCORE_SM = ${SRC_DIR}/underscore
+BACKBONE_SM = ${SRC_DIR}/backbone
+
+UGLIFY = `which node` build/uglify.js --unsafe
 COMPILER = `which coffee` -b -s -p
 
 MODULES = ${SRC_DIR}/intro.coffee \
@@ -14,31 +18,45 @@ MODULES = ${SRC_DIR}/intro.coffee \
 		  ${SRC_DIR}/register.coffee \
 		  ${SRC_DIR}/outro.coffee
 
-BUILD_FILE = ${BUILD_DIR}/synapse.js
-MINI_FILE = ${BUILD_DIR}/synapse.min.js
-
 VERSION = $(shell cat VERSION)
 DATE = $(shell git log -1 --pretty=format:%ad)
 
-all: build minify
+all: update_sm build minify
+
+jquery:
+	@@cd ${JQUERY_SM}
+	@@cd ${JQUERY_SM} && make
+	@@cp ${JQUERY_SM}/dist/jquery.js ${EXAMPLES_DIR}
+
+underscore:
+	@@cp ${UNDERSCORE_SM}/underscore.js ${EXAMPLES_DIR}
+
+backbone:
+	@@cp ${BACKBONE_SM}/backbone.js ${EXAMPLES_DIR}
 
 compile:
+	@@mkdir -p dist
 	@@cat ${MODULES} | \
 		sed 's/@DATE/'"${DATE}"'/' | \
 		sed 's/@VERSION/'"${VERSION}"'/' | \
-		${COMPILER} > ${BUILD_FILE}
+		${COMPILER} > ${DIST_DIR}/synapse.js
 
-build: compile
-	@@cp ${BUILD_FILE} ${EXAMPLES_DIR}
-	@@cp ${BUILD_FILE} ${TEST_DIR}
+build: jquery backbone underscore compile
+	@@cp ${DIST_DIR}/synapse.js ${EXAMPLES_DIR}
 
 minify: compile
-	${MINIFIER} ${BUILD_FILE} > ${MINI_FILE}
+	${UGLIFY} ${DIST_DIR}/synapse.js > ${DIST_DIR}/synapse.min.js
+
+update_sm:
+	@@git submodule foreach "git pull \$$(git config remote.origin.url)"
+	@@git submodule foreach "git checkout \$$(git describe --tags \$$(git rev-list --tags --max-count=1))"
 
 clean:
-	@@rm -f ${BUILD_FILE} \
-		${MINI_FILE} \
-		${TEST_DIR}/synapse.js \
-		${EXAMPLES_DIR}/synapse.js
+	@@rm -rf ${DIST_DIR} \
+		${EXAMPLES_DIR}/synapse.js \
+		${EXAMPLES_DIR}/underscore.js \
+		${EXAMPLES_DIR}/backbone.js \
+		${EXAMPLES_DIR}/jquery.js
 
-.PHONY: all compile build minify clean
+
+.PHONY: all compile build minify update_sm jquery underscore backbone clean
