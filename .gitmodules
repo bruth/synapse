@@ -1,0 +1,9 @@
+[submodule "src/jquery"]
+	path = src/jquery
+	url = git://github.com/jquery/jquery.git
+[submodule "src/backbone"]
+	path = src/backbone
+	url = git://github.com/documentcloud/backbone.git
+[submodule "src/underscore"]
+	path = src/underscore
+	url = git://github.com/documentcloud/underscore.git
