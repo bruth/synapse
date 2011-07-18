@@ -1,6 +1,27 @@
 Synapse (The Backbone KVO Library)
 ==================================
 
+Get Synapse
+-----------
+Download this (temporary until I get a better process):
+https://raw.github.com/bruth/synapse/master/examples/js/synapse.js
+
+To build from source you must have CoffeeScript (and thus Node)
+installed:
+
+```
+make build
+```
+
+you can also optionally Uglify the built file:
+
+```
+make uglify
+```
+
+in either case, there will be a ``dist`` directory added that will
+contain the built files ``synapse.js`` and ``synapse.min.js``.
+
 Introduction
 ------------
 Synapse provides a mechanism for defining a communication hub between two
