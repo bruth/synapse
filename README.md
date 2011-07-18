@@ -204,7 +204,7 @@ Synapse('input').addObserver('span', [
 Examples
 --------
 View examples here to gradually learn the API:
-http://bruth.github.com/backbone-kvo/examples/
+http://bruth.github.com/synapse/examples/
 
 
 TODO
