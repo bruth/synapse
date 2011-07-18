@@ -160,6 +160,46 @@ result in the element being visible
 * ``css:<key>`` - gets/sets the CSS class name ``key``
 * ``data:<key>`` - gets/sets arbitrary data ``key`` using jQuery data API
 
+Subject/Observer Options
+------------------------
+
+* ``event`` - the event(s) that will trigger the notification by the subject
+* ``get`` - the interface(s) to use by the subject for getting the
+message to be sent to all observers for this event. if this interface does not
+exist, the value is assumed to be the name of a function on the subject to be
+used for getting the message for the observers.
+* ``set`` - the interface to use by the observer for reading in
+the message when notified. the interface. if this interface does not
+exist, the value is assumed to be the name of a function on the observer to be
+used to take the message.
+* ``convert`` - a function to be called that takes the message and returns
+a message prior to being read by the observer
+
+An explicit binding can be defined as follows:
+
+```javascript
+Synapse('input').addObserver('span', {
+    event: 'keyup',
+    get: 'value',
+    set: 'text'
+});
+```
+
+or multiple bindings can be defined:
+
+```javascript
+Synapse('input').addObserver('span', [
+    {
+        event: 'keyup',
+        get: 'value',
+        set: 'text'
+    }, {
+        event: 'blur',
+        get: 'value',
+        set: 'data:title'
+    }
+]);
+```
 
 Examples
 --------

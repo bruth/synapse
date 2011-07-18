@@ -11,20 +11,19 @@
 
 
     # detect the default DOM event to use for the element
-    Synapse.detectDomEvent = (syn) ->
+    detectDomEvent = (subject) ->
         for item in Synapse.defaultDomEvents
             [selector, event] = item
-            if syn.context.is(selector) then return event
-        throw new Error("Event for #{syn} could not be detected.")
+            if subject.context.is(selector) then return event
+        throw new Error("Event for #{subject} could not be detected.")
 
 
     # return an array of events for the given subject. if ``event`` is not
     # supplied, attempt to detect the appropriate event for the object type.
     Synapse.getEvents = (subject, event) ->
-        # get the event based on the subjectType
         if not event
             if subject.type is Synapse.types.jquery
-                events = [Synapse.detectDomEvent(subject)]
+                events = [detectDomEvent(subject)]
             else if subject.type is Synapse.types.model
                 events = ['change']
             else

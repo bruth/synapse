@@ -1,3 +1,10 @@
+    # detect the default interface to use for the element
+    detectElementInterface = (obj) ->
+        for item in Synapse.defaultElementInterfaces
+            [selector, interface] = item
+            if obj.context.is(selector) then return interface
+        throw new Error("Interface for #{obj} could not be detected.")
+
     # default element interfaces relative to their selectors. each
     # item will be iterated over in order and compared against using
     # the ``jQuery.fn.is()`` method for comparison.
@@ -9,82 +16,70 @@
         ['*', 'text']
     ]
 
-    # detect the default interface to use for the element
-    Synapse.detectElementInterface = (syn) ->
-        for item in Synapse.defaultElementInterfaces
-            [selector, interface] = item
-            if syn.context.is(selector) then return interface
-        throw new Error("Interface for #{syn} could not be detected.")
-
-
-    # helper function to convert the user-defined ``interfaces`` to
-    # it's necessary structure.
-    parseInterfaces = (interfaces, downstream) ->
-        if not interfaces
-            interfaces = [[null, null]]
-
-        else if _.isArray(interfaces)
-            # a single interface pair is defined 
-            if not _.isArray(interfaces[0])
-                interfaces = [interfaces]
-        # if a single string is define, we assume this is the interface
-        # of the referring item
-        else
-            interfaces = if downstream then [[interfaces, null]] else [[null, interfaces]]
-
-        return interfaces
-
-
-    # return an array of interfaces appropriate for the given notifier/observer.
+    # return an array of interfaces appropriate for the given subject/observer.
     # if no interface is defined, only if a ``name`` attribute on either the
-    # notifier or observer will be used by default (in the case of form fields).
+    # subject or observer will be used by default (in the case of form fields).
     # ``downstream`` will be true when the interfaces are being defined relative
-    # to notifier
-    Synapse.getInterfaces = (notifier, observer, interfaces, downstream=true) ->
-        interfaces = parseInterfaces(interfaces, downstream)
+    # to subject
+    Synapse.getInterfaces = (subject, observer, interfaces={}) ->
+        getInterface = interfaces.get
+        setInterface = interfaces.set
 
-        for pair in interfaces
-            if downstream then [si, oi] = [0, 1] else [oi, si] = [1, 0]
-            _si = null
-            _oi = null
+        # first, determine interfaces independently of the other...
 
+        # get the interface for the subject
+        if not getInterface
             # whenever a DOM element is used, the interface is the detected
-            # interface. if a model is used then the 'name' attribute is used
-            # as the interface for that model (the attribute to be get/set on
-            # that model)
-            if notifier.type is Synapse.types.jquery
-                _si = Synapse.detectElementInterface(notifier)
+            # interface.
+            if subject.type is Synapse.types.jquery
+                getInterface = detectElementInterface(subject)
 
-                # if 
-                if observer.type in [Synapse.types.model, Synapse.types.object]
-                    _oi = notifier.context.attr('name') or null
-
-            if observer.type is Synapse.types.jquery
-                # since this a jQuery object, we must detect the interface to
-                # be used
-                _oi = Synapse.detectElementInterface(observer)
-
-                # value is still not defined, so use the observer's name if
-                # present. the only time this would be set is if the notifier
-                # is also a jQuery object. in this case, the notifier 'name'
-                # attribute takes precedence
-                if not _si
-                    _si = observer.context.attr('name') or null
-
-            # if no value has been set and the notifier is a model, assume
+            # if no value has been set and the subject is a model, assume
             # the observer wants to observe any change of the model. this
             # generally assumes a handler of some sorts will be performing
             # any necessary manipulation
-            if _si is null and notifier.type is Synapse.types.model
-                _si = ''
+            else if subject.type is Synapse.types.model
+                getInterface = ''
 
-            # overwrite the defined interfaces only if null
-            pair[si] ?= _si
-            pair[oi] ?= _oi
+        # get the interface for the observer
+        if not setInterface
+            if observer.type is Synapse.types.jquery
+                # since this a jQuery type, we must detect the interface to
+                # be used
+                setInterface = detectElementInterface(observer)
 
-            # if none of the above worked
-            if pair[si] is null or pair[oi] is null
-                throw new Error("The interfaces between #{notifier} and #{observer} could be detected")
+
+        # second, determine interfaces based on the other's type...
+
+        if not getInterface
+            # value is still not defined, so use the observer's name if
+            # present. the only time this would be setInterface is if the subject
+            # is also a jQuery interfacesect. in this case, the subject 'name'
+            # attribute takes precedence
+            if observer.type is Synapse.types.jquery and observer.context.attr('name')
+                getInterface or= observer.context.attr('name')
+
+
+        if not setInterface
+            # if a model is used then the 'name' attribute is used as the
+            # interface for that model (the attribute to be get/set on that
+            # model)
+            if subject.type is Synapse.types.jquery and subject.context.attr('name')
+                setInterface or= subject.context.attr('name')
+
+            else
+                setInterface or= getInterface
+
+       # if none of the above worked
+        if not setInterface
+            throw new Error("The interfaces between #{subject} and #{observer} could be detected - #{getInterface} => #{setInterface}")
+
+        if _.isString(getInterface) then getInterface = getInterface.split(' ')
+        if _.isString(setInterface) then setInterface = setInterface.split(' ')
+
+        # overwrite the defined interfaces only if null
+        interfaces.get = getInterface
+        interfaces.set = setInterface
 
         return interfaces
 
@@ -101,14 +96,17 @@
             delete @registry[name]
 
         get: (context, name, args...) ->
-            if context instanceof Synapse then context = context.context
+            if context instanceof Synapse
+                context = context.context
 
             [name, key] = name.split ':'
             if key? then args = [key].concat(args)
             @registry[name].get.apply(context, args)
 
         set: (context, name, args...) ->
-            if context instanceof Synapse then context = context.context
+            if context instanceof Synapse
+                context = context.context
+
             [name, key] = name.split ':'
             if key? then args = [key].concat(args)
             @registry[name].set.apply(context, args)
@@ -116,7 +114,6 @@
 
     # built-in interfaces below
     do ->
-
         # setter/getter for properties
         getProperty = (key) ->
             # backwards compatible with older jQuery versions and Zepto which

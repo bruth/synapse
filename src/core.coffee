@@ -19,149 +19,201 @@
     _.defaults(synapseConf, defaultSynapseConf)
 
 
-    # assign it to the root context
-    Synapse = do ->
+    # define and build up local copy of Synapse
+    Synapse = (object) -> new Synapse.fn.init(object)
 
-        # define and build up local copy of Synapse
-        Synapse = (object) -> new Synapse.fn.init(object)
+    Synapse.version = '@VERSION'
 
-        Synapse.version = '@VERSION'
+    # global internal counter for all objects. used to reference objects
+    # that are connected in some way.
+    Synapse.guid = 1
 
-        # global internal counter for all objects. used to reference objects
-        # that are connected in some way.
-        Synapse.guid = 1
+    # general cache for all objects by their ``guid``
+    Synapse.cache = {}
 
-        # general cache for all objects by their ``guid``
-        Synapse.cache = {}
-
-        # store configuration
-        Synapse.conf = synapseConf
+    # store configuration
+    Synapse.conf = synapseConf
 
 
-        Synapse.log = ->
-            if Synapse.conf.debug
+    Synapse.log = ->
+        if Synapse.conf.debug
+            try
+                console.log.apply(console, arguments)
+            catch e
                 try
-                    console.log.apply(console, arguments)
+                    opera.postError.apply(opera, arguments)
                 catch e
-                    try
-                        opera.postError.apply(opera, arguments)
-                    catch e
-                        alert(Array.prototype.join.call(arguments, ' '))
+                    alert(Array.prototype.join.call(arguments, ' '))
 
 
-        # an enumeration of supported object types
-        Synapse.types =
+    # an enumeration of supported object types
+    Synapse.types =
 
-            # object primitive or instance that is not natively supported. the
-            # object will be extended with Backbone.Events if the methods
-            # 'bind', 'trigger' and 'unbind' are not present.
-            object: 0
+        # object primitive or instance that is not natively supported. the
+        # object will be extended with Backbone.Events if the methods
+        # 'bind', 'trigger' and 'unbind' are not present.
+        object: 0
 
-            # represents a jQuery object
-            jquery: 1
+        # represents a jQuery object
+        jquery: 1
 
-            # Backbone model object
-            model: 2
+        # Backbone model object
+        model: 2
 
-            # Backbone collection object
-            collection: 3
+        # Backbone collection object
+        collection: 3
 
-            # Backbone view object
-            view: 4
+        # Backbone view object
+        view: 4
 
-            # Backbone router object
-            router: 5
-
-
-        # determines the object type
-        Synapse.getObjectType = (object) ->
-
-            if object instanceof $
-                return Synapse.types.jquery
-
-            if object instanceof Backbone.Model
-                return Synapse.types.model
-
-            if object instanceof Backbone.Collection
-                return Synapse.types.collection
-
-            if object instanceof Backbone.View
-                return Synapse.types.view
-
-            if object instanceof Backbone.Router
-                return Synapse.types.router
-
-            for key of Backbone.Events
-                if not object[key]
-                    if not Synapse.conf.autoExtendObjects
-                        throw new Error("object does not support events and 'autoExtendObjects' is turned off")
-
-                    _.extend(object, Backbone.Events)
-                    break
-
-            return Synapse.types.object
+        # Backbone router object
+        router: 5
 
 
-        Synapse.fn = Synapse.prototype =
-            constructor: Synapse
-
-            # keep references to all observers and notifiers via their guid.
-            # the corresponding event and whether it is an active connection.
-            # { 3: [event, true] }
-            observers: {}
-
-            notifiers: {}
-
-            init: (context) ->
-                # already an instance
-                if context instanceof Synapse then return context
-
-                # convert into a jQuery object if a string or element
-                if _.isString(context) or _.isElement(context)
-                    context = $.apply($, arguments)
-
-                else if $.isPlainObject(context)
-                    _.extend(context, Backbone.Events)
-
-                @guid = Synapse.guid++
-                @type = Synapse.getObjectType(context)
-                @context = context
-
-                # cache a reference to this object
-                Synapse.cache[@guid] = @
-
-                return @
-
-            bind: -> @context.bind.apply(@, arguments)
-            unbind: -> @context.unbind.apply(@, arguments)
-            trigger: -> @context.trigger.apply(@, arguments)
-
-            get: (key) ->
-                if @context.get
-                    return @context.get.call(@context, key)
-                if @type is Synapse.types.jquery
-                    return Synapse.interfaces.get(@context, key)
-                @context[key]
-
-            set: (key, value) ->
-                if @context.set
-                    return @context.set.call(@context, key, value)
-                if @type is Synapse.types.jquery
-                    return Synapse.interfaces.set(@context, key, value)
-                @context[key] = value
-
-            sync: (other) ->
-                @addObserver(other).addNotifier(other)
-
-            addNotifier: (notifier, options) ->
-                Synapse.register(@, notifier, options, false)
-                return @
-
-            addObserver: (observer, options) ->
-                Synapse.register(observer, @, options, true)
-                return @
+    typeNames =
+        0: 'Object'
+        1: 'jQuery'
+        2: 'Model'
+        3: 'Collection'
+        4: 'View'
+        5: 'Router'
 
 
-        Synapse.fn.init.prototype = Synapse.fn
+    # determines the object type
+    Synapse.getObjectType = (object) ->
 
-        return Synapse
+        if object instanceof $
+            return Synapse.types.jquery
+
+        if object instanceof Backbone.Model
+            return Synapse.types.model
+
+        if object instanceof Backbone.Collection
+            return Synapse.types.collection
+
+        if object instanceof Backbone.View
+            return Synapse.types.view
+
+        if object instanceof Backbone.Router
+            return Synapse.types.router
+
+        return Synapse.types.object
+
+
+    Synapse.fn = Synapse:: =
+
+        constructor: Synapse
+
+        # keep references to all observers and subjects via their guid.
+        # the corresponding event and whether it is an active connection.
+        # { 3: [event, true] }
+        observers: {}
+
+        subjects: {}
+
+        init: (context) ->
+            # already an instance
+            if context instanceof Synapse then return context
+
+            # convert into a jQuery object if a string or element
+            if _.isString(context) or _.isElement(context)
+                context = $.apply($, arguments)
+
+            # store reference to original context 
+            @context = context
+
+            # get the type of the context
+            @type = Synapse.getObjectType(context)
+
+            # increment guid and cache a reference to this object
+            Synapse.cache[@guid = Synapse.guid++] = @
+
+        # use native bind method if available and fallback to the
+        # Backbone.Events.bind
+        bind: ->
+            if @context.bind
+                @context.bind.apply(@context, arguments)
+            else
+                Backbone.Events.bind.apply(@context, arguments)
+            return @
+
+        # use native unbind method if available and fallback to the
+        # Backbone.Events.unbind
+        unbind: ->
+            if @context.unbind
+                @context.unbind.apply(@context, arguments)
+            else
+                Backbone.Events.unbind.apply(@context, arguments)
+            return @
+
+        # use native trigger method if available and fallback to the
+        # Backbone.Events.trigger
+        trigger: ->
+            if @context.trigger
+                @context.trigger.apply(@context, arguments)
+            else
+                Backbone.Events.trigger.apply(@context, arguments)
+            return @
+
+        get: (key) ->
+            # use the interfaces for jQuery objects
+            if @type is Synapse.types.jquery
+                return Synapse.interfaces.get(@context, key)
+
+            # use the native get method if it exists e.g.
+            # Backbone.Model.get
+            if @context.get
+                return @context.get.call(@context, key)
+
+            # fall back to simply setting the object property
+            return @context[key]
+
+        set: (key, value) ->
+            # handle single key/value pair and create an object for use
+            # by the below ``set`` methods
+            if not _.isObject(key)
+                attrs = {}
+                attrs[key] = value
+            else
+                attrs = key
+
+            # use the interfaces for jQuery objects
+            if @type is Synapse.types.jquery
+                for k, v of attrs
+                    Synapse.interfaces.set(@context, k, v)
+
+            # next try using native set method on context e.g. Model.set
+            else if @context.set
+                @context.set.call(@context, attrs)
+
+            # fallback to extending the context object
+            else
+                _.extend @context, attrs
+
+            return @
+
+        sync: (other) ->
+            if not (other instanceof Synapse)
+                other = Synapse(other)
+            @addNotifier(other).addObserver(other)
+
+        addNotifier: (other, get, set) ->
+            if not (other instanceof Synapse)
+                other = Synapse(other)
+            Synapse.register(other, @, get, set)
+            return @
+
+        addObserver: (other, get, set) ->
+            if not (other instanceof Synapse)
+                other = Synapse(other)
+            Synapse.register(@, other, get, set)
+            return @
+
+        toString: -> "<Synapse #{typeNames[@type]} ##{@guid}>"
+
+    # simple convenience methods
+    Synapse::observe = Synapse::addNotifier
+    Synapse::notify = Synapse::addObserver
+
+    Synapse.fn.init.prototype = Synapse.fn
+
