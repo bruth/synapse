@@ -65,6 +65,13 @@ uglify: compile
 pull:
 	@@echo 'Pulling latest of everything...'
 	@@git pull origin master
+	@@if [ -d .git ]; then \
+		if git submodule status | grep -q -E '^-'; then \
+			git submodule update --init --recursive; \
+		else \
+			git submodule update --init --recursive --merge; \
+		fi; \
+	fi;
 	@@git submodule foreach "git pull \$$(git config remote.origin.url)"	
 
 clean:
