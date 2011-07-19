@@ -70,7 +70,7 @@
             else
                 setInterface or= getInterface
 
-       # if none of the above worked
+        # if none of the above worked
         if not setInterface
             throw new Error("The interfaces between #{subject} and #{observer} could be detected - #{getInterface} => #{setInterface}")
 
