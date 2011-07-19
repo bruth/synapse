@@ -10,6 +10,9 @@
 
         <link rel="stylesheet" href="css/ir_black.css">
         <link rel="stylesheet" href="css/style.css">
+        <style>
+            .red { color: red; }
+        </style>
 
         <script src="js/jquery.js"></script>
         <script src="js/underscore.js"></script>
@@ -39,6 +42,48 @@
                     return 'Last updated: ' + (new Date()).toString();
                 });
 
+                var Model = Backbone.Model.extend({
+                    fullName: function() {
+                        return this.get('firstName') + ' ' + this.get('lastName');
+                    }
+                });
+
+                var model = new Model;
+                Synapse(model)
+                    .sync('#example0-2 [name=firstName]')
+                    .sync('#example0-2 [name=lastName]')
+                    .notify('#example0-2 .fullName', 'fullName');
+
+                var Model = Backbone.Model.extend({
+                    defaults: { clicks: 0 },
+                    addClick: function() {
+                        this.set({clicks: this.get('clicks')+1});
+                    },
+                    tooManyClicks: function() {
+                        return this.get('clicks') >= 3;
+                    },
+                    resetClicks: function() {
+                        this.set({clicks: this.defaults.clicks});
+                    }
+                });
+
+                var model = new Model;
+
+                Synapse(model)
+                    .observe('#example0-3 .clicker', {
+                        set: 'addClick',
+                        trigger: false
+                    })
+                    .notify('.clicks', [
+                        { get: 'clicks' },
+                        { get: 'tooManyClicks', set: 'css:red' }
+                    ])
+                    .notify('#example0-3 .clicker', 'tooManyClicks', 'disabled') 
+                    .notify('#example0-3 .message', 'tooManyClicks', 'visible');
+
+                $('#example0-3 .reset').bind('click', function() {
+                    model.resetClicks();
+                });
 
                 // example 1 
                 Synapse('#example1-1 span').observe('#example1-1 input');
@@ -80,13 +125,13 @@
         <div class="example">
             <div>
 <pre class="javascript">
-<code>// simple constructor to wrap objects for use with the API, returns
-// the Synapse object. 
-var prim = {},
-    bprim = Synapse(prim);
+<code>// Synapse supports object primitives
+var obj = {};
 
+// simple constructor to wrap objects for use with the API, returns
+// the Synapse object.
 // the original object is a property called ``context``.
-assert(bprim.context === prim);
+assert(Synapse(obj).context === prim);
 </code></pre>
             </div>
             <div id="example-pre">
@@ -94,7 +139,6 @@ assert(bprim.context === prim);
                 <span class="meta"></span>
             </div>
         </div>
-
 
         <h3>DOM to Model</h3>
 
@@ -125,6 +169,81 @@ Synapse('.meta').observe(model, function() {
                 <span class="meta"></span>
             </div>
         </div>
+
+
+        <div class="example">
+            <div>
+<pre class="javascript">
+<code>var Model = new Backbone.Model.extend({
+    fullName: function() {
+        return this.get('firstName') + ' ' + this.get('lastName');
+    }
+});
+
+Synapse(new Model)
+    .observe('[name=firstName]')
+    .observe('[name=lastName]')
+    .notify('.fullName', 'fullName');
+</code></pre>
+            </div>
+            <div id="example0-2">
+                First name: <input type="text" name="firstName" value="Planet"><br>
+                Last name: <input type="text" name="lastName" value="Earth"><br><br>
+                Hello, <span class="fullName"></span>
+            </div>
+        </div>
+
+        <div class="example">
+            <div>
+<pre class="javascript">
+<code>var Model = Backbone.Model.extend({
+    defaults: { clicks: 0 },
+    addClick: function() {
+        this.set({ clicks: this.get('clicks')++ });
+    },
+    tooManyClicks: function() {
+        return this.get('clicks') &gt;= 3;
+    },
+    resetClicks: function() {
+        this.set({ clicks: this.defaults.clicks });
+    }
+});
+
+var model = new Model;
+
+Synapse(model)
+    // watch the "Click Me!" button on each click
+    .observe('.clicker', {
+        set: 'addClick',
+        trigger: false
+    })
+    // notify the counter of the clicks and update clicks
+    // if it reaches too many
+    .notify('.clicks', [
+        { get: 'clicks' },
+        { get: 'tooManyClicks', set: 'css:red' }
+    ])
+     
+    .notify('.clicker', 'tooManyClicks', 'disabled') 
+    .notify('.message', 'tooManyClicks', 'visible');
+
+$('.reset').bind('click', function() {
+    model.resetClicks();
+});
+</code></pre>
+            </div>
+            <div id="example0-3">
+                You've clicked <span class="clicks"></span><br>
+                <button class="clicker">Click Me!</button>
+                <span class="message">
+                    Too many clicks... <button class="reset">Reset Clicks</button>
+                </span>
+            </div>
+        </div>
+
+
+
+
 
         <h3>DOM to DOM</h3>
 

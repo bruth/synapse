@@ -3,7 +3,7 @@ Synapse - The Backbone KVO Library
 
 Author: Byron Ruth
 Version: 0.1
-Date: Sun Jul 17 11:46:30 2011 -0400
+Date: Mon Jul 18 17:08:23 2011 -0400
 */var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, detectDomEvent, detectElementInterface, register, synapseConf, typeNames;
@@ -112,6 +112,9 @@ Date: Sun Jul 17 11:46:30 2011 -0400
       return this;
     },
     get: function(key) {
+      if (_.isFunction(this.context[key])) {
+        return this.context[key]();
+      }
       if (this.type === Synapse.types.jquery) {
         return Synapse.interfaces.get(this.context, key);
       }
@@ -122,6 +125,9 @@ Date: Sun Jul 17 11:46:30 2011 -0400
     },
     set: function(key, value) {
       var attrs, k, v;
+      if (_.isFunction(this.context[key])) {
+        return this.context[key](value);
+      }
       if (!_.isObject(key)) {
         attrs = {};
         attrs[key] = value;
@@ -194,33 +200,6 @@ Date: Sun Jul 17 11:46:30 2011 -0400
       events = !_.isArray(event) ? [event] : event;
     }
     return events;
-  };
-  Synapse.handlers = {
-    2: {
-      getter: function(subject, event, convert, interfaces, set) {
-        var interface, _event, _i, _len, _results;
-        _event = event;
-        _results = [];
-        for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
-          interface = interfaces[_i];
-          if (interface) {
-            _event = "" + event + ":" + interface;
-          }
-          subject.bind(_event, function(model, value, options) {
-            value = _.map(interfaces, subject.get, subject);
-            if (convert) {
-              value = convert.apply(convert, value);
-              if (!_.isArray(value)) {
-                value = [value];
-              }
-            }
-            return set.apply(subject.context, value);
-          });
-          _results.push(subject.trigger(_event, subject.context, subject.get(interface)));
-        }
-        return _results;
-      }
-    }
   };
   detectElementInterface = function(obj) {
     var interface, item, selector, _i, _len, _ref;
@@ -497,11 +476,39 @@ Date: Sun Jul 17 11:46:30 2011 -0400
       }
     });
   })();
+  Synapse.handlers = {
+    2: {
+      getter: function(subject, event, convert, interfaces, set, trigger) {
+        var interface, _event, _i, _len, _results;
+        _event = event;
+        _results = [];
+        for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
+          interface = interfaces[_i];
+          if (interface && !subject.context[interface]) {
+            _event = "" + event + ":" + interface;
+          }
+          subject.bind(_event, function(model, value, options) {
+            value = _.map(interfaces, subject.get, subject);
+            if (convert) {
+              value = convert.apply(convert, value);
+              if (!_.isArray(value)) {
+                value = [value];
+              }
+            }
+            return set.apply(subject.context, value);
+          });
+          _results.push(trigger ? subject.trigger(_event, subject.context, subject.get(interface)) : void 0);
+        }
+        return _results;
+      }
+    }
+  };
   defaultRegisterOptions = {
     event: null,
     get: null,
     set: null,
-    convert: null
+    convert: null,
+    trigger: true
   };
   register = function(subject, observer, options) {
     var convert, event, events, getter, interfaces, set, setter, _i, _len, _results;
@@ -514,30 +521,40 @@ Date: Sun Jul 17 11:46:30 2011 -0400
     }
     setter = Synapse.handlers[observer.type] && Synapse.handlers[observer.type].setter;
     getter = Synapse.handlers[subject.type] && Synapse.handlers[subject.type].getter;
-    setter != null ? setter : setter = function(observer, interfaces) {
-      return function(value) {
-        var interface, _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
-          interface = interfaces[_i];
-          _results.push(observer.set(interface, value));
-        }
-        return _results;
+        if (setter != null) {
+      setter;
+    } else {
+      setter = function(observer, interfaces) {
+        return function(value) {
+          var interface, _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
+            interface = interfaces[_i];
+            _results.push(observer.set(interface, value));
+          }
+          return _results;
+        };
       };
     };
-    getter != null ? getter : getter = function(subject, event, convert, interfaces, set) {
-      subject.bind(event, function() {
-        var value;
-        value = _.map(interfaces, subject.get, subject);
-        if (convert) {
-          value = convert.apply(convert, value);
-          if (!_.isArray(value)) {
-            value = [value];
+        if (getter != null) {
+      getter;
+    } else {
+      getter = function(subject, event, convert, interfaces, set, trigger) {
+        subject.bind(event, function() {
+          var value;
+          value = _.map(interfaces, subject.get, subject);
+          if (convert) {
+            value = convert.apply(convert, value);
+            if (!_.isArray(value)) {
+              value = [value];
+            }
           }
+          return set.apply(subject.context, value);
+        });
+        if (trigger) {
+          return subject.trigger(event);
         }
-        return set.apply(subject.context, value);
-      });
-      return subject.trigger(event);
+      };
     };
     set = setter(observer, interfaces.set);
     _results = [];
@@ -545,7 +562,7 @@ Date: Sun Jul 17 11:46:30 2011 -0400
       event = events[_i];
       subject.observers[observer.guid][event] = true;
       observer.subjects[subject.guid][event] = true;
-      _results.push(getter(subject, event, convert, interfaces.get, set));
+      _results.push(getter(subject, event, convert, interfaces.get, set, options.trigger));
     }
     return _results;
   };
