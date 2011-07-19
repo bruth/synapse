@@ -3,6 +3,8 @@
         get: null
         set: null
         convert: null
+        trigger: true
+
 
 
     register = (subject, observer, options) ->
@@ -37,7 +39,7 @@
                     observer.set interface, value
 
 
-        getter ?= (subject, event, convert, interfaces, set) ->
+        getter ?= (subject, event, convert, interfaces, set, trigger) ->
             subject.bind event, ->
                 # shortcut for getting a value via the interface for
                 # from the subject
@@ -52,7 +54,7 @@
                 # and the value to all observers.
                 set.apply subject.context, value
 
-            subject.trigger event
+            if trigger then subject.trigger event
 
 
         set = setter(observer, interfaces.set)
@@ -62,7 +64,7 @@
             subject.observers[observer.guid][event] = true
             observer.subjects[subject.guid][event] = true
 
-            getter(subject, event, convert, interfaces.get, set)
+            getter(subject, event, convert, interfaces.get, set, options.trigger)
 
 
     Synapse.registerSync = (object1, object2) ->

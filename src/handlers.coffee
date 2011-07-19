@@ -3,7 +3,7 @@
     # the observer
     Synapse.handlers =
         2:
-            getter: (subject, event, convert, interfaces, set) ->
+            getter: (subject, event, convert, interfaces, set, trigger) ->
                 _event = event
                 for interface in interfaces
                     # handle the case where an interface (the model attribute) is
@@ -26,4 +26,5 @@
                         # and the value to all observers.
                         set.apply subject.context, value
 
-                    subject.trigger _event, subject.context, subject.get(interface)
+                    if trigger
+                        subject.trigger _event, subject.context, subject.get(interface)
