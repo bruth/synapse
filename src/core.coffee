@@ -156,13 +156,13 @@
             return @
 
         get: (key) ->
-            # if a method exists on this object, this takes precedence
-            if _.isFunction(@context[key])
-                return @context[key]()
-
             # use the interfaces for jQuery objects
             if @type is Synapse.types.jquery
                 return Synapse.interfaces.get(@context, key)
+
+            # if a method exists on this object, this takes precedence
+            if _.isFunction(@context[key])
+                return @context[key]()
 
             # use the native get method if it exists e.g.
             # Backbone.Model.get
@@ -173,10 +173,6 @@
             return @context[key]
 
         set: (key, value) ->
-            # if a method exists on this object, this takes precedence
-            if _.isFunction(@context[key])
-                return @context[key](value)
-
             # handle single key/value pair and create an object for use
             # by the below ``set`` methods
             if not _.isObject(key)
@@ -184,6 +180,10 @@
                 attrs[key] = value
             else
                 attrs = key
+
+            # if a method exists on this object, this takes precedence
+            if _.isFunction(@context[key])
+                return @context[key](value)
 
             # use the interfaces for jQuery objects
             if @type is Synapse.types.jquery

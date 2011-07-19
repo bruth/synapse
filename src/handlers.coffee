@@ -3,7 +3,7 @@
     # the observer
     Synapse.handlers =
         2:
-            getter: (subject, event, convert, interfaces, set, trigger) ->
+            get: (subject, event, convert, interfaces, set, trigger) ->
                 _event = event
                 for interface in interfaces
                     # handle the case where an interface (the model attribute) is

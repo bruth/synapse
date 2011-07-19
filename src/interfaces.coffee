@@ -19,12 +19,7 @@
     # return an array of interfaces appropriate for the given subject/observer.
     # if no interface is defined, only if a ``name`` attribute on either the
     # subject or observer will be used by default (in the case of form fields).
-    # ``downstream`` will be true when the interfaces are being defined relative
-    # to subject
-    Synapse.getInterfaces = (subject, observer, interfaces={}) ->
-        getInterface = interfaces.get
-        setInterface = interfaces.set
-
+    Synapse.getInterfaces = (subject, observer, getInterface, setInterface) ->
         # first, determine interfaces independently of the other...
 
         # get the interface for the subject
@@ -77,11 +72,7 @@
         if _.isString(getInterface) then getInterface = getInterface.split(' ')
         if _.isString(setInterface) then setInterface = setInterface.split(' ')
 
-        # overwrite the defined interfaces only if null
-        interfaces.get = getInterface
-        interfaces.set = setInterface
-
-        return interfaces
+        return [getInterface, setInterface]
 
 
     # the interfaces registry 

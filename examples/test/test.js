@@ -56,14 +56,14 @@ test('getEvents', function() {
 test('getInterfaces', function() {
     expect(9);
 
-    deepEqual(Synapse.getInterfaces(text, model), {get: ['value'], set: ['text']});
-    deepEqual(Synapse.getInterfaces(check, text), {get: ['checked'], set: ['value']});
-    deepEqual(Synapse.getInterfaces(radio, text), {get: ['checked'], set: ['value']});
-    deepEqual(Synapse.getInterfaces(select, model), {get: ['value'], set: ['select']});
-    deepEqual(Synapse.getInterfaces(model, button), {get: ['button'], set: ['html']});
-    deepEqual(Synapse.getInterfaces(email, model), {get: ['value'], set: ['email']});
-    deepEqual(Synapse.getInterfaces(span, text), {get: ['text'], set: ['value']});
-    deepEqual(Synapse.getInterfaces(model, span), {get: [''], set: ['text']});
+    deepEqual(Synapse.getInterfaces(text, model), [['value'], ['text']]);
+    deepEqual(Synapse.getInterfaces(check, text), [['checked'], ['value']]);
+    deepEqual(Synapse.getInterfaces(radio, text), [['checked'], ['value']]);
+    deepEqual(Synapse.getInterfaces(select, model), [['value'], ['select']]);
+    deepEqual(Synapse.getInterfaces(model, button), [['button'], ['html']]);
+    deepEqual(Synapse.getInterfaces(email, model), [['value'], ['email']]);
+    deepEqual(Synapse.getInterfaces(span, text), [['text'], ['value']]);
+    deepEqual(Synapse.getInterfaces(model, span), [[''], ['text']]);
 
     raises(function() {
         Synapse.getInterfaces(model, model);
@@ -74,10 +74,10 @@ test('getInterfaces', function() {
 test('getInterfaces - notifier interface', function() {
     expect(4);
 
-    deepEqual(Synapse.getInterfaces(model, text, {get: 'title'}), {get: ['title'], set: ['value']});
-    deepEqual(Synapse.getInterfaces(model, check, {get: 'public'}), {get: ['public'], set: ['checked']});
-    deepEqual(Synapse.getInterfaces(model, text, {get: ['first', 'last']}), {get: ['first', 'last'], set: ['value']});
-    deepEqual(Synapse.getInterfaces(model, span, {get: 'title'}), {get: ['title'], set: ['text']});
+    deepEqual(Synapse.getInterfaces(model, text, 'title'), [['title'], ['value']]);
+    deepEqual(Synapse.getInterfaces(model, check, 'public'), [['public'], ['checked']]);
+    deepEqual(Synapse.getInterfaces(model, text, ['first', 'last']), [['first', 'last'], ['value']]);
+    deepEqual(Synapse.getInterfaces(model, span, 'title'), [['title'], ['text']]);
 });
 
 
@@ -160,7 +160,7 @@ test('set text', function() {
     equals(span.get('text'), '1', 'span number');
 
     span.set('text', []);
-    equals(span.get('text'), '', 'span array');
+    equals(span.get('text'), '1', 'span array');
 
 });
 
@@ -327,7 +327,7 @@ test('read-only non-form element', function() {
     expect(5);
 
     // shorthand for specifying a particular interface for the observers
-    model.addObserver(span, { get: 'title' });
+    model.addObserver(span, 'title');
 
     model.set({title: 'Cool Title'});
     equals(span.get('text'), 'Cool Title', 'the span element observes the title attr on the model');
@@ -335,13 +335,13 @@ test('read-only non-form element', function() {
     model.unbind();
 
     span.addNotifier(model, {
-        get: ['title', 'author'],
-        convert: function() {
+        getInterface: ['title', 'author'],
+        converter: function() {
             return model.get('title') + ' by ' + model.get('author');
         }
     });
 
-    model.set({title: 'Yet Again!', author: 'John Doe'});
+    model.set({ title: 'Yet Again!', author: 'John Doe' });
     equals(span.get('text'), 'Yet Again! by John Doe', 'the span element observes the title and author attr on the model'); 
 
     model.unbind();
@@ -351,7 +351,7 @@ test('read-only non-form element', function() {
     });
 
 
-    model.addNotifier(model2, {get: 'foo'});
+    model.addNotifier(model2, 'foo');
     equals(model.get('foo'), 'Bar', 'initial value');
     model2.set({foo: 'Hello'});
     equals(model.get('foo'), 'Hello', 'model is observing model2');

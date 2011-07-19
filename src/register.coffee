@@ -1,9 +1,9 @@
     defaultRegisterOptions =
         event: null
-        get: null
-        set: null
-        convert: null
-        trigger: true
+        getInterface: null
+        setInterface: null
+        converter: null
+        triggerOnBind: true
 
 
 
@@ -20,51 +20,57 @@
         # relationship between the observer and subject. for each entry,
         # whenever the subject's message changes, the observer will be
         # notified to handle via it's interface
-        interfaces = Synapse.getInterfaces(subject, observer, options)
+        [getInterface, setInterface] = Synapse.getInterfaces(subject, observer,
+            options.getInterface, options.setInterface)
 
-        # if custom behaviors need to occur, a convert can be defined which
+        # if custom behaviors need to occur, a converter can be defined which
         # will be passed the data by the subject
-        convert = options.convert
+        converter = options.converter
 
-        if convert and not _.isFunction(convert)
-            convert = observer[convert]
+        if converter and not _.isFunction(converter)
+            converter = observer[converter]
 
-        setter = Synapse.handlers[observer.type] and Synapse.handlers[observer.type].setter
-        getter = Synapse.handlers[subject.type] and Synapse.handlers[subject.type].getter
+        triggerOnBind = options.triggerOnBind
 
-        setter ?= (observer, interfaces) ->
-            return (value) ->
-                # for each setter interface defined, use the value for each
-                for interface in interfaces
-                    observer.set interface, value
+        getHandler = Synapse.handlers[subject.type] and Synapse.handlers[subject.type].get
+        setHandler = Synapse.handlers[observer.type] and Synapse.handlers[observer.type].set
 
-
-        getter ?= (subject, event, convert, interfaces, set, trigger) ->
+        # default to a generic handler for getting data from the subject
+        getHandler ?= (subject, event, converter, interfaces, setHandler, triggerOnBind) ->
             subject.bind event, ->
                 # shortcut for getting a value via the interface for
                 # from the subject
                 value = _.map interfaces, subject.get, subject
                 # call the user-defined converter which takes the message
                 # passed from the subject and returns another value
-                if convert
-                    value = convert.apply convert, value
+                if converter
+                    value = converter.apply converter, value
                     if not _.isArray(value)
                         value = [value]
                 # call the notify handler passing itself, the interface
                 # and the value to all observers.
-                set.apply subject.context, value
+                setHandler.apply subject.context, value
 
-            if trigger then subject.trigger event
+            if triggerOnBind then subject.trigger event
 
 
-        set = setter(observer, interfaces.set)
+        # default to a generic handler for setting data on the observer
+        setHandler ?= (observer, interfaces) ->
+            return (value) ->
+                # for each setter interface defined, use the value for each
+                for interface in interfaces
+                    observer.set interface, value
+
+
+        # this returns a handler with the passed variables in scope
+        setHandler = setHandler(observer, setInterface)
 
         for event in events
             # cache references
             subject.observers[observer.guid][event] = true
             observer.subjects[subject.guid][event] = true
 
-            getter(subject, event, convert, interfaces.get, set, options.trigger)
+            getHandler(subject, event, converter, getInterface, setHandler, triggerOnBind)
 
 
     Synapse.registerSync = (object1, object2) ->
@@ -72,7 +78,7 @@
         Synapse.registerObserver(object2, object1)
 
 
-    Synapse.register = (subject, observer, get, set) ->
+    Synapse.register = (subject, observer, getInterface, setInterface) ->
         # setup cache of all observers for this
         if not subject.observers[observer.guid]
             subject.observers[observer.guid] = {}
@@ -80,12 +86,12 @@
         if not observer.subjects[subject.guid]
             observer.subjects[subject.guid] = {}
 
-        if _.isFunction(get)
-            options = convert: get
-        else if not _.isObject(get)
-            options = get: get, set: set
+        if _.isFunction(getInterface)
+            options = converter: getInterface
+        else if not _.isObject(getInterface)
+            options = getInterface: getInterface, setInterface: setInterface
         else
-            options = get
+            options = getInterface
 
         # the configuration is already defined as an object
         if not _.isArray(options)

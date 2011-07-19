@@ -59,7 +59,7 @@
                     addClick: function() {
                         this.set({clicks: this.get('clicks')+1});
                     },
-                    tooManyClicks: function() {
+                    hasTooManyClicks: function() {
                         return this.get('clicks') >= 3;
                     },
                     resetClicks: function() {
@@ -71,28 +71,26 @@
 
                 Synapse(model)
                     .observe('#example0-3 .clicker', {
-                        set: 'addClick',
-                        trigger: false
+                        setInterface: 'addClick',
+                        triggerOnBind: false
                     })
                     .notify('.clicks', [
-                        { get: 'clicks' },
-                        { get: 'tooManyClicks', set: 'css:red' }
+                        { getInterface: 'clicks' },
+                        { getInterface: 'hasTooManyClicks', setInterface: 'css:red' }
                     ])
-                    .notify('#example0-3 .clicker', 'tooManyClicks', 'disabled') 
-                    .notify('#example0-3 .message', 'tooManyClicks', 'visible');
+                    .notify('#example0-3 .clicker', 'hasTooManyClicks', 'disabled') 
+                    .notify('#example0-3 .message', 'hasTooManyClicks', 'visible');
 
-                $('#example0-3 .reset').bind('click', function() {
-                    model.resetClicks();
-                });
+                Synapse('#example0-3 .reset').notify(model, {setInterface: 'resetClicks'});
 
                 // example 1 
                 Synapse('#example1-1 span').observe('#example1-1 input');
                 Synapse('#example1-2 input.one').sync('#example1-2 input.two');
                 Synapse('#example1-3 :text').observe('#example1-3 :checkbox', 'checked', 'enabled');
                 Synapse('#example1-4 span').observe('#example1-4 input', {
-                    get: 'value',
-                    set: 'html',
-                    convert: function(value) {
+                    getInterface: 'value',
+                    setInterface: 'html',
+                    converter: function(value) {
                         if (value !== '')
                             return 'I am a <b>' + value + '</b>';
                         return '<em class="meta">please type something</em>';
@@ -101,9 +99,9 @@
 
                 // example 2
                 var bprim = Synapse({}).observe('#example2-1 input').notify('#example2-1 span', {
-                    get: 'foo',
-                    set: 'text',
-                    event: 'change'
+                    event: 'change',
+                    getInterface: 'foo',
+                    setInterface: 'text'
                 });
 
                 setInterval(function() {
@@ -201,7 +199,7 @@ Synapse(new Model)
     addClick: function() {
         this.set({ clicks: this.get('clicks')++ });
     },
-    tooManyClicks: function() {
+    hasTooManyClicks: function() {
         return this.get('clicks') &gt;= 3;
     },
     resetClicks: function() {
@@ -214,22 +212,20 @@ var model = new Model;
 Synapse(model)
     // watch the "Click Me!" button on each click
     .observe('.clicker', {
-        set: 'addClick',
-        trigger: false
+        setInterface: 'addClick',
+        triggerOnBind: false
     })
     // notify the counter of the clicks and update clicks
     // if it reaches too many
     .notify('.clicks', [
-        { get: 'clicks' },
-        { get: 'tooManyClicks', set: 'css:red' }
+        { getInterface: 'clicks' },
+        { getInterface: 'hasTooManyClicks', setInterface: 'css:red' }
     ])
      
-    .notify('.clicker', 'tooManyClicks', 'disabled') 
-    .notify('.message', 'tooManyClicks', 'visible');
+    .notify('.clicker', 'hasTooManyClicks', 'disabled') 
+    .notify('.message', 'hasTooManyClicks', 'visible');
 
-$('.reset').bind('click', function() {
-    model.resetClicks();
-});
+Synapse('.reset').notify(model, {setInterface: 'resetClicks'});
 </code></pre>
             </div>
             <div id="example0-3">
@@ -301,8 +297,8 @@ Synapse(':text').observe(':checkbox', 'enabled', 'checked');
 // state as arguments. the returned values from the handler will be
 // used as the value for the observers interface.
 Synapse('span').observe('input', {
-    get: 'value',
-    set: 'html',
+    getInterface: 'value',
+    setInterface: 'html',
     handler: function(value) {
         if (value !== '')
             return 'I am a &lt;b&gt;' + value + '&lt;/b&gt;';
@@ -325,8 +321,8 @@ Synapse('span').observe('input', {
 // value of the input field. the property will be the input's name
 // attribute
 var sPrim = Synapse({}).observe('input').notify('span', {
-    get: 'foo',
-    set: 'text',
+    getInterface: 'foo',
+    setInterface: 'text',
     event: 'change'
 });
 

@@ -3,7 +3,7 @@ Synapse - The Backbone KVO Library
 
 Author: Byron Ruth
 Version: 0.1
-Date: Mon Jul 18 17:08:23 2011 -0400
+Date: Tue Jul 19 00:18:21 2011 -0400
 */var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, detectDomEvent, detectElementInterface, register, synapseConf, typeNames;
@@ -112,11 +112,11 @@ Date: Mon Jul 18 17:08:23 2011 -0400
       return this;
     },
     get: function(key) {
-      if (_.isFunction(this.context[key])) {
-        return this.context[key]();
-      }
       if (this.type === Synapse.types.jquery) {
         return Synapse.interfaces.get(this.context, key);
+      }
+      if (_.isFunction(this.context[key])) {
+        return this.context[key]();
       }
       if (this.context.get) {
         return this.context.get.call(this.context, key);
@@ -125,14 +125,14 @@ Date: Mon Jul 18 17:08:23 2011 -0400
     },
     set: function(key, value) {
       var attrs, k, v;
-      if (_.isFunction(this.context[key])) {
-        return this.context[key](value);
-      }
       if (!_.isObject(key)) {
         attrs = {};
         attrs[key] = value;
       } else {
         attrs = key;
+      }
+      if (_.isFunction(this.context[key])) {
+        return this.context[key](value);
       }
       if (this.type === Synapse.types.jquery) {
         for (k in attrs) {
@@ -214,13 +214,7 @@ Date: Mon Jul 18 17:08:23 2011 -0400
     throw new Error("Interface for " + obj + " could not be detected.");
   };
   Synapse.defaultElementInterfaces = [[':checkbox', 'checked'], [':radio', 'checked'], ['button', 'html'], [':input', 'value'], ['*', 'text']];
-  Synapse.getInterfaces = function(subject, observer, interfaces) {
-    var getInterface, setInterface;
-    if (interfaces == null) {
-      interfaces = {};
-    }
-    getInterface = interfaces.get;
-    setInterface = interfaces.set;
+  Synapse.getInterfaces = function(subject, observer, getInterface, setInterface) {
     if (!getInterface) {
       if (subject.type === Synapse.types.jquery) {
         getInterface = detectElementInterface(subject);
@@ -254,9 +248,7 @@ Date: Mon Jul 18 17:08:23 2011 -0400
     if (_.isString(setInterface)) {
       setInterface = setInterface.split(' ');
     }
-    interfaces.get = getInterface;
-    interfaces.set = setInterface;
-    return interfaces;
+    return [getInterface, setInterface];
   };
   Synapse.interfaces = (function() {
     return {
@@ -478,7 +470,7 @@ Date: Mon Jul 18 17:08:23 2011 -0400
   })();
   Synapse.handlers = {
     2: {
-      getter: function(subject, event, convert, interfaces, set, trigger) {
+      get: function(subject, event, convert, interfaces, set, trigger) {
         var interface, _event, _i, _len, _results;
         _event = event;
         _results = [];
@@ -505,26 +497,47 @@ Date: Mon Jul 18 17:08:23 2011 -0400
   };
   defaultRegisterOptions = {
     event: null,
-    get: null,
-    set: null,
-    convert: null,
-    trigger: true
+    getInterface: null,
+    setInterface: null,
+    converter: null,
+    triggerOnBind: true
   };
   register = function(subject, observer, options) {
-    var convert, event, events, getter, interfaces, set, setter, _i, _len, _results;
+    var converter, event, events, getHandler, getInterface, setHandler, setInterface, triggerOnBind, _i, _len, _ref, _results;
     _.defaults(options, defaultRegisterOptions);
     events = Synapse.getEvents(subject, options.event);
-    interfaces = Synapse.getInterfaces(subject, observer, options);
-    convert = options.convert;
-    if (convert && !_.isFunction(convert)) {
-      convert = observer[convert];
+    _ref = Synapse.getInterfaces(subject, observer, options.getInterface, options.setInterface), getInterface = _ref[0], setInterface = _ref[1];
+    converter = options.converter;
+    if (converter && !_.isFunction(converter)) {
+      converter = observer[converter];
     }
-    setter = Synapse.handlers[observer.type] && Synapse.handlers[observer.type].setter;
-    getter = Synapse.handlers[subject.type] && Synapse.handlers[subject.type].getter;
-        if (setter != null) {
-      setter;
+    triggerOnBind = options.triggerOnBind;
+    getHandler = Synapse.handlers[subject.type] && Synapse.handlers[subject.type].get;
+    setHandler = Synapse.handlers[observer.type] && Synapse.handlers[observer.type].set;
+        if (getHandler != null) {
+      getHandler;
     } else {
-      setter = function(observer, interfaces) {
+      getHandler = function(subject, event, converter, interfaces, setHandler, triggerOnBind) {
+        subject.bind(event, function() {
+          var value;
+          value = _.map(interfaces, subject.get, subject);
+          if (converter) {
+            value = converter.apply(converter, value);
+            if (!_.isArray(value)) {
+              value = [value];
+            }
+          }
+          return setHandler.apply(subject.context, value);
+        });
+        if (triggerOnBind) {
+          return subject.trigger(event);
+        }
+      };
+    };
+        if (setHandler != null) {
+      setHandler;
+    } else {
+      setHandler = function(observer, interfaces) {
         return function(value) {
           var interface, _i, _len, _results;
           _results = [];
@@ -536,33 +549,13 @@ Date: Mon Jul 18 17:08:23 2011 -0400
         };
       };
     };
-        if (getter != null) {
-      getter;
-    } else {
-      getter = function(subject, event, convert, interfaces, set, trigger) {
-        subject.bind(event, function() {
-          var value;
-          value = _.map(interfaces, subject.get, subject);
-          if (convert) {
-            value = convert.apply(convert, value);
-            if (!_.isArray(value)) {
-              value = [value];
-            }
-          }
-          return set.apply(subject.context, value);
-        });
-        if (trigger) {
-          return subject.trigger(event);
-        }
-      };
-    };
-    set = setter(observer, interfaces.set);
+    setHandler = setHandler(observer, setInterface);
     _results = [];
     for (_i = 0, _len = events.length; _i < _len; _i++) {
       event = events[_i];
       subject.observers[observer.guid][event] = true;
       observer.subjects[subject.guid][event] = true;
-      _results.push(getter(subject, event, convert, interfaces.get, set, options.trigger));
+      _results.push(getHandler(subject, event, converter, getInterface, setHandler, triggerOnBind));
     }
     return _results;
   };
@@ -570,7 +563,7 @@ Date: Mon Jul 18 17:08:23 2011 -0400
     Synapse.registerObserver(object1, object2);
     return Synapse.registerObserver(object2, object1);
   };
-  Synapse.register = function(subject, observer, get, set) {
+  Synapse.register = function(subject, observer, getInterface, setInterface) {
     var opt, options, _i, _len, _results;
     if (!subject.observers[observer.guid]) {
       subject.observers[observer.guid] = {};
@@ -578,17 +571,17 @@ Date: Mon Jul 18 17:08:23 2011 -0400
     if (!observer.subjects[subject.guid]) {
       observer.subjects[subject.guid] = {};
     }
-    if (_.isFunction(get)) {
+    if (_.isFunction(getInterface)) {
       options = {
-        convert: get
+        converter: getInterface
       };
-    } else if (!_.isObject(get)) {
+    } else if (!_.isObject(getInterface)) {
       options = {
-        get: get,
-        set: set
+        getInterface: getInterface,
+        setInterface: setInterface
       };
     } else {
-      options = get;
+      options = getInterface;
     }
     if (!_.isArray(options)) {
       options = [options];
