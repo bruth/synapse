@@ -9,7 +9,8 @@
                     # handle the case where an interface (the model attribute) is
                     # not defined. when anything changes about the model, this will
                     # fire.
-                    if interface then _event = "#{event}:#{interface}"
+                    if interface and not subject.context[interface]
+                        _event = "#{event}:#{interface}"
 
                     subject.bind _event, (model, value, options) ->
                         # shortcut for getting a value via the interface for

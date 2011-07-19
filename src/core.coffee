@@ -156,6 +156,10 @@
             return @
 
         get: (key) ->
+            # if a method exists on this object, this takes precedence
+            if _.isFunction(@context[key])
+                return @context[key]()
+
             # use the interfaces for jQuery objects
             if @type is Synapse.types.jquery
                 return Synapse.interfaces.get(@context, key)
@@ -169,6 +173,10 @@
             return @context[key]
 
         set: (key, value) ->
+            # if a method exists on this object, this takes precedence
+            if _.isFunction(@context[key])
+                return @context[key](value)
+
             # handle single key/value pair and create an object for use
             # by the below ``set`` methods
             if not _.isObject(key)
