@@ -32,8 +32,9 @@
 
         triggerOnBind = options.triggerOnBind
 
-        getHandler = Synapse.handlers[subject.type] and Synapse.handlers[subject.type].get
-        setHandler = Synapse.handlers[observer.type] and Synapse.handlers[observer.type].set
+
+        if Synapse.handlers[subject.type]
+            getHandler = Synapse.handlers[subject.type].getHandler
 
         # default to a generic handler for getting data from the subject
         getHandler ?= (subject, event, converter, interfaces, setHandler, triggerOnBind) ->
@@ -53,6 +54,9 @@
 
             if triggerOnBind then subject.trigger event
 
+
+        if Synapse.handlers[observer.type]
+            setHandler = Synapse.handlers[observer.type].setHandler
 
         # default to a generic handler for setting data on the observer
         setHandler ?= (observer, interfaces) ->
