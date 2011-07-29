@@ -3,7 +3,7 @@ Synapse - The Backbone KVO Library
 
 Author: Byron Ruth
 Version: 0.1
-Date: Tue Jul 19 00:18:21 2011 -0400
+Date: Thu Jul 21 07:15:01 2011 -0400
 */var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, detectDomEvent, detectElementInterface, register, synapseConf, typeNames;
@@ -228,15 +228,19 @@ Date: Tue Jul 19 00:18:21 2011 -0400
       }
     }
     if (!getInterface) {
-      if (observer.type === Synapse.types.jquery && observer.context.attr('name')) {
-        getInterface || (getInterface = observer.context.attr('name'));
+      if (observer.type === Synapse.types.jquery) {
+        if (observer.context.attr('role')) {
+          getInterface = observer.context.attr('role');
+        } else if (observer.context.attr('name')) {
+          getInterface = observer.context.attr('name');
+        }
       }
     }
     if (!setInterface) {
       if (subject.type === Synapse.types.jquery && subject.context.attr('name')) {
-        setInterface || (setInterface = subject.context.attr('name'));
+        setInterface = subject.context.attr('name');
       } else {
-        setInterface || (setInterface = getInterface);
+        setInterface = getInterface;
       }
     }
     if (!setInterface) {
@@ -470,7 +474,7 @@ Date: Tue Jul 19 00:18:21 2011 -0400
   })();
   Synapse.handlers = {
     2: {
-      get: function(subject, event, convert, interfaces, set, trigger) {
+      getHandler: function(subject, event, convert, interfaces, set, trigger) {
         var interface, _event, _i, _len, _results;
         _event = event;
         _results = [];
@@ -512,8 +516,9 @@ Date: Tue Jul 19 00:18:21 2011 -0400
       converter = observer[converter];
     }
     triggerOnBind = options.triggerOnBind;
-    getHandler = Synapse.handlers[subject.type] && Synapse.handlers[subject.type].get;
-    setHandler = Synapse.handlers[observer.type] && Synapse.handlers[observer.type].set;
+    if (Synapse.handlers[subject.type]) {
+      getHandler = Synapse.handlers[subject.type].getHandler;
+    }
         if (getHandler != null) {
       getHandler;
     } else {
@@ -534,6 +539,9 @@ Date: Tue Jul 19 00:18:21 2011 -0400
         }
       };
     };
+    if (Synapse.handlers[observer.type]) {
+      setHandler = Synapse.handlers[observer.type].setHandler;
+    }
         if (setHandler != null) {
       setHandler;
     } else {

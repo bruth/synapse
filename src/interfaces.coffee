@@ -51,8 +51,11 @@
             # present. the only time this would be setInterface is if the subject
             # is also a jQuery interfacesect. in this case, the subject 'name'
             # attribute takes precedence
-            if observer.type is Synapse.types.jquery and observer.context.attr('name')
-                getInterface or= observer.context.attr('name')
+            if observer.type is Synapse.types.jquery
+                if observer.context.attr('role')
+                    getInterface = observer.context.attr('role')
+                else if observer.context.attr('name')
+                    getInterface = observer.context.attr('name')
 
 
         if not setInterface
@@ -60,10 +63,9 @@
             # interface for that model (the attribute to be get/set on that
             # model)
             if subject.type is Synapse.types.jquery and subject.context.attr('name')
-                setInterface or= subject.context.attr('name')
-
+                setInterface = subject.context.attr('name')
             else
-                setInterface or= getInterface
+                setInterface = getInterface
 
         # if none of the above worked
         if not setInterface
