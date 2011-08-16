@@ -1,20 +1,23 @@
     # detect the default interface to use for the element
     detectElementInterface = (obj) ->
-        for item in Synapse.defaultElementInterfaces
+        for item in Synapse.elementInterfaces
             [selector, interface] = item
             if obj.context.is(selector) then return interface
+        if Synapse.defaultElementInterface
+            return Synapse.defaultElementInterface
         throw new Error("Interface for #{obj} could not be detected.")
 
     # default element interfaces relative to their selectors. each
     # item will be iterated over in order and compared against using
     # the ``jQuery.fn.is()`` method for comparison.
-    Synapse.defaultElementInterfaces = [
+    Synapse.elementInterfaces = Synapse.defauElementInterfaces = [
         [':checkbox', 'checked']
         [':radio', 'checked']
         ['button', 'html']
         [':input', 'value']
-        ['*', 'text']
     ]
+
+    Synapse.defaultElementInterface = 'text'
 
     # return an array of interfaces appropriate for the given subject/observer.
     # if no interface is defined, only if a ``name`` attribute on either the
