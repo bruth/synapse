@@ -1,3 +1,3 @@
 
-    window.Synapse = window.SYN = Synapse
+    window.Synapse = Synapse
 

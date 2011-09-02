@@ -2,9 +2,10 @@
 Synapse - The Backbone KVO Library
 
 Author: Byron Ruth
-Version: 0.1
-Date: Thu Jul 21 07:15:01 2011 -0400
-*/var __slice = Array.prototype.slice;
+Version: 0.2
+Date: Fri Jul 29 16:41:36 2011 -0400
+*/
+var __slice = Array.prototype.slice;
 (function(window) {
   var Synapse, defaultRegisterOptions, defaultSynapseConf, detectDomEvent, detectElementInterface, register, synapseConf, typeNames;
   if (!_.isObject) {
@@ -21,23 +22,10 @@ Date: Thu Jul 21 07:15:01 2011 -0400
   Synapse = function(object) {
     return new Synapse.fn.init(object);
   };
-  Synapse.version = '0.1';
+  Synapse.version = '0.2';
   Synapse.guid = 1;
   Synapse.cache = {};
   Synapse.conf = synapseConf;
-  Synapse.log = function() {
-    if (Synapse.conf.debug) {
-      try {
-        return console.log.apply(console, arguments);
-      } catch (e) {
-        try {
-          return opera.postError.apply(opera, arguments);
-        } catch (e) {
-          return alert(Array.prototype.join.call(arguments, ' '));
-        }
-      }
-    }
-  };
   Synapse.types = {
     object: 0,
     jquery: 1,
@@ -519,9 +507,7 @@ Date: Thu Jul 21 07:15:01 2011 -0400
     if (Synapse.handlers[subject.type]) {
       getHandler = Synapse.handlers[subject.type].getHandler;
     }
-        if (getHandler != null) {
-      getHandler;
-    } else {
+    if (getHandler == null) {
       getHandler = function(subject, event, converter, interfaces, setHandler, triggerOnBind) {
         subject.bind(event, function() {
           var value;
@@ -538,13 +524,11 @@ Date: Thu Jul 21 07:15:01 2011 -0400
           return subject.trigger(event);
         }
       };
-    };
+    }
     if (Synapse.handlers[observer.type]) {
       setHandler = Synapse.handlers[observer.type].setHandler;
     }
-        if (setHandler != null) {
-      setHandler;
-    } else {
+    if (setHandler == null) {
       setHandler = function(observer, interfaces) {
         return function(value) {
           var interface, _i, _len, _results;
@@ -556,7 +540,7 @@ Date: Thu Jul 21 07:15:01 2011 -0400
           return _results;
         };
       };
-    };
+    }
     setHandler = setHandler(observer, setInterface);
     _results = [];
     for (_i = 0, _len = events.length; _i < _len; _i++) {
@@ -601,5 +585,5 @@ Date: Thu Jul 21 07:15:01 2011 -0400
     }
     return _results;
   };
-  return window.Synapse = window.SYN = Synapse;
+  return window.Synapse = Synapse;
 })(window);
