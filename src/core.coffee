@@ -18,7 +18,6 @@
     # fill in the rest of the default options
     _.defaults(synapseConf, defaultSynapseConf)
 
-
     # define and build up local copy of Synapse
     Synapse = (object) -> new Synapse.fn.init(object)
 
@@ -33,18 +32,6 @@
 
     # store configuration
     Synapse.conf = synapseConf
-
-
-    Synapse.log = ->
-        if Synapse.conf.debug
-            try
-                console.log.apply(console, arguments)
-            catch e
-                try
-                    opera.postError.apply(opera, arguments)
-                catch e
-                    alert(Array.prototype.join.call(arguments, ' '))
-
 
     # an enumeration of supported object types
     Synapse.types =

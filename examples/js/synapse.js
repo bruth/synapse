@@ -2,7 +2,7 @@
 Synapse - The Backbone KVO Library
 
 Author: Byron Ruth
-Version: 0.1.1
+Version: 0.2
 Date: Tue Aug 16 13:28:16 2011 -0400
 */
 var __slice = Array.prototype.slice;
@@ -22,23 +22,10 @@ var __slice = Array.prototype.slice;
   Synapse = function(object) {
     return new Synapse.fn.init(object);
   };
-  Synapse.version = '0.1.1';
+  Synapse.version = '0.2';
   Synapse.guid = 1;
   Synapse.cache = {};
   Synapse.conf = synapseConf;
-  Synapse.log = function() {
-    if (Synapse.conf.debug) {
-      try {
-        return console.log.apply(console, arguments);
-      } catch (e) {
-        try {
-          return opera.postError.apply(opera, arguments);
-        } catch (e) {
-          return alert(Array.prototype.join.call(arguments, ' '));
-        }
-      }
-    }
-  };
   Synapse.types = {
     object: 0,
     jquery: 1,
@@ -602,5 +589,5 @@ var __slice = Array.prototype.slice;
     }
     return _results;
   };
-  return window.Synapse = window.SYN = Synapse;
+  return window.Synapse = Synapse;
 })(window);
