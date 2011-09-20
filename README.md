@@ -68,8 +68,10 @@ A.bind('keyup', function() {
         value = A.val(),
         data = {};
 
+    // key is 'title'
     data[key] = value;
 
+    // sets the input value for the 'title' attribute
     B.set(data);
 });
 ```
@@ -140,7 +142,7 @@ itself.
 
 ```javascript
 A.val('foobar');
-A.trigger('keyup');     // sends the 'value' to observers
+A.trigger('keyup');     // gets the A's value and sends it to its observers
                         // B.set('title', 'foobar') is executed
                         // B.get('title') now returns the value
 ```
@@ -185,11 +187,11 @@ Subject/Observer Options
 ------------------------
 
 * ``event`` - the event(s) that will trigger the notification by the subject
-* ``get`` - the interface(s) to use by the subject for getting the
+* ``subjectInterface`` - the interface(s) to use by the subject for getting the
 message to be sent to all observers for this event. if this interface does not
 exist, the value is assumed to be the name of a function on the subject to be
 used for getting the message for the observers.
-* ``set`` - the interface to use by the observer for reading in
+* ``observerInterface`` - the interface to use by the observer for reading in
 the message when notified. the interface. if this interface does not
 exist, the value is assumed to be the name of a function on the observer to be
 used to take the message.
@@ -201,8 +203,8 @@ An explicit binding can be defined as follows:
 ```javascript
 Synapse('input').addObserver('span', {
     event: 'keyup',
-    get: 'value',
-    set: 'text'
+    subjectInterface: 'value',
+    observerInterface: 'text'
 });
 ```
 
@@ -212,12 +214,12 @@ or multiple bindings can be defined:
 Synapse('input').addObserver('span', [
     {
         event: 'keyup',
-        get: 'value',
-        set: 'text'
+        subjectInterface: 'value',
+        observerInterface: 'text'
     }, {
         event: 'blur',
-        get: 'value',
-        set: 'data:title'
+        subjectInterface: 'value',
+        observerInterface: 'data:title'
     }
 ]);
 ```

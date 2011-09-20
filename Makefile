@@ -12,6 +12,7 @@ UGLIFY = `which node` build/uglify.js --unsafe
 COMPILER = `which coffee` -b -s -p
 
 MODULES = ${SRC_DIR}/intro.coffee \
+		  ${SRC_DIR}/config.coffee \
 		  ${SRC_DIR}/core.coffee \
 		  ${SRC_DIR}/events.coffee \
 		  ${SRC_DIR}/interfaces.coffee \

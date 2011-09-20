@@ -1,88 +1,99 @@
-    # detect the default interface to use for the element
-    detectElementInterface = (obj) ->
-        for item in Synapse.elementInterfaces
+    # Iterates over each selector and event in ``elementInterfaces`` and
+    # compares it with the subject ``context`` (e.g. the ``jQuery`` object).
+    detectElementInterface = (elem) ->
+        for item in Synapse.configuration.elementInterfaces
             [selector, interface] = item
-            if obj.context.is(selector) then return interface
-        if Synapse.defaultElementInterface
-            return Synapse.defaultElementInterface
-        throw new Error("Interface for #{obj} could not be detected.")
+            if elem.is(selector) then return interface
+        if Synapse.configuration.defaultElementInterface
+            return Synapse.configuration.defaultElementInterface
+        throw new Error("Interface for #{elem} could not be detected.")
 
-    # default element interfaces relative to their selectors. each
-    # item will be iterated over in order and compared against using
-    # the ``jQuery.fn.is()`` method for comparison.
-    Synapse.elementInterfaces = Synapse.defauElementInterfaces = [
-        [':checkbox', 'checked']
-        [':radio', 'checked']
-        ['button', 'html']
-        [':input', 'value']
-    ]
+    # Return an array of interfaces appropriate for the given subject/observer.
+    # If no interface is defined, only if a ``name`` or ``role`` attribute on
+    # either the subject or observer will be used by default. The following steps
+    # are invovled in determining the interfaces:
+    #
+    # - each interface is independently determined first, since the other may
+    # be inferred from the other (specifically in the case of DOM elements)
+    # - if either are not defined, each is attempted to be determined relative
+    # to the other
+    # - elements can use an arbitrary identifier such as the ``name`` or
+    # ``role`` attribute (e.g. name="title")
+    #
+    # The last step slits the string in case multiple interfaces have been
+    # defined for either side.
+    #
+    # **Special note:**
+    # If no ``subjectInterface`` has been set and the subject is a model, assume
+    # the observer wants to observe any change of the model. This generally
+    # assumes a handler of some sorts will be performing any necessary
+    # manipulation.
+    Synapse.getInterfaces = (subject, observer, subjectInterface, observerInterface) ->
 
-    Synapse.defaultElementInterface = 'text'
+        if not subjectInterface
+            if subject.type is Types.jquery
+                subjectInterface = detectElementInterface(subject.context)
+            else if subject.type is Types.view
+                subjectInterface = detectElementInterface(subject.context.el)
+            else if subject.type is Types.model
+                subjectInterface = ''
 
-    # return an array of interfaces appropriate for the given subject/observer.
-    # if no interface is defined, only if a ``name`` attribute on either the
-    # subject or observer will be used by default (in the case of form fields).
-    Synapse.getInterfaces = (subject, observer, getInterface, setInterface) ->
-        # first, determine interfaces independently of the other...
+        if not observerInterface
+            if observer.type is Types.jquery
+                observerInterface = detectElementInterface(observer.context)
+            else if observer.type is Types.view
+                observerInterface = detectElementInterface(observer.context.el)
 
-        # get the interface for the subject
-        if not getInterface
-            # whenever a DOM element is used, the interface is the detected
-            # interface.
-            if subject.type is Synapse.types.jquery
-                getInterface = detectElementInterface(subject)
+        if not subjectInterface
+            el = null
 
-            # if no value has been set and the subject is a model, assume
-            # the observer wants to observe any change of the model. this
-            # generally assumes a handler of some sorts will be performing
-            # any necessary manipulation
-            else if subject.type is Synapse.types.model
-                getInterface = ''
+            if observer.type is Types.jquery
+                el = observer.context
+            else if observer.type is Types.view
+                el = observer.context.el
 
-        # get the interface for the observer
-        if not setInterface
-            if observer.type is Synapse.types.jquery
-                # since this a jQuery type, we must detect the interface to
-                # be used
-                setInterface = detectElementInterface(observer)
+            if el
+                for attr in Synapse.configuration.elementBindAttributes
+                    if el.attr(attr)
+                        subjectInterface = el.attr(attr)
+                        break
 
+        if not observerInterface
+            el = null
 
-        # second, determine interfaces based on the other's type...
+            if subject.type is Types.jquery
+                el = subject.context
+            else if subject.type is Types.view
+                el = subject.context.el
 
-        if not getInterface
-            # value is still not defined, so use the observer's name if
-            # present. the only time this would be setInterface is if the subject
-            # is also a jQuery interfacesect. in this case, the subject 'name'
-            # attribute takes precedence
-            if observer.type is Synapse.types.jquery
-                if observer.context.attr('role')
-                    getInterface = observer.context.attr('role')
-                else if observer.context.attr('name')
-                    getInterface = observer.context.attr('name')
-
-
-        if not setInterface
-            # if a model is used then the 'name' attribute is used as the
-            # interface for that model (the attribute to be get/set on that
-            # model)
-            if subject.type is Synapse.types.jquery and subject.context.attr('name')
-                setInterface = subject.context.attr('name')
+            if el
+                for attr in Synapse.configuration.elementBindAttributes
+                    if el.attr(attr)
+                        observerInterface = el.attr(attr)
+                        break
             else
-                setInterface = getInterface
+                observerInterface = subjectInterface
 
-        # if none of the above worked
-        if not setInterface
-            throw new Error("The interfaces between #{subject} and #{observer} could be detected - #{getInterface} => #{setInterface}")
+        if not observerInterface
+            throw new Error("The interfaces between #{subject} and #{observer}
+                could be detected - #{subjectInterface} => #{observerInterface}")
 
-        if _.isString(getInterface) then getInterface = getInterface.split(' ')
-        if _.isString(setInterface) then setInterface = setInterface.split(' ')
+        if _.isString(subjectInterface) then subjectInterface = subjectInterface.split(' ')
+        if _.isString(observerInterface) then observerInterface = observerInterface.split(' ')
 
-        return [getInterface, setInterface]
+        return [subjectInterface, observerInterface]
 
 
-    # the interfaces registry 
+    # ### Interfaces Registry
+    # Simple module allowing for [un]registering interfaces. The ``get`` and
+    # ``set`` methods are defined here which are used by ``Synapse`` instances
+    # as the common interface for ``jQuery`` objects.
+    #
+    # Compound interfaces correspond to other jQuery APIs such as ``attr``,
+    # ``prop`` and ``data`` and require their own ``key``, thus the
+    # ``attr:name`` convention. In this case, the ``key`` will be extracted
+    # and passed as the first argument to the interface handler.
     Synapse.interfaces = do ->
-
         registry: {}
 
         register: (config) ->
@@ -108,66 +119,61 @@
             @registry[name].set.apply(context, args)
 
 
-    # built-in interfaces below
+    # ### Built-In Interfaces
+    # Each setter and getter for compound interfaces are defined up front
+    # for use throughout the interfaces. For older versions of jQuery, ``attr``
+    # will be used instread of ``prop``.
     do ->
-        # setter/getter for properties
         getProperty = (key) ->
-            # backwards compatible with older jQuery versions and Zepto which
-            # are the two required for Backbone
             if @prop?
                 return @prop(key)
             getAttribute.call(@, key)
 
         setProperty = (key, value) ->
-            # backwards compatible with older jQuery versions and Zepto which
-            # are the two required for Backbone
             if @prop?
                 if typeof key is 'object'
                     return @prop(key)
                 return @prop(key, value)
             setAttribute.call(@, key, value)
 
-
-        # setter/getter for attributes
         getAttribute = (key) -> @attr(key)
 
         setAttribute = (key, value) ->
-            if typeof key is 'object'
-                return @attr(key)
-            @attr(key, value)
+            if _.isObject(key) then @attr(key) else @attr(key, value)
 
 
-        # setter/getter for style properties
         getStyle = (key) -> @css(key)
 
         setStyle = (key, value) ->
-            if typeof key is 'object'
-                return @css(key)
-            @css(key, value)
+            if _.isObject(key) then @css(key) else @css(key, value)
 
-        # Gets and sets the innerText of the element
+        # ### _text_
+        # Gets and sets the ``innerText`` of the element
         Synapse.interfaces.register
             name: 'text'
             get: -> @text()
             set: (value) -> @text((value or= '').toString())
 
 
-        # Gets and sets the innerHTML of the element
+        # ### _html_
+        # Gets and sets the ``innerHTML`` of the element
         Synapse.interfaces.register
             name: 'html'
             get: -> @html()
             set: (value) -> @html((value or= '').toString())
 
 
-        # Gets and sets the value of the element. This is to be used with form
-        # fields and such.
+        # ### _value_
+        # Gets and sets the ``value`` of the element. This is to be used with form
+        # fields.
         Synapse.interfaces.register
             name: 'value'
             get: -> @val()
             set: (value) -> @val(value or= '')
 
 
-        # Gets and sets the 'disabled' property of the element. The disabled
+        # ### _enabled_
+        # Gets and sets the ``disabled`` property of the element. The disabled
         # property is directly related to the truth of the value. That is, if the
         # value is true the element will be enabled.
         Synapse.interfaces.register
@@ -180,7 +186,8 @@
                 setProperty.call(@, 'disabled', !Boolean(value))
 
 
-        # Gets and sets the 'disabled' property of the element. The disabled
+        # ### _disabled_
+        # Gets and sets the ``disabled`` property of the element. The disabled
         # property is inversely related to the truth of the value. That is, if the
         # value is true the element will be disabled.
         Synapse.interfaces.register
@@ -193,8 +200,9 @@
                 setProperty.call(@, 'disabled', Boolean(value))
 
 
-        # Gets and sets the 'checked' property of the element (checkboxes or radio
-        # buttons). 
+        # ### _checked_
+        # Gets and sets the ``checked`` property of the element. Applied to
+        # checkboxes and radio buttons. 
         Synapse.interfaces.register
             name: 'checked'
             get: ->
@@ -205,50 +213,60 @@
                 setProperty.call(@, 'checked', Boolean(value))
 
 
+        # ### _visible_
         # An implied one-way interface that toggles the element's visibility
         # based on the truth of the value it is observing.
         Synapse.interfaces.register
             name: 'visible'
             get: ->
                 getStyle.call(@, 'display') is not 'none'
-
             set: (value) ->
                 if _.isArray(value) and value.length is 0
                     value = false
                 if Boolean(value) then @show() else @hide()
 
 
+        # ### _hidden_
         # An implied one-way interface that toggles the element's visibility
         # based on the truth of the value it is observing.
         Synapse.interfaces.register
             name: 'hidden'
             get: ->
                 getStyle.call(@, 'display') is 'none'
-
             set: (value) ->
                 if _.isArray(value) and value.length is 0
                     value = false
                 if Boolean(value) then @hide() else @show()
 
 
+        # ### Compound Interfaces
+
+        # ### _prop:FOO_
+        # Gets and sets a property on the target element.
         Synapse.interfaces.register
             name: 'prop'
             get: (key) -> getProperty.call(@, key)
             set: (key, value) -> setProperty.call(@, key, value)
 
 
+        # ### _attr:FOO_
+        # Gets and sets an attribute on the target element.
         Synapse.interfaces.register
             name: 'attr'
             get: (key) -> getAttribute.call(@, key)
             set: (key, value) -> setAttribute.call(@, key, value)
 
 
+        # ### _style:FOO_
+        # Gets and sets a style property on the target element.
         Synapse.interfaces.register
             name: 'style'
             get: (key) -> getStyle.call(@, key)
             set: (key, value) -> setStyle.call(@, key, value)
 
 
+        # ### _css:FOO_
+        # Gets and sets a CSS class on the target element.
         Synapse.interfaces.register
             name: 'css'
             get: (key) -> @hasClass(key)
@@ -258,10 +276,11 @@
                 if Boolean(value) then @addClass(key) else @removeClass(key)
 
 
+        # ### _data:FOO_
+        # Gets and sets an attribute on the target element using the jQuery
+        # data API.
         Synapse.interfaces.register
             name: 'data'
             get: (key) -> @data(key)
             set: (key, value) -> @data(key, value)
-
-
 

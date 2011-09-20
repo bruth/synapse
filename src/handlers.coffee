@@ -1,6 +1,6 @@
-    # the default set of event handlers for the various object types. each
-    # type has a handler for when it is the subject and for when it is
-    # the observer
+    # ## Get/Set Handlers
+    # Default event handlers for the various object types. Each type has a
+    # handler for when it is the subject and for when it is the observer.
     Synapse.handlers =
         2:
             getHandler: (subject, event, convert, interfaces, set, trigger) ->
@@ -28,3 +28,4 @@
 
                     if trigger
                         subject.trigger _event, subject.context, subject.get(interface)
+

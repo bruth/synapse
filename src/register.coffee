@@ -1,10 +1,19 @@
+    # ## Register a Connection
+    #
+    # - ``event`` - the event that will trigger the ``subjectInterface`` to be
+    # invoked
+    # - ``subjectInterface`` - the interface for getting a value from the subject
+    # - ``observerInterface`` - the interface for setting a value on the observer
+    # - ``converter`` - an intermediate function that transforms the value received
+    # before passing it to the ``observerInterface``
+    # - ``triggerOnBind`` - defines when or not to trigger the event once bound
+    # acting as the _initial_ invocation.
     defaultRegisterOptions =
         event: null
-        getInterface: null
-        setInterface: null
+        subjectInterface: null
+        observerInterface: null
         converter: null
         triggerOnBind: true
-
 
 
     register = (subject, observer, options) ->
@@ -20,8 +29,8 @@
         # relationship between the observer and subject. for each entry,
         # whenever the subject's message changes, the observer will be
         # notified to handle via it's interface
-        [getInterface, setInterface] = Synapse.getInterfaces(subject, observer,
-            options.getInterface, options.setInterface)
+        [subjectInterface, observerInterface] = Synapse.getInterfaces(subject, observer,
+            options.subjectInterface, options.observerInterface)
 
         # if custom behaviors need to occur, a converter can be defined which
         # will be passed the data by the subject
@@ -67,14 +76,14 @@
 
 
         # this returns a handler with the passed variables in scope
-        setHandler = setHandler(observer, setInterface)
+        setHandler = setHandler(observer, observerInterface)
 
         for event in events
             # cache references
             subject.observers[observer.guid][event] = true
             observer.subjects[subject.guid][event] = true
 
-            getHandler(subject, event, converter, getInterface, setHandler, triggerOnBind)
+            getHandler(subject, event, converter, subjectInterface, setHandler, triggerOnBind)
 
 
     Synapse.registerSync = (object1, object2) ->
@@ -82,7 +91,7 @@
         Synapse.registerObserver(object2, object1)
 
 
-    Synapse.register = (subject, observer, getInterface, setInterface) ->
+    Synapse.register = (subject, observer, subjectInterface, observerInterface) ->
         # setup cache of all observers for this
         if not subject.observers[observer.guid]
             subject.observers[observer.guid] = {}
@@ -90,12 +99,12 @@
         if not observer.subjects[subject.guid]
             observer.subjects[subject.guid] = {}
 
-        if _.isFunction(getInterface)
-            options = converter: getInterface
-        else if not _.isObject(getInterface)
-            options = getInterface: getInterface, setInterface: setInterface
+        if _.isFunction(subjectInterface)
+            options = converter: subjectInterface
+        else if not _.isObject(subjectInterface)
+            options = subjectInterface: subjectInterface, observerInterface: observerInterface
         else
-            options = getInterface
+            options = subjectInterface
 
         # the configuration is already defined as an object
         if not _.isArray(options)

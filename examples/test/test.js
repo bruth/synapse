@@ -1,11 +1,10 @@
-var prim, model, view, router, collection, dom, cxt, text, check,
+var prim, model, view, collection, dom, cxt, text, check,
     radio, select, span, button, email, submit;
 
 $(function() {
     prim = Synapse({});
     model = Synapse(new Backbone.Model);
     view = Synapse(new Backbone.View);
-    router = Synapse(new Backbone.Router);
     collection = Synapse(new Backbone.Collection);
     dom = Synapse(document.getElementById('text-input'));
 
@@ -22,17 +21,6 @@ $(function() {
 });
 
 module('Utilities');
-
-test('object types', function() {
-	expect(6);
-
-	equals(prim.type, Synapse.types.object, 'a plain object');
-    equals(dom.type, Synapse.types.jquery, 'DOM element');
-    equals(view.type, Synapse.types.view, 'Backbone view');
-    equals(router.type, Synapse.types.router, 'Backbone router');
-    equals(model.type, Synapse.types.model, 'Backbone model');
-    equals(collection.type, Synapse.types.collection, 'Backbone collection');
-});
 
 test('getEvents', function() {
     expect(9);
@@ -160,7 +148,7 @@ test('set text', function() {
     equals(span.get('text'), '1', 'span number');
 
     span.set('text', []);
-    equals(span.get('text'), '1', 'span array');
+    equals(span.get('text'), '', 'span array');
 
 });
 
@@ -335,7 +323,7 @@ test('read-only non-form element', function() {
     model.unbind();
 
     span.addNotifier(model, {
-        getInterface: ['title', 'author'],
+        subjectInterface: ['title', 'author'],
         converter: function() {
             return model.get('title') + ' by ' + model.get('author');
         }
