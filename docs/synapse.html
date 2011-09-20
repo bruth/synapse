@@ -2,7 +2,7 @@
 (c) 2011 Byron Ruth
 Synapse may be freely distributed under the MIT license
 Version: 0.2
-Date: Tue Sep 20 09:18:02 2011 -0400
+Date: Tue Sep 20 11:55:16 2011 -0400
 </code></pre>             </td>             <td class="code">               <div class="highlight"><pre><span class="nx">do</span> <span class="nf">(window) -&gt;</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <h2>Configuration</h2>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">defaultConfiguration =</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Adds additional logging at various points</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nv">debug: </span><span class="kc">false</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Prevents extending jQuery and Backbone classes with the Synapse
 methods</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nv">noConflict: </span><span class="kc">false</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Default DOM events. When a DOM element is declared the subject of a
 binding and no event is specified, the element will be compared to
@@ -53,7 +53,7 @@ provide the configuration.</p>             </td>             <td class="code">  
 
     <span class="nv">getObjectType = </span><span class="nf">(object) -&gt;</span>
 
-        <span class="k">if</span> <span class="nx">object</span> <span class="k">instanceof</span> <span class="nx">$</span>
+        <span class="k">if</span> <span class="nx">object</span> <span class="k">instanceof</span> <span class="nx">jQuery</span>
             <span class="k">return</span> <span class="nx">Types</span><span class="p">.</span><span class="nx">jquery</span>
 
         <span class="k">if</span> <span class="nx">object</span> <span class="k">instanceof</span> <span class="nx">Backbone</span><span class="p">.</span><span class="nx">Model</span>
@@ -89,7 +89,7 @@ determined for inferring the interfaces.</p>             </td>             <td c
 
             <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span><span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="o">or</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isElement</span><span class="p">(</span><span class="nx">context</span><span class="p">)</span>
                 <span class="vi">@originalContext = </span><span class="nx">context</span>
-                <span class="nv">context = </span><span class="nx">$</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">$</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">)</span>
+                <span class="nv">context = </span><span class="nx">jQuery</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">jQuery</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">)</span>
 
             <span class="vi">@context = </span><span class="nx">context</span>
             <span class="vi">@type = </span><span class="nx">getObjectType</span><span class="p">(</span><span class="nx">context</span><span class="p">)</span>
@@ -169,6 +169,7 @@ property.</p>             </td>             <td class="code">               <div
 
     <span class="nv">Synapse.fn.init:: = </span><span class="nx">Synapse</span><span class="p">.</span><span class="nx">fn</span></pre></div>             </td>           </tr>                               <tr id="section-18">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-18">&#182;</a>               </div>               <p>Iterates over each selector and event in <code>domEvents</code> and
 compares it with the subject <code>context</code> (e.g. the <code>jQuery</code> object).</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">detectDomEvent = </span><span class="nf">(elem) -&gt;</span>
+        <span class="nv">elem = </span><span class="nx">jQuery</span><span class="p">(</span><span class="nx">elem</span><span class="p">)</span>
         <span class="k">for</span> <span class="nx">item</span> <span class="k">in</span> <span class="nx">Synapse</span><span class="p">.</span><span class="nx">configuration</span><span class="p">.</span><span class="nx">domEvents</span>
             <span class="p">[</span><span class="nx">selector</span><span class="p">,</span> <span class="nx">event</span><span class="p">]</span> <span class="o">=</span> <span class="nx">item</span>
             <span class="k">if</span> <span class="nx">elem</span><span class="p">.</span><span class="o">is</span><span class="p">(</span><span class="nx">selector</span><span class="p">)</span> <span class="k">then</span> <span class="k">return</span> <span class="nx">event</span>
@@ -338,6 +339,7 @@ event that will trigger the pipeline.</li>
         <span class="k">for</span> <span class="nx">opt</span> <span class="k">in</span> <span class="nx">options</span>
             <span class="nx">connectOne</span><span class="p">(</span><span class="nx">subject</span><span class="p">,</span> <span class="nx">observer</span><span class="p">,</span> <span class="nx">opt</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>Iterates over each selector and event in <code>elementInterfaces</code> and
 compares it with the subject <code>context</code> (e.g. the <code>jQuery</code> object).</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">detectElementInterface = </span><span class="nf">(elem) -&gt;</span>
+        <span class="nv">elem = </span><span class="nx">jQuery</span><span class="p">(</span><span class="nx">elem</span><span class="p">)</span>
         <span class="k">for</span> <span class="nx">item</span> <span class="k">in</span> <span class="nx">Synapse</span><span class="p">.</span><span class="nx">configuration</span><span class="p">.</span><span class="nx">elementInterfaces</span>
             <span class="p">[</span><span class="nx">selector</span><span class="p">,</span> <span class="nx">interface</span><span class="p">]</span> <span class="o">=</span> <span class="nx">item</span>
             <span class="k">if</span> <span class="nx">elem</span><span class="p">.</span><span class="o">is</span><span class="p">(</span><span class="nx">selector</span><span class="p">)</span> <span class="k">then</span> <span class="k">return</span> <span class="nx">interface</span>
@@ -384,9 +386,9 @@ manipulation.</p>             </td>             <td class="code">               
             <span class="nv">el = </span><span class="kc">null</span>
 
             <span class="k">if</span> <span class="nx">observer</span><span class="p">.</span><span class="nx">type</span> <span class="o">is</span> <span class="nx">Types</span><span class="p">.</span><span class="nx">jquery</span>
-                <span class="nv">el = </span><span class="nx">observer</span><span class="p">.</span><span class="nx">context</span>
+                <span class="nv">el = </span><span class="nx">jQuery</span><span class="p">(</span><span class="nx">observer</span><span class="p">.</span><span class="nx">context</span><span class="p">)</span>
             <span class="k">else</span> <span class="k">if</span> <span class="nx">observer</span><span class="p">.</span><span class="nx">type</span> <span class="o">is</span> <span class="nx">Types</span><span class="p">.</span><span class="nx">view</span>
-                <span class="nv">el = </span><span class="nx">observer</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">el</span>
+                <span class="nv">el = </span><span class="nx">jQuery</span><span class="p">(</span><span class="nx">observer</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">el</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nx">el</span>
                 <span class="k">for</span> <span class="nx">attr</span> <span class="k">in</span> <span class="nx">Synapse</span><span class="p">.</span><span class="nx">configuration</span><span class="p">.</span><span class="nx">elementBindAttributes</span>
@@ -398,9 +400,9 @@ manipulation.</p>             </td>             <td class="code">               
             <span class="nv">el = </span><span class="kc">null</span>
 
             <span class="k">if</span> <span class="nx">subject</span><span class="p">.</span><span class="nx">type</span> <span class="o">is</span> <span class="nx">Types</span><span class="p">.</span><span class="nx">jquery</span>
-                <span class="nv">el = </span><span class="nx">subject</span><span class="p">.</span><span class="nx">context</span>
+                <span class="nv">el = </span><span class="nx">jQuery</span><span class="p">(</span><span class="nx">subject</span><span class="p">.</span><span class="nx">context</span><span class="p">)</span>
             <span class="k">else</span> <span class="k">if</span> <span class="nx">subject</span><span class="p">.</span><span class="nx">type</span> <span class="o">is</span> <span class="nx">Types</span><span class="p">.</span><span class="nx">view</span>
-                <span class="nv">el = </span><span class="nx">subject</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">el</span>
+                <span class="nv">el = </span><span class="nx">jQuery</span><span class="p">(</span><span class="nx">subject</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">el</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nx">el</span>
                 <span class="k">for</span> <span class="nx">attr</span> <span class="k">in</span> <span class="nx">Synapse</span><span class="p">.</span><span class="nx">configuration</span><span class="p">.</span><span class="nx">elementBindAttributes</span>

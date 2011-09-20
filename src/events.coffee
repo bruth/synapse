@@ -1,6 +1,7 @@
     # Iterates over each selector and event in ``domEvents`` and
     # compares it with the subject ``context`` (e.g. the ``jQuery`` object).
     detectDomEvent = (elem) ->
+        elem = jQuery(elem)
         for item in Synapse.configuration.domEvents
             [selector, event] = item
             if elem.is(selector) then return event

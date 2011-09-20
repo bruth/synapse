@@ -27,7 +27,7 @@ var __slice = Array.prototype.slice;
     4: 'View'
   };
   getObjectType = function(object) {
-    if (object instanceof $) {
+    if (object instanceof jQuery) {
       return Types.jquery;
     }
     if (object instanceof Backbone.Model) {
@@ -58,7 +58,7 @@ var __slice = Array.prototype.slice;
       }
       if (_.isString(context) || _.isElement(context)) {
         this.originalContext = context;
-        context = $.apply($, arguments);
+        context = jQuery.apply(jQuery, arguments);
       }
       this.context = context;
       this.type = getObjectType(context);
@@ -144,6 +144,7 @@ var __slice = Array.prototype.slice;
   Synapse.fn.init.prototype = Synapse.fn;
   detectDomEvent = function(elem) {
     var event, item, selector, _i, _len, _ref;
+    elem = jQuery(elem);
     _ref = Synapse.configuration.domEvents;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       item = _ref[_i];
@@ -316,6 +317,7 @@ var __slice = Array.prototype.slice;
   };
   detectElementInterface = function(elem) {
     var interface, item, selector, _i, _len, _ref;
+    elem = jQuery(elem);
     _ref = Synapse.configuration.elementInterfaces;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       item = _ref[_i];
@@ -350,9 +352,9 @@ var __slice = Array.prototype.slice;
     if (!subjectInterface) {
       el = null;
       if (observer.type === Types.jquery) {
-        el = observer.context;
+        el = jQuery(observer.context);
       } else if (observer.type === Types.view) {
-        el = observer.context.el;
+        el = jQuery(observer.context.el);
       }
       if (el) {
         _ref = Synapse.configuration.elementBindAttributes;
@@ -368,9 +370,9 @@ var __slice = Array.prototype.slice;
     if (!observerInterface) {
       el = null;
       if (subject.type === Types.jquery) {
-        el = subject.context;
+        el = jQuery(subject.context);
       } else if (subject.type === Types.view) {
-        el = subject.context.el;
+        el = jQuery(subject.context.el);
       }
       if (el) {
         _ref2 = Synapse.configuration.elementBindAttributes;

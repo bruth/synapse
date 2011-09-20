@@ -22,7 +22,7 @@
 
     getObjectType = (object) ->
 
-        if object instanceof $
+        if object instanceof jQuery
             return Types.jquery
 
         if object instanceof Backbone.Model
@@ -67,7 +67,7 @@
 
             if _.isString(context) or _.isElement(context)
                 @originalContext = context
-                context = $.apply($, arguments)
+                context = jQuery.apply(jQuery, arguments)
 
             @context = context
             @type = getObjectType(context)

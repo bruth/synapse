@@ -1,6 +1,7 @@
     # Iterates over each selector and event in ``elementInterfaces`` and
     # compares it with the subject ``context`` (e.g. the ``jQuery`` object).
     detectElementInterface = (elem) ->
+        elem = jQuery(elem)
         for item in Synapse.configuration.elementInterfaces
             [selector, interface] = item
             if elem.is(selector) then return interface
@@ -48,9 +49,9 @@
             el = null
 
             if observer.type is Types.jquery
-                el = observer.context
+                el = jQuery(observer.context)
             else if observer.type is Types.view
-                el = observer.context.el
+                el = jQuery(observer.context.el)
 
             if el
                 for attr in Synapse.configuration.elementBindAttributes
@@ -62,9 +63,9 @@
             el = null
 
             if subject.type is Types.jquery
-                el = subject.context
+                el = jQuery(subject.context)
             else if subject.type is Types.view
-                el = subject.context.el
+                el = jQuery(subject.context.el)
 
             if el
                 for attr in Synapse.configuration.elementBindAttributes
