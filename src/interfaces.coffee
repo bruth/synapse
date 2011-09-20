@@ -28,7 +28,7 @@
     # the observer wants to observe any change of the model. This generally
     # assumes a handler of some sorts will be performing any necessary
     # manipulation.
-    Synapse.getInterfaces = (subject, observer, subjectInterface, observerInterface) ->
+    getInterfaces = (subject, observer, subjectInterface, observerInterface) ->
 
         if not subjectInterface
             if subject.type is Types.jquery
@@ -93,7 +93,7 @@
     # ``prop`` and ``data`` and require their own ``key``, thus the
     # ``attr:name`` convention. In this case, the ``key`` will be extracted
     # and passed as the first argument to the interface handler.
-    Synapse.interfaces = do ->
+    interfaces = do ->
         registry: {}
 
         register: (config) ->
@@ -119,7 +119,7 @@
             @registry[name].set.apply(context, args)
 
 
-    # ### Built-In Interfaces
+    # ### Built-In interfaces
     # Each setter and getter for compound interfaces are defined up front
     # for use throughout the interfaces. For older versions of jQuery, ``attr``
     # will be used instread of ``prop``.
@@ -149,7 +149,7 @@
 
         # ### _text_
         # Gets and sets the ``innerText`` of the element
-        Synapse.interfaces.register
+        interfaces.register
             name: 'text'
             get: -> @text()
             set: (value) -> @text((value or= '').toString())
@@ -157,7 +157,7 @@
 
         # ### _html_
         # Gets and sets the ``innerHTML`` of the element
-        Synapse.interfaces.register
+        interfaces.register
             name: 'html'
             get: -> @html()
             set: (value) -> @html((value or= '').toString())
@@ -166,7 +166,7 @@
         # ### _value_
         # Gets and sets the ``value`` of the element. This is to be used with form
         # fields.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'value'
             get: -> @val()
             set: (value) -> @val(value or= '')
@@ -176,7 +176,7 @@
         # Gets and sets the ``disabled`` property of the element. The disabled
         # property is directly related to the truth of the value. That is, if the
         # value is true the element will be enabled.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'enabled',
             get: ->
                 !getProperty.call(@, 'disabled')
@@ -190,7 +190,7 @@
         # Gets and sets the ``disabled`` property of the element. The disabled
         # property is inversely related to the truth of the value. That is, if the
         # value is true the element will be disabled.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'disabled'
             get: ->
                 getProperty.call(@, 'disabled')
@@ -203,7 +203,7 @@
         # ### _checked_
         # Gets and sets the ``checked`` property of the element. Applied to
         # checkboxes and radio buttons. 
-        Synapse.interfaces.register
+        interfaces.register
             name: 'checked'
             get: ->
                 getProperty.call(@, 'checked')
@@ -216,7 +216,7 @@
         # ### _visible_
         # An implied one-way interface that toggles the element's visibility
         # based on the truth of the value it is observing.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'visible'
             get: ->
                 getStyle.call(@, 'display') is not 'none'
@@ -229,7 +229,7 @@
         # ### _hidden_
         # An implied one-way interface that toggles the element's visibility
         # based on the truth of the value it is observing.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'hidden'
             get: ->
                 getStyle.call(@, 'display') is 'none'
@@ -239,11 +239,11 @@
                 if Boolean(value) then @hide() else @show()
 
 
-        # ### Compound Interfaces
+        # ### Compound interfaces
 
         # ### _prop:FOO_
         # Gets and sets a property on the target element.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'prop'
             get: (key) -> getProperty.call(@, key)
             set: (key, value) -> setProperty.call(@, key, value)
@@ -251,7 +251,7 @@
 
         # ### _attr:FOO_
         # Gets and sets an attribute on the target element.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'attr'
             get: (key) -> getAttribute.call(@, key)
             set: (key, value) -> setAttribute.call(@, key, value)
@@ -259,7 +259,7 @@
 
         # ### _style:FOO_
         # Gets and sets a style property on the target element.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'style'
             get: (key) -> getStyle.call(@, key)
             set: (key, value) -> setStyle.call(@, key, value)
@@ -267,7 +267,7 @@
 
         # ### _css:FOO_
         # Gets and sets a CSS class on the target element.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'css'
             get: (key) -> @hasClass(key)
             set: (key, value) ->
@@ -279,8 +279,11 @@
         # ### _data:FOO_
         # Gets and sets an attribute on the target element using the jQuery
         # data API.
-        Synapse.interfaces.register
+        interfaces.register
             name: 'data'
             get: (key) -> @data(key)
             set: (key, value) -> @data(key, value)
 
+
+    Synapse.getInterfaces = getInterfaces
+    Synapse.interfaces = interfaces

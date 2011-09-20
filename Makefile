@@ -16,9 +16,9 @@ MODULES = ${SRC_DIR}/intro.coffee \
 		  ${SRC_DIR}/config.coffee \
 		  ${SRC_DIR}/core.coffee \
 		  ${SRC_DIR}/events.coffee \
-		  ${SRC_DIR}/interfaces.coffee \
 		  ${SRC_DIR}/handlers.coffee \
-		  ${SRC_DIR}/register.coffee \
+		  ${SRC_DIR}/connect.coffee \
+		  ${SRC_DIR}/interfaces.coffee \
 		  ${SRC_DIR}/outro.coffee
 
 VERSION = $(shell cat VERSION)

@@ -1,8 +1,8 @@
-var prim, model, view, collection, dom, cxt, text, check,
+var obj, model, view, collection, dom, cxt, text, check,
     radio, select, span, button, email, submit;
 
 $(function() {
-    prim = Synapse({});
+    obj = Synapse({});
     model = Synapse(new Backbone.Model);
     view = Synapse(new Backbone.View);
     collection = Synapse(new Backbone.Collection);
@@ -299,7 +299,7 @@ test('css', function() {
 
 
 
-module('jQuery Observers', {
+module('Connections', {
     setup: function() {
         span.context.html('Hello World');
         text.context.val('hello world');
@@ -307,49 +307,93 @@ module('jQuery Observers', {
         radio.context.prop('disabled', true);
         select.context.hide().val('');
         button.context.html('Click Me!');
+        model.unbind();
     }
 });
 
-// jQuery observers have two means of being notified by the notifier. 
-test('read-only non-form element', function() {
-    expect(5);
-
+test('model => DOM, single attr', function() {
+    expect(1);
     // shorthand for specifying a particular interface for the observers
     model.notify(span, 'title');
-
     model.set({title: 'Cool Title'});
     equals(span.get('text'), 'Cool Title', 'the span element observes the title attr on the model');
+});
 
-    model.unbind();
+test('model => DOM, multiple attrs', function() {
+    expect(1);
 
-    span.observe(model, {
+    model.notify(span, {
         subjectInterface: ['title', 'author'],
         converter: function() {
             return model.get('title') + ' by ' + model.get('author');
         }
     });
-
     model.set({ title: 'Yet Again!', author: 'John Doe' });
     equals(span.get('text'), 'Yet Again! by John Doe', 'the span element observes the title and author attr on the model'); 
+});
 
-    model.unbind();
+test('model => model, single attr', function() {
+    expect(3);
 
     var model2 = new Backbone.Model({
         foo: 'Bar'
     });
 
-
     model.observe(model2, 'foo');
     equals(model.get('foo'), 'Bar', 'initial value');
     model2.set({foo: 'Hello'});
-    equals(model.get('foo'), 'Hello', 'model is observing model2');
-
-    text.observe(model);
-
-    model.set({text: 'Foo'});
-    equals(text.get('value'), 'Foo');
-
-    model.unbind();
-
+    equals(model.get('foo'), 'Hello', 'new value');
+    model.set({foo: 'Moto'});
+    equals(model2.get('foo'), 'Hello', 'notifier value still the same');
 });
 
+
+test('model => model => DOM, single attr', function() {
+    expect(2);
+
+    var model2 = new Backbone.Model({
+        foo: 'Bar'
+    });
+
+    model.observe(model2, 'foo');
+    text.observe(model, 'foo');
+    equals(text.get('value'), 'Bar');
+
+    model2.set({foo: 'Hello'});
+
+    equals(text.get('value'), 'Hello');
+});
+
+test('model => model, multiple attrs', function() {
+    expect(4);
+
+    var model2 = new Backbone.Model({
+        foo: 'Hello',
+        bar: 'Moto'
+    });
+
+    model.observe(model2, ['foo', 'bar']);
+    equals(model.get('foo'), 'Hello');
+    equals(model.get('bar'), 'Moto');
+
+    model.set({foo: 'Something'});
+    equals(model.get('foo'), 'Something', 'changed');
+    equals(model.get('bar'), 'Moto', 'stayed the same');
+});
+
+
+test('model <=> DOM, single attr', function() {
+
+    model.sync(text);
+
+    equals(text.get('value'), 'hello world');
+    equals(model.get('text'), 'hello world');
+
+    model.set('text', 'something new');
+    equals(text.get('value'), 'something new');
+
+    text.set('value', 'another value');
+    // mimic the event trigger
+    text.context.keyup();
+    equals(model.get('text'), 'another value');
+});

@@ -1,9 +1,11 @@
 var __slice = Array.prototype.slice;
 (function(window) {
-  var Synapse, TypeNames, Types, configuration, defaultConfiguration, defaultRegisterOptions, detectDomEvent, detectElementInterface, getObjectType, register;
+  var Synapse, TypeNames, Types, configuration, connect, connectOne, defaultConfiguration, defaultHandlers, defaultRegisterOptions, detectDomEvent, detectElementInterface, getEvents, getHandlerForType, getInterfaces, getObjectType, interfaces;
   defaultConfiguration = {
     debug: false,
+    noConflict: false,
     domEvents: [['a,:button,:reset', 'click'], ['select,:checkbox,:radio,textarea', 'change'], [':submit', 'submit'], [':input', 'keyup']],
+    defaultDomEvent: null,
     elementInterfaces: [[':checkbox,:radio', 'checked'], ['button', 'html'], [':input', 'value']],
     defaultElementInterface: 'text',
     elementBindAttributes: ['name', 'role']
@@ -123,7 +125,7 @@ var __slice = Array.prototype.slice;
       if (!(other instanceof Synapse)) {
         other = Synapse(other);
       }
-      Synapse.register.apply(Synapse, [other, this].concat(__slice.call(args)));
+      connect.apply(null, [other, this].concat(__slice.call(args)));
       return this;
     },
     notify: function() {
@@ -132,7 +134,7 @@ var __slice = Array.prototype.slice;
       if (!(other instanceof Synapse)) {
         other = Synapse(other);
       }
-      Synapse.register.apply(Synapse, [this, other].concat(__slice.call(args)));
+      connect.apply(null, [this, other].concat(__slice.call(args)));
       return this;
     },
     toString: function() {
@@ -150,9 +152,12 @@ var __slice = Array.prototype.slice;
         return event;
       }
     }
+    if (Synapse.configuration.defaultDomEvent) {
+      return Synapse.configuration.defaultDomEvent;
+    }
     throw new Error("Event for " + elem + " could not be detected.");
   };
-  Synapse.getEvents = function(subject, event) {
+  getEvents = function(subject, event) {
     var events;
     if (!event) {
       if (subject.type === Types.jquery) {
@@ -169,6 +174,146 @@ var __slice = Array.prototype.slice;
     }
     return events;
   };
+  Synapse.getEvents = getEvents;
+  defaultHandlers = {
+    get: function(subject, event, converter, interfaces, set, trigger) {
+      subject.bind(event, function() {
+        var value;
+        value = _.map(interfaces, subject.get, subject);
+        if (converter) {
+          value = converter.apply(converter, value);
+          if (!_.isArray(value)) {
+            value = [value];
+          }
+        }
+        return set.apply(subject.context, value);
+      });
+      if (trigger) {
+        return subject.trigger(event);
+      }
+    },
+    set: function(observer, interfaces) {
+      return function() {
+        var args, interface, _i, _len, _results;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        _results = [];
+        for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
+          interface = interfaces[_i];
+          _results.push(observer.set.apply(observer, [interface].concat(__slice.call(args))));
+        }
+        return _results;
+      };
+    }
+  };
+  getHandlerForType = function(type, method) {
+    var handler, _ref;
+    if (!(handler = (_ref = Synapse.handlers[type]) != null ? _ref[method] : void 0)) {
+      handler = defaultHandlers[method];
+    }
+    return handler;
+  };
+  Synapse.handlers = {
+    2: {
+      get: function(subject, event, converter, interfaces, set, trigger) {
+        var attr, _event, _i, _len, _results;
+        _event = event;
+        _results = [];
+        for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
+          attr = interfaces[_i];
+          if (attr && !_.isFunction(subject.context[attr])) {
+            _event = "" + event + ":" + attr;
+          }
+          subject.bind(_event, function(model, value, options) {
+            value = _.map(interfaces, subject.get, subject);
+            if (converter) {
+              value = converter.apply(converter, value);
+              if (!_.isArray(value)) {
+                value = [value];
+              }
+            }
+            return set.apply(subject.context, value);
+          });
+          _results.push(trigger ? subject.trigger(_event, subject.context, subject.get(attr)) : void 0);
+        }
+        return _results;
+      },
+      set: function(observer, interfaces) {
+        return function() {
+          var args, attrs, k, v, _i, _len, _ref, _ref2;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          attrs = {};
+          _ref = _.zip(interfaces, args);
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            _ref2 = _ref[_i], k = _ref2[0], v = _ref2[1];
+            attrs[k] = v;
+          }
+          return observer.set(attrs);
+        };
+      }
+    }
+  };
+  defaultRegisterOptions = {
+    event: null,
+    subjectInterface: null,
+    observerInterface: null,
+    converter: null,
+    triggerOnBind: true
+  };
+  connectOne = function(subject, observer, options) {
+    var converter, event, events, getHandler, observerInterface, setHandler, subjectInterface, triggerOnBind, _i, _len, _ref, _results;
+    _.defaults(options, defaultRegisterOptions);
+    events = getEvents(subject, options.event);
+    _ref = getInterfaces(subject, observer, options.subjectInterface, options.observerInterface), subjectInterface = _ref[0], observerInterface = _ref[1];
+    if ((converter = options.converter) && !_.isFunction(converter)) {
+      converter = observer[converter];
+    }
+    triggerOnBind = options.triggerOnBind;
+    getHandler = getHandlerForType(subject.type, 'get');
+    setHandler = getHandlerForType(subject.type, 'set');
+    setHandler = setHandler(observer, observerInterface);
+    _results = [];
+    for (_i = 0, _len = events.length; _i < _len; _i++) {
+      event = events[_i];
+      subject.observers[observer.guid][event] = true;
+      observer.subjects[subject.guid][event] = true;
+      _results.push(getHandler(subject, event, converter, subjectInterface, setHandler, triggerOnBind));
+    }
+    return _results;
+  };
+  connect = function() {
+    var arg0, arg1, args, observer, opt, options, subject, _i, _len, _results;
+    subject = arguments[0], observer = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    if (!subject.observers[observer.guid]) {
+      subject.observers[observer.guid] = {};
+    }
+    if (!observer.subjects[subject.guid]) {
+      observer.subjects[subject.guid] = {};
+    }
+    options = args;
+    arg0 = args[0];
+    arg1 = args[1];
+    if (_.isFunction(arg0)) {
+      options = {
+        converter: arg0
+      };
+    } else if (_.isArray(arg0) || !_.isObject(arg0)) {
+      options = {
+        subjectInterface: arg0,
+        observerInterface: arg1
+      };
+    } else {
+      options = arg0;
+    }
+    if (!_.isArray(options)) {
+      options = [options];
+    }
+    _results = [];
+    for (_i = 0, _len = options.length; _i < _len; _i++) {
+      opt = options[_i];
+      _results.push(connectOne(subject, observer, opt));
+    }
+    return _results;
+  };
   detectElementInterface = function(elem) {
     var interface, item, selector, _i, _len, _ref;
     _ref = Synapse.configuration.elementInterfaces;
@@ -184,7 +329,7 @@ var __slice = Array.prototype.slice;
     }
     throw new Error("Interface for " + elem + " could not be detected.");
   };
-  Synapse.getInterfaces = function(subject, observer, subjectInterface, observerInterface) {
+  getInterfaces = function(subject, observer, subjectInterface, observerInterface) {
     var attr, el, _i, _j, _len, _len2, _ref, _ref2;
     if (!subjectInterface) {
       if (subject.type === Types.jquery) {
@@ -251,7 +396,7 @@ var __slice = Array.prototype.slice;
     }
     return [subjectInterface, observerInterface];
   };
-  Synapse.interfaces = (function() {
+  interfaces = (function() {
     return {
       registry: {},
       register: function(config) {
@@ -323,7 +468,7 @@ var __slice = Array.prototype.slice;
         return this.css(key, value);
       }
     };
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'text',
       get: function() {
         return this.text();
@@ -332,7 +477,7 @@ var __slice = Array.prototype.slice;
         return this.text((value || (value = '')).toString());
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'html',
       get: function() {
         return this.html();
@@ -341,7 +486,7 @@ var __slice = Array.prototype.slice;
         return this.html((value || (value = '')).toString());
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'value',
       get: function() {
         return this.val();
@@ -350,7 +495,7 @@ var __slice = Array.prototype.slice;
         return this.val(value || (value = ''));
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'enabled',
       get: function() {
         return !getProperty.call(this, 'disabled');
@@ -362,7 +507,7 @@ var __slice = Array.prototype.slice;
         return setProperty.call(this, 'disabled', !Boolean(value));
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'disabled',
       get: function() {
         return getProperty.call(this, 'disabled');
@@ -374,7 +519,7 @@ var __slice = Array.prototype.slice;
         return setProperty.call(this, 'disabled', Boolean(value));
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'checked',
       get: function() {
         return getProperty.call(this, 'checked');
@@ -386,7 +531,7 @@ var __slice = Array.prototype.slice;
         return setProperty.call(this, 'checked', Boolean(value));
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'visible',
       get: function() {
         return getStyle.call(this, 'display') === !'none';
@@ -402,7 +547,7 @@ var __slice = Array.prototype.slice;
         }
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'hidden',
       get: function() {
         return getStyle.call(this, 'display') === 'none';
@@ -418,7 +563,7 @@ var __slice = Array.prototype.slice;
         }
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'prop',
       get: function(key) {
         return getProperty.call(this, key);
@@ -427,7 +572,7 @@ var __slice = Array.prototype.slice;
         return setProperty.call(this, key, value);
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'attr',
       get: function(key) {
         return getAttribute.call(this, key);
@@ -436,7 +581,7 @@ var __slice = Array.prototype.slice;
         return setAttribute.call(this, key, value);
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'style',
       get: function(key) {
         return getStyle.call(this, key);
@@ -445,7 +590,7 @@ var __slice = Array.prototype.slice;
         return setStyle.call(this, key, value);
       }
     });
-    Synapse.interfaces.register({
+    interfaces.register({
       name: 'css',
       get: function(key) {
         return this.hasClass(key);
@@ -461,7 +606,7 @@ var __slice = Array.prototype.slice;
         }
       }
     });
-    return Synapse.interfaces.register({
+    return interfaces.register({
       name: 'data',
       get: function(key) {
         return this.data(key);
@@ -471,130 +616,7 @@ var __slice = Array.prototype.slice;
       }
     });
   })();
-  Synapse.handlers = {
-    2: {
-      getHandler: function(subject, event, convert, interfaces, set, trigger) {
-        var interface, _event, _i, _len, _results;
-        _event = event;
-        _results = [];
-        for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
-          interface = interfaces[_i];
-          if (interface && !subject.context[interface]) {
-            _event = "" + event + ":" + interface;
-          }
-          subject.bind(_event, function(model, value, options) {
-            value = _.map(interfaces, subject.get, subject);
-            if (convert) {
-              value = convert.apply(convert, value);
-              if (!_.isArray(value)) {
-                value = [value];
-              }
-            }
-            return set.apply(subject.context, value);
-          });
-          _results.push(trigger ? subject.trigger(_event, subject.context, subject.get(interface)) : void 0);
-        }
-        return _results;
-      }
-    }
-  };
-  defaultRegisterOptions = {
-    event: null,
-    subjectInterface: null,
-    observerInterface: null,
-    converter: null,
-    triggerOnBind: true
-  };
-  register = function(subject, observer, options) {
-    var converter, event, events, getHandler, observerInterface, setHandler, subjectInterface, triggerOnBind, _i, _len, _ref, _results;
-    _.defaults(options, defaultRegisterOptions);
-    events = Synapse.getEvents(subject, options.event);
-    _ref = Synapse.getInterfaces(subject, observer, options.subjectInterface, options.observerInterface), subjectInterface = _ref[0], observerInterface = _ref[1];
-    converter = options.converter;
-    if (converter && !_.isFunction(converter)) {
-      converter = observer[converter];
-    }
-    triggerOnBind = options.triggerOnBind;
-    if (Synapse.handlers[subject.type]) {
-      getHandler = Synapse.handlers[subject.type].getHandler;
-    }
-    if (getHandler == null) {
-      getHandler = function(subject, event, converter, interfaces, setHandler, triggerOnBind) {
-        subject.bind(event, function() {
-          var value;
-          value = _.map(interfaces, subject.get, subject);
-          if (converter) {
-            value = converter.apply(converter, value);
-            if (!_.isArray(value)) {
-              value = [value];
-            }
-          }
-          return setHandler.apply(subject.context, value);
-        });
-        if (triggerOnBind) {
-          return subject.trigger(event);
-        }
-      };
-    }
-    if (Synapse.handlers[observer.type]) {
-      setHandler = Synapse.handlers[observer.type].setHandler;
-    }
-    if (setHandler == null) {
-      setHandler = function(observer, interfaces) {
-        return function(value) {
-          var interface, _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = interfaces.length; _i < _len; _i++) {
-            interface = interfaces[_i];
-            _results.push(observer.set(interface, value));
-          }
-          return _results;
-        };
-      };
-    }
-    setHandler = setHandler(observer, observerInterface);
-    _results = [];
-    for (_i = 0, _len = events.length; _i < _len; _i++) {
-      event = events[_i];
-      subject.observers[observer.guid][event] = true;
-      observer.subjects[subject.guid][event] = true;
-      _results.push(getHandler(subject, event, converter, subjectInterface, setHandler, triggerOnBind));
-    }
-    return _results;
-  };
-  Synapse.registerSync = function(object1, object2) {
-    Synapse.registerObserver(object1, object2);
-    return Synapse.registerObserver(object2, object1);
-  };
-  Synapse.register = function(subject, observer, subjectInterface, observerInterface) {
-    var opt, options, _i, _len, _results;
-    if (!subject.observers[observer.guid]) {
-      subject.observers[observer.guid] = {};
-    }
-    if (!observer.subjects[subject.guid]) {
-      observer.subjects[subject.guid] = {};
-    }
-    if (_.isFunction(subjectInterface)) {
-      options = {
-        converter: subjectInterface
-      };
-    } else if (!_.isObject(subjectInterface)) {
-      options = {
-        subjectInterface: subjectInterface,
-        observerInterface: observerInterface
-      };
-    } else {
-      options = subjectInterface;
-    }
-    if (!_.isArray(options)) {
-      options = [options];
-    }
-    _results = [];
-    for (_i = 0, _len = options.length; _i < _len; _i++) {
-      opt = options[_i];
-      _results.push(register(subject, observer, opt));
-    }
-    return _results;
-  };
+  Synapse.getInterfaces = getInterfaces;
+  Synapse.interfaces = interfaces;
   return window.Synapse = Synapse;
 })(window);

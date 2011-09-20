@@ -139,13 +139,13 @@
         observe: (other, args...) ->
             if not (other instanceof Synapse)
                 other = Synapse(other)
-            Synapse.register(other, @, args...)
+            connect(other, @, args...)
             return @
 
         notify: (other, args...) ->
             if not (other instanceof Synapse)
                 other = Synapse(other)
-            Synapse.register(@, other, args...)
+            connect(@, other, args...)
             return @
 
         toString: -> "<Synapse #{TypeNames[@type]} ##{@guid}>"

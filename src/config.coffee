@@ -3,6 +3,10 @@
         # Adds additional logging at various points
         debug: false
 
+        # Prevents extending jQuery and Backbone classes with the Synapse
+        # methods
+        noConflict: false
+
         # Default DOM events. When a DOM element is declared the subject of a
         # binding and no event is specified, the element will be compared to
         # each item in this list in order to determine the appropriate DOM
@@ -16,6 +20,10 @@
             [':input', 'keyup']
         ]
 
+        # The default DOM event to be used if none was detected from the above
+        # list. If not defined, an error will be thrown for undetected events.
+        defaultDomEvent: null
+
         # Default element interfaces relative to their selectors. Each
         # item will be iterated over in order and compared against using
         # the ``jQuery.fn.is()`` method for comparison. Note that more
@@ -27,7 +35,9 @@
             [':input', 'value']
         ]
 
-        # The default element interface for all other non-actionable elements
+        # The default element interface to be used if none was detected from
+        # the above list. If not defined, an error will be thrown for undetected
+        # interfaces.
         defaultElementInterface: 'text'
 
         # An array of element attributes to check for a value during interface
