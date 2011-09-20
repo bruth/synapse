@@ -8,6 +8,7 @@ UNDERSCORE_SM = ${SRC_DIR}/underscore
 BACKBONE_SM = ${SRC_DIR}/backbone
 QUNIT_SM = ${SRC_DIR}/qunit
 
+DOCCO = `which docco`
 UGLIFY = `which node` build/uglify.js --unsafe
 COMPILER = `which coffee` -b -s -p
 
@@ -25,7 +26,7 @@ DATE = $(shell git log -1 --pretty=format:%ad)
 
 LATEST_TAG = `git describe --tags \`git rev-list --tags --max-count=1\``
 
-all: pull jquery underscore backbone qunit build uglify
+all: pull jquery underscore backbone qunit build uglify docs
 
 jquery:
 	@@echo 'Updating jQuery...'
@@ -63,6 +64,15 @@ uglify: compile
 	@@echo 'Uglifying...'
 	${UGLIFY} ${DIST_DIR}/synapse.js > ${DIST_DIR}/synapse.min.js
 
+docs:
+	@@echo 'Building docs...'
+	@@rm -rf docs
+	@@cat ${MODULES} | \
+		sed 's/@DATE/'"${DATE}"'/' | \
+		sed 's/@VERSION/'"${VERSION}"'/' > synapse.coffee
+	${DOCCO} synapse.coffee
+	@@rm synapse.coffee
+
 pull:
 	@@echo 'Pulling latest of everything...'
 	@@git pull origin master
@@ -83,4 +93,4 @@ clean:
 		${EXAMPLES_DIR}/jquery.js
 
 
-.PHONY: all compile build uglify pull jquery underscore backbone qunit clean
+.PHONY: all compile build uglify pull jquery underscore backbone qunit clean docs
