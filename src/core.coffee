@@ -134,26 +134,21 @@
         sync: (other) ->
             if not (other instanceof Synapse)
                 other = Synapse(other)
-            @addNotifier(other).addObserver(other)
+            @observe(other).notify(other)
 
-        addNotifier: (other, get, set) ->
+        observe: (other, args...) ->
             if not (other instanceof Synapse)
                 other = Synapse(other)
-            Synapse.register(other, @, get, set)
+            Synapse.register(other, @, args...)
             return @
 
-        addObserver: (other, get, set) ->
+        notify: (other, args...) ->
             if not (other instanceof Synapse)
                 other = Synapse(other)
-            Synapse.register(@, other, get, set)
+            Synapse.register(@, other, args...)
             return @
 
         toString: -> "<Synapse #{TypeNames[@type]} ##{@guid}>"
 
     Synapse.fn.init:: = Synapse.fn
-
-    # Extra convenience methods..
-    Synapse::observe = Synapse::addNotifier
-    Synapse::notify = Synapse::addObserver
-
 

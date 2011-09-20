@@ -315,14 +315,14 @@ test('read-only non-form element', function() {
     expect(5);
 
     // shorthand for specifying a particular interface for the observers
-    model.addObserver(span, 'title');
+    model.notify(span, 'title');
 
     model.set({title: 'Cool Title'});
     equals(span.get('text'), 'Cool Title', 'the span element observes the title attr on the model');
 
     model.unbind();
 
-    span.addNotifier(model, {
+    span.observe(model, {
         subjectInterface: ['title', 'author'],
         converter: function() {
             return model.get('title') + ' by ' + model.get('author');
@@ -339,12 +339,12 @@ test('read-only non-form element', function() {
     });
 
 
-    model.addNotifier(model2, 'foo');
+    model.observe(model2, 'foo');
     equals(model.get('foo'), 'Bar', 'initial value');
     model2.set({foo: 'Hello'});
     equals(model.get('foo'), 'Hello', 'model is observing model2');
 
-    text.addNotifier(model);
+    text.observe(model);
 
     model.set({text: 'Foo'});
     equals(text.get('value'), 'Foo');

@@ -115,20 +115,24 @@ var __slice = Array.prototype.slice;
       if (!(other instanceof Synapse)) {
         other = Synapse(other);
       }
-      return this.addNotifier(other).addObserver(other);
+      return this.observe(other).notify(other);
     },
-    addNotifier: function(other, get, set) {
+    observe: function() {
+      var args, other;
+      other = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       if (!(other instanceof Synapse)) {
         other = Synapse(other);
       }
-      Synapse.register(other, this, get, set);
+      Synapse.register.apply(Synapse, [other, this].concat(__slice.call(args)));
       return this;
     },
-    addObserver: function(other, get, set) {
+    notify: function() {
+      var args, other;
+      other = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       if (!(other instanceof Synapse)) {
         other = Synapse(other);
       }
-      Synapse.register(this, other, get, set);
+      Synapse.register.apply(Synapse, [this, other].concat(__slice.call(args)));
       return this;
     },
     toString: function() {
@@ -136,8 +140,6 @@ var __slice = Array.prototype.slice;
     }
   };
   Synapse.fn.init.prototype = Synapse.fn;
-  Synapse.prototype.observe = Synapse.prototype.addNotifier;
-  Synapse.prototype.notify = Synapse.prototype.addObserver;
   detectDomEvent = function(elem) {
     var event, item, selector, _i, _len, _ref;
     _ref = Synapse.configuration.domEvents;

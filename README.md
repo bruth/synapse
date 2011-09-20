@@ -46,7 +46,7 @@ interactions between the objects. For example:
 var A = $('input[name=title]');
 var B = new Backbone.Model;
 
-Synapse(A).addObserver(B);
+Synapse(A).notify(B);
 ```
 
 The subject ``A`` is an input element with a name attribute of 'title'.
@@ -81,7 +81,7 @@ on the types of objects that are interacting. For example:
 
 ```javascript
 var C = $(':checkbox');
-Synapse(A).addObserver(C);
+Synapse(A).notify(C);
 ```
 
 The observer in this case is a checkbox. The default behavior (in virtually all
@@ -201,7 +201,7 @@ a message prior to being read by the observer
 An explicit binding can be defined as follows:
 
 ```javascript
-Synapse('input').addObserver('span', {
+Synapse('input').notify('span', {
     event: 'keyup',
     subjectInterface: 'value',
     observerInterface: 'text'
@@ -211,7 +211,7 @@ Synapse('input').addObserver('span', {
 or multiple bindings can be defined:
 
 ```javascript
-Synapse('input').addObserver('span', [
+Synapse('input').notify('span', [
     {
         event: 'keyup',
         subjectInterface: 'value',
