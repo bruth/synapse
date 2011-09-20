@@ -1,6 +1,8 @@
 Synapse (The Backbone KVO Library)
 ==================================
 
+Read the annotated source: http://bruth.github.com/synapse/docs/synapse.html
+
 Get Synapse
 -----------
 Download this (temporary until I get a better process):
