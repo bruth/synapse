@@ -1,187 +1,131 @@
-# NOTE: indent is necessary for building...
-
-    # this is in underscore dev
-    if not _.isObject then _.isObject = (object) -> object is Object(object)
-
-
-    # default configuration options for Synapse
-    defaultSynapseConf =
-        autoExtendObjects: true
-        debug: false
-
-
-    # user can predefine Synapse as an object defining options.
-    # this object will be augmented during execution
-    synapseConf = @Synapse or {}
-
-
-    # fill in the rest of the default options
-    _.defaults(synapseConf, defaultSynapseConf)
-
-    # define and build up local copy of Synapse
-    Synapse = (object) -> new Synapse.fn.init(object)
-
-    Synapse.version = '@VERSION'
-
-    # global internal counter for all objects. used to reference objects
-    # that are connected in some way.
-    Synapse.guid = 1
-
-    # general cache for all objects by their ``guid``
-    Synapse.cache = {}
-
-    # store configuration
-    Synapse.conf = synapseConf
-
-    # an enumeration of supported object types
-    Synapse.types =
-
-        # object primitive or instance that is not natively supported. the
-        # object will be extended with Backbone.Events if the methods
-        # 'bind', 'trigger' and 'unbind' are not present.
+    # ## Supported Types
+    # An enumeration of supported object types including:
+    #
+    # - any object (fallback)
+    # - jQuery and DOM elements
+    # - Backbone.Model objects
+    # - Backbone.Collection objects
+    # - Backbone.View objects
+    Types =
         object: 0
-
-        # represents a jQuery object
         jquery: 1
-
-        # Backbone model object
         model: 2
-
-        # Backbone collection object
         collection: 3
-
-        # Backbone view object
         view: 4
 
-        # Backbone router object
-        router: 5
-
-
-    typeNames =
+    TypeNames =
         0: 'Object'
         1: 'jQuery'
         2: 'Model'
         3: 'Collection'
         4: 'View'
-        5: 'Router'
 
-
-    # determines the object type
-    Synapse.getObjectType = (object) ->
+    getObjectType = (object) ->
 
         if object instanceof $
-            return Synapse.types.jquery
+            return Types.jquery
 
         if object instanceof Backbone.Model
-            return Synapse.types.model
+            return Types.model
 
         if object instanceof Backbone.Collection
-            return Synapse.types.collection
+            return Types.collection
 
         if object instanceof Backbone.View
-            return Synapse.types.view
+            return Types.view
 
-        if object instanceof Backbone.Router
-            return Synapse.types.router
+        return Types.object
 
-        return Synapse.types.object
 
+    # The ``Synapse`` constructor acts as a common adapter between objects
+    # providing a common interface for each type of object.
+    Synapse = (object) -> new Synapse.fn.init(object)
+
+    Synapse.guid = 1
+    Synapse.cache = {}
+    Synapse.version = '@VERSION'
+    Synapse.configuration = configuration
 
     Synapse.fn = Synapse:: =
 
         constructor: Synapse
 
-        # keep references to all observers and subjects via their guid.
-        # the corresponding event and whether it is an active connection.
-        # { 3: [event, true] }
+        # Keep references to all observers and subjects via their guid, the
+        # corresponding event, and whether it is an active connection.
+        # ``{ 3: [event, true] }``. So the necessary objects can be deferenced
+        # when observing is turned off.
         observers: {}
-
         subjects: {}
 
+        # ## Constructor
+        # Ensure the ``context`` is not already an instance of ``Synapse``.
+        # Strings and DOM elements are converted to jQuery objects and the
+        # original context is stored for safe-keeping. The ``type`` is
+        # determined for inferring the interfaces.
         init: (context) ->
-            # already an instance
             if context instanceof Synapse then return context
 
-            # convert into a jQuery object if a string or element
             if _.isString(context) or _.isElement(context)
+                @originalContext = context
                 context = $.apply($, arguments)
 
-            # store reference to original context 
             @context = context
+            @type = getObjectType(context)
 
-            # get the type of the context
-            @type = Synapse.getObjectType(context)
-
-            # increment guid and cache a reference to this object
             Synapse.cache[@guid = Synapse.guid++] = @
 
-        # use native bind method if available and fallback to the
-        # Backbone.Events.bind
+        # ## Bind/Unbind/Trigger
+        # The common interface between all objects are the ``bind``,
+        # ``unbind``, and ``trigger`` methods. The native methods are used if
+        # available and fallback to the methods defined on the
+        # ``Backbone.Events`` module.
         bind: ->
-            if @context.bind
-                @context.bind.apply(@context, arguments)
-            else
-                Backbone.Events.bind.apply(@context, arguments)
-            return @
+            bind = @context.bind or Backbone.Events.bind
+            bind.apply @context, arguments
 
-        # use native unbind method if available and fallback to the
-        # Backbone.Events.unbind
         unbind: ->
-            if @context.unbind
-                @context.unbind.apply(@context, arguments)
-            else
-                Backbone.Events.unbind.apply(@context, arguments)
-            return @
+            unbind = @context.unbind or Backbone.Events.unbind
+            unbind.apply @context, arguments
 
-        # use native trigger method if available and fallback to the
-        # Backbone.Events.trigger
         trigger: ->
-            if @context.trigger
-                @context.trigger.apply(@context, arguments)
-            else
-                Backbone.Events.trigger.apply(@context, arguments)
-            return @
+            trigger = @context.trigger or Backbone.Events.trigger
+            trigger.apply @context, arguments
 
+
+        # ## Get/Set
+        # The second shared interface between all objects are the ``get`` and
+        # ``set`` methods. The appropriate method of invocation is chosen
+        # depending on the object type. If a ``jQuery`` object, the built-in
+        # interfaces are used. The ``key`` will be checked on all other objects
+        # to be a method, and then checked for a local ``get``/``set`` method.
+        # The fallback (e.g. object primitives) is to return or set the object
+        # property.
         get: (key) ->
-            # use the interfaces for jQuery objects
-            if @type is Synapse.types.jquery
+            if @type is Types.jquery
                 return Synapse.interfaces.get(@context, key)
 
-            # if a method exists on this object, this takes precedence
             if _.isFunction(@context[key])
                 return @context[key]()
 
-            # use the native get method if it exists e.g.
-            # Backbone.Model.get
             if @context.get
                 return @context.get.call(@context, key)
 
-            # fall back to simply setting the object property
             return @context[key]
 
         set: (key, value) ->
-            # handle single key/value pair and create an object for use
-            # by the below ``set`` methods
             if not _.isObject(key)
                 attrs = {}
                 attrs[key] = value
             else
                 attrs = key
 
-            # if a method exists on this object, this takes precedence
-            if _.isFunction(@context[key])
-                return @context[key](value)
-
-            # use the interfaces for jQuery objects
-            if @type is Synapse.types.jquery
+            if @type is Types.jquery
                 for k, v of attrs
                     Synapse.interfaces.set(@context, k, v)
-
-            # next try using native set method on context e.g. Model.set
+            else if _.isFunction(@context[key])
+                @context[key](value)
             else if @context.set
                 @context.set.call(@context, attrs)
-
-            # fallback to extending the context object
             else
                 _.extend @context, attrs
 
@@ -204,11 +148,12 @@
             Synapse.register(@, other, get, set)
             return @
 
-        toString: -> "<Synapse #{typeNames[@type]} ##{@guid}>"
+        toString: -> "<Synapse #{TypeNames[@type]} ##{@guid}>"
 
-    # simple convenience methods
+    Synapse.fn.init:: = Synapse.fn
+
+    # Extra convenience methods..
     Synapse::observe = Synapse::addNotifier
     Synapse::notify = Synapse::addObserver
 
-    Synapse.fn.init.prototype = Synapse.fn
 

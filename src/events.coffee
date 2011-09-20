@@ -1,35 +1,26 @@
-    # default element DOM events. when a DOM element is declared the
-    # subject of a binding and no event is specified, the element will
-    # be compared to each item in this list in order to determine the
-    # appropriate DOM event to use.
-    Synapse.defaultDomEvents = [
-        ['a,:button,:reset', 'click']
-        ['select,:checkbox,:radio,textarea', 'change']
-        [':submit', 'submit']
-        [':input', 'keyup']
-    ]
-
-
-    # detect the default DOM event to use for the element
-    detectDomEvent = (subject) ->
-        for item in Synapse.defaultDomEvents
+    # Iterates over each selector and event in ``defaultDomEvents`` and
+    # compares it with the subject ``context`` (e.g. the ``jQuery`` object).
+    detectDomEvent = (elem) ->
+        for item in Synapse.configuration.domEvents
             [selector, event] = item
-            if subject.context.is(selector) then return event
-        throw new Error("Event for #{subject} could not be detected.")
+            if elem.is(selector) then return event
+        throw new Error("Event for #{elem} could not be detected.")
 
 
-    # return an array of events for the given subject. if ``event`` is not
+    # Return an array of events for the given subject. if ``event`` is not
     # supplied, attempt to detect the appropriate event for the object type.
+    # An array is used when subjects are being observed via multiple events.
     Synapse.getEvents = (subject, event) ->
         if not event
-            if subject.type is Synapse.types.jquery
-                events = [detectDomEvent(subject)]
-            else if subject.type is Synapse.types.model
+            if subject.type is Types.jquery
+                events = [detectDomEvent(subject.context)]
+            else if subject.type is Types.view
+                events = [detectDomEvent(subject.context.el)]
+            else if subject.type is Types.model
                 events = ['change']
             else
                 throw new Error('No event defined for subject')
         else
-            # ensure an array is returned
             events = if not _.isArray(event) then [event] else event
 
         return events
