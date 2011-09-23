@@ -74,10 +74,10 @@
                         observerInterface: 'addClick',
                         triggerOnBind: false
                     })
-                    .notify('.clicks', [
+                    .notify('.clicks',
                         { subjectInterface: 'clicks' },
                         { subjectInterface: 'hasTooManyClicks', observerInterface: 'css:red' }
-                    ])
+                    )
                     .notify('#example0-3 .clicker', 'hasTooManyClicks', 'disabled') 
                     .notify('#example0-3 .message', 'hasTooManyClicks', 'visible');
 
