@@ -302,8 +302,6 @@ var __slice = Array.prototype.slice;
         subjectInterface: arg0,
         observerInterface: arg1
       };
-    } else {
-      options = arg0;
     }
     if (!_.isArray(options)) {
       options = [options];

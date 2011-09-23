@@ -77,8 +77,6 @@
             options =
                 subjectInterface: arg0
                 observerInterface: arg1
-        else
-            options = arg0
 
         # the configuration is already defined as an object
         if not _.isArray(options)
