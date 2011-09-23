@@ -217,10 +217,10 @@ Synapse(model)
     })
     // notify the counter of the clicks and update clicks
     // if it reaches too many
-    .notify('.clicks', [
+    .notify('.clicks',
         { subjectInterface: 'clicks' },
         { subjectInterface: 'hasTooManyClicks', observerInterface: 'css:red' }
-    ])
+    )
      
     .notify('.clicker', 'hasTooManyClicks', 'disabled') 
     .notify('.message', 'hasTooManyClicks', 'visible');
