@@ -1,8 +1,9 @@
+PID_FILE = .watch-pid
+
 SRC_DIR = src
 DIST_DIR = dist
 EXAMPLES_DIR = examples/js
 TEST_DIR = examples/test
-PID_FILE = /tmp/synapse-watch
 
 JQUERY_SM = ${SRC_DIR}/jquery
 UNDERSCORE_SM = ${SRC_DIR}/underscore
@@ -22,8 +23,8 @@ MODULES = ${SRC_DIR}/intro.coffee \
 		  ${SRC_DIR}/interfaces.coffee \
 		  ${SRC_DIR}/outro.coffee
 
-VERSION = $(shell cat VERSION)
-DATE = $(shell git log -1 --pretty=format:%ad)
+VERSION = `cat VERSION`
+DATE = `git log -1 --pretty=format:%ad`
 
 LATEST_TAG = `git describe --tags \`git rev-list --tags --max-count=1\``
 
@@ -105,4 +106,4 @@ clean:
 		${EXAMPLES_DIR}/jquery.js
 
 
-.PHONY: all compile build uglify pull jquery underscore backbone qunit clean docs
+.PHONY: all watch unwatch compile build uglify pull jquery underscore backbone qunit clean docs
