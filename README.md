@@ -36,19 +36,19 @@ objects. In order for two objects to communicate, there are three components
 needing to be defined for ``A`` &rarr; ``B``:
 
 * the event that will trigger when ``A``'s state changes
-* the function to call on ``A`` that returns a representation of the changed
+* the function to call on/for ``A`` that returns a representation of the changed
 state (typically the data that has changed)
-* the function to call on ``B`` that handles this data from ``A``
+* the function to call on/for ``B`` that handles this data from ``A``
 
 The hub can be defined with respect to either the subject ``A`` or the observer
 ``B`` depending on the system. In either case, whenever a change in state occurs
-in ``A``, it will notify ``B`` (and all other observers of that data).
+in ``A``, ``B`` (and all other observers of that event) will be notified.
 
 To facilitate the most common cases, Synapse infers the three components above
 from the objects' types. Currently, Synapse has built-in support for "plain"
-objects (or instances), jQuery objects (and thus DOM elements), and Backbone
-Model instances. The various subject/observer combinations infer different
-interactions between the objects. For example:
+objects (or instances), jQuery/Zepto objects (and thus DOM elements), and
+Backbone Model instances. The various subject/observer combinations infer
+different connections between the objects. For example:
 
 ```javascript
 var A = $('input[name=title]');
@@ -57,18 +57,18 @@ var B = new Backbone.Model;
 Synapse(A).notify(B);
 ```
 
-The subject ``A`` is an input element with a name attribute of 'title'.
+The subject ``A`` is an input element with a name attribute of _title_.
 Assuming the input element is a text input, Synapse determines the appropriate
-event to be 'keyup'. That is, whenever the 'keyup' event is triggered (via user
-interaction) ``A`` will notify ``B`` of this occurence.
+event to be _keyup_. That is, whenever the _keyup_ event is triggered (via user
+interaction) ``B`` will be notified of this occurence on behalf of ``A``.
 
 To infer the next two components, the types of ``A`` and ``B`` in combination
 must be considered. Since ``A`` is a form element, the _data_ that is
 sent by ``A`` is it's input value at that current state.
 
-Given that ``B`` is a model instance, we assume to store the _data_ from
-``A`` as a property on ``B``, but under what name? We use the name attribute
-'title'. Thus the equivalent non-Synapse code would look like this:
+Given that ``B`` is a ``Backbone.Model`` instance, we assume to store the
+data from ``A`` as a property on ``B``, but under what name? We use the name
+attribute _title_. Thus the equivalent non-Synapse code would look like this:
 
 ```javascript
 A.bind('keyup', function() {
@@ -93,7 +93,7 @@ Synapse(A).notify(C);
 ```
 
 The observer in this case is a checkbox. The default behavior (in virtually all
-cases) is to become 'checked' or 'unchecked' depending the _falsy_ nature of
+cases) is to become _checked_ or _unchecked_ depending the falsy nature of
 the data sent by the subject. Here is the equivalent non-Synapse code:
 
 ```javascript
@@ -124,12 +124,19 @@ to provide a common API across all interfaces (Synapse objects).
 As one would expect, ``get`` simply takes a ``key`` and returns the
 corresponding value, while ``set`` takes a ``key`` and ``value``.
 
+For example:
+
+```javascript
+var intB = Synapse(B);        // model
+
+intB.get('foo');              // get the value of the 'foo' property
+intB.set('hello', 'moto');    // sets the 'hello' property to 'moto'
+```
+
 Due to their greater depth and complexity, DOM element interface handlers target
 a variety of APIs on the element including attributes, properties, and styles.
 Models and plain objects are much simplier and simply get/set properties
 on themselves.
-
-A few examples of interface handlers:
 
 ```javascript
 var intA = Synapse(A);        // input element interface
@@ -143,11 +150,6 @@ intA.set('value', 'foobar');  // sets the 'value' property
 intA.set('visible', false);   // makes the element hidden
 intA.set('disabled', true);   // makes the element disabled
 intA.set('attr:foo', 'bar');  // adds an attribute 'foo=bar' on the element
-
-var intB = Synapse(B);        // model
-
-intB.get('foo');              // get the value of the 'foo' property
-intB.set('hello', 'moto');    // sets the 'hello' property to 'moto'
 ```
 
 The interfaces registry can be extended by registering new interfaces or
@@ -198,11 +200,13 @@ var spanInt = Synapse('span').observe(model, {
     getHandler: 'fullName'
 });
 ```
+
 * ``setHandler`` - The interface handler to use by the subject for
 returning the data to be passed to all observers. For non-jQuery objects, a
 method will checked for first as explained above for ``getHandler``.
-* ``converter`` - A function which takes the data from the subject and performs
-some manipulation prior to passing it to the observer.
+* ``converter`` - A function which takes the data returned from the
+``getHandler`` and performs some manipulation prior to passing it to
+the ``setHandler``.
 
 An explicit binding can be defined as follows:
 
@@ -232,9 +236,3 @@ Examples
 --------
 View examples here to gradually learn the API:
 http://bruth.github.com/synapse/examples/
-
-
-TODO
-----
-* Add more examples
-* Provide way to unobserve an object

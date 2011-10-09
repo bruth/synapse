@@ -28,7 +28,7 @@ DATE = `git log -1 --pretty=format:%ad`
 
 LATEST_TAG = `git describe --tags \`git rev-list --tags --max-count=1\``
 
-all: pull jquery underscore backbone qunit build uglify docs
+all: jquery underscore backbone qunit build uglify docs
 
 jquery:
 	@echo 'Updating jQuery...'
@@ -48,6 +48,7 @@ backbone:
 
 qunit:
 	@echo 'Updating QUnit...'
+	@cd ${QUNIT_SM} && git checkout ${LATEST_TAG}
 	@cp ${QUNIT_SM}/qunit/qunit.* ${TEST_DIR}
 
 watch: unwatch
@@ -88,7 +89,6 @@ docs:
 
 pull:
 	@echo 'Pulling latest of everything...'
-	@git pull origin master
 	@if [ -d .git ]; then \
 		if git submodule status | grep -q -E '^-'; then \
 			git submodule update --init --recursive; \
