@@ -293,13 +293,13 @@ Synapse(':text').observe(':checkbox', 'enabled', 'checked');
 
         <div class="example">
             <div>
-<pre class="javascript"><code>// add a handler that takes the subject and value that has changed
+<pre class="javascript"><code>// add a converter that takes the subject and value that has changed
 // state as arguments. the returned values from the handler will be
 // used as the value for the observers interface.
 Synapse('span').observe('input', {
     subjectInterface: 'value',
     observerInterface: 'html',
-    handler: function(value) {
+    converter: function(value) {
         if (value !== '')
             return 'I am a &lt;b&gt;' + value + '&lt;/b&gt;';
         return '&lt;em class="meta"&gt;please type something&lt;/em&gt;';
