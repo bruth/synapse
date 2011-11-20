@@ -1,3 +1,0 @@
-
-    window.Synapse = Synapse
-

@@ -31,7 +31,7 @@ contain the built files ``synapse.js`` and ``synapse.min.js``.
 
 Introduction
 ------------
-Synapse provides a mechanism for defining a communication pipeline between two
+Synapse provides a mechanism for defining a communication channel between two
 objects. In order for two objects to communicate, there are three components
 needing to be defined for ``A`` &rarr; ``B``:
 
@@ -40,9 +40,10 @@ needing to be defined for ``A`` &rarr; ``B``:
 state (typically the data that has changed)
 * the function to call on/for ``B`` that handles this data from ``A``
 
-The hub can be defined with respect to either the subject ``A`` or the observer
-``B`` depending on the system. In either case, whenever a change in state occurs
-in ``A``, ``B`` (and all other observers of that event) will be notified.
+The channel can be defined with respect to either the subject ``A`` or the
+observer ``B`` depending on the system. In either case, whenever a change in
+state occurs in ``A``, ``B`` (and all other observers of that event) will be
+notified.
 
 To facilitate the most common cases, Synapse infers the three components above
 from the objects' types. Currently, Synapse has built-in support for "plain"

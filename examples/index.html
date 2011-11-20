@@ -4,20 +4,21 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         
-        <title>Syanpse</title>
+        <title>Synapse</title>
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <link rel="stylesheet" href="css/ir_black.css">
         <link rel="stylesheet" href="css/style.css">
-        <style>
-            .red { color: red; }
-        </style>
+        <style>.red { color: red; }</style>
 
-        <script src="js/jquery.js"></script>
+        <script>
+            var require = {
+                baseUrl: 'js/'
+            };
+        </script>
         <script src="js/underscore.js"></script>
-        <script src="js/backbone.js"></script>
-        <script src="js/synapse.js"></script>
+        <script src="js/require.js"></script>
         <script src="js/highlight.pack.js"></script>
         <script>
             hljs.tabReplace = '    ';
@@ -25,96 +26,88 @@
         </script>
 
         <script>
-            function assert(expr) { return Boolean(expr); }
+            require(['synapse/core', 'synapse/ext/jquery', 'synapse/ext/object', 'synapse/ext/backbone-model'], function(Synapse, jQueryExt, ObjectExt, BackboneModelExt) {
+               
+                Synapse.addExtensions(jQueryExt, BackboneModelExt, ObjectExt)
 
-            $(function() {
+                function assert(expr) { return Boolean(expr); }
 
-                // example pre
-                var prim = {},
-                    sPrim = Synapse(prim);
-                $('#example-pre span').text(assert(prim === sPrim.context));
+                $(function() {
 
-                // example 0
-                var model = new Backbone.Model({ title: 'Hello World' });
-                Synapse('#example0-1 input').sync(model);
-                Synapse('#example0-1 .output').observe(model, 'title');
-                Synapse('#example0-1 .meta').observe(model, function() {
-                    return 'Last updated: ' + (new Date()).toString();
+
+                    // example pre
+                    var obj = {};
+                    $('#example-pre span').text(assert(obj === Synapse(obj).raw));
+
+                    // example 0
+                    var model = new Backbone.Model({ title: 'Hello World' });
+                    Synapse('#example0-1 input').notify(model);
+                    Synapse('#example0-1 .output').observe(model, 'title');
+                    Synapse('#example0-1 .meta').observe(model, function() {
+                        return 'Last updated: ' + (new Date()).toString();
+                    });
+
+                    var Model = Backbone.Model.extend({
+                        fullName: function() {
+                            return this.get('firstName') + ' ' + this.get('lastName');
+                        }
+                    });
+
+                    var model = new Model;
+                    Synapse(model)
+                        .observe('#example0-2 [name=firstName]')
+                        .observe('#example0-2 [name=lastName]')
+                        .notify('#example0-2 .fullName', 'fullName');
+
+                    var Model = Backbone.Model.extend({
+                        defaults: { clicks: 0 },
+                        addClick: function() {
+                            this.set({clicks: this.get('clicks')+1});
+                        },
+                        hasTooManyClicks: function() {
+                            return this.get('clicks') >= 3;
+                        },
+                        resetClicks: function() {
+                            this.set({clicks: this.defaults.clicks});
+                        }
+                    });
+
+                    var model = new Model;
+
+                    Synapse(model)
+                        .observe('#example0-3 .clicker', {
+                            observerInterface: 'addClick',
+                            triggerOnBind: false
+                        })
+                        .notify('.clicks',
+                            { subjectInterface: 'clicks' },
+                            { subjectInterface: 'hasTooManyClicks', observerInterface: 'css:red' }
+                        )
+                        .notify('#example0-3 .clicker', 'hasTooManyClicks', 'disabled') 
+                        .notify('#example0-3 .message', 'hasTooManyClicks', 'visible');
+
+                    Synapse('#example0-3 .reset').notify(model, {observerInterface: 'resetClicks'});
+
+                    // example 1 
+                    Synapse('#example1-1 span').observe('#example1-1 input');
+                    Synapse('#example1-2 input.one').sync('#example1-2 input.two');
+                    Synapse('#example1-3 :text').observe('#example1-3 :checkbox', 'checked', 'enabled');
+                    Synapse('#example1-4 span').observe('#example1-4 input', {
+                        subjectInterface: 'value',
+                        observerInterface: 'html',
+                        converter: function(value) {
+                            if (value !== '')
+                                return 'I am a <b>' + value + '</b>';
+                            return '<em class="meta">please type something</em>';
+                        }
+                    });
                 });
-
-                var Model = Backbone.Model.extend({
-                    fullName: function() {
-                        return this.get('firstName') + ' ' + this.get('lastName');
-                    }
-                });
-
-                var model = new Model;
-                Synapse(model)
-                    .sync('#example0-2 [name=firstName]')
-                    .sync('#example0-2 [name=lastName]')
-                    .notify('#example0-2 .fullName', 'fullName');
-
-                var Model = Backbone.Model.extend({
-                    defaults: { clicks: 0 },
-                    addClick: function() {
-                        this.set({clicks: this.get('clicks')+1});
-                    },
-                    hasTooManyClicks: function() {
-                        return this.get('clicks') >= 3;
-                    },
-                    resetClicks: function() {
-                        this.set({clicks: this.defaults.clicks});
-                    }
-                });
-
-                var model = new Model;
-
-                Synapse(model)
-                    .observe('#example0-3 .clicker', {
-                        observerInterface: 'addClick',
-                        triggerOnBind: false
-                    })
-                    .notify('.clicks',
-                        { subjectInterface: 'clicks' },
-                        { subjectInterface: 'hasTooManyClicks', observerInterface: 'css:red' }
-                    )
-                    .notify('#example0-3 .clicker', 'hasTooManyClicks', 'disabled') 
-                    .notify('#example0-3 .message', 'hasTooManyClicks', 'visible');
-
-                Synapse('#example0-3 .reset').notify(model, {observerInterface: 'resetClicks'});
-
-                // example 1 
-                Synapse('#example1-1 span').observe('#example1-1 input');
-                Synapse('#example1-2 input.one').sync('#example1-2 input.two');
-                Synapse('#example1-3 :text').observe('#example1-3 :checkbox', 'checked', 'enabled');
-                Synapse('#example1-4 span').observe('#example1-4 input', {
-                    subjectInterface: 'value',
-                    observerInterface: 'html',
-                    converter: function(value) {
-                        if (value !== '')
-                            return 'I am a <b>' + value + '</b>';
-                        return '<em class="meta">please type something</em>';
-                    }
-                });
-
-                // example 2
-                var bprim = Synapse({}).observe('#example2-1 input').notify('#example2-1 span', {
-                    event: 'change',
-                    subjectInterface: 'foo',
-                    observerInterface: 'text'
-                });
-
-                setInterval(function() {
-                    bprim.trigger('change');
-                }, 100);
-
             });
         </script>
 
     </head>
     <body>        
-
-        <h1>Synapse (The Backbone KVO Library)</h1>
+        <h1>Synapse</h1>
 
         <p class="meta"><a href="./test/">View tests</a> (only tested in Chrome)</p>
 
@@ -128,12 +121,12 @@ var obj = {};
 
 // simple constructor to wrap objects for use with the API, returns
 // the Synapse object.
-// the original object is a property called ``context``.
-assert(Synapse(obj).context === prim);
+// the original object is a property called ``raw``.
+assert(Synapse(obj).raw === obj);
 </code></pre>
             </div>
             <div id="example-pre">
-                <code>assert(prim === bprim.context)</code><br>
+                <code>assert(Synapse(obj).raw === obj)</code><br>
                 <span class="meta"></span>
             </div>
         </div>
@@ -293,13 +286,13 @@ Synapse(':text').observe(':checkbox', 'enabled', 'checked');
 
         <div class="example">
             <div>
-<pre class="javascript"><code>// add a handler that takes the subject and value that has changed
+<pre class="javascript"><code>// add a converter that takes the subject and value that has changed
 // state as arguments. the returned values from the handler will be
 // used as the value for the observers interface.
 Synapse('span').observe('input', {
     subjectInterface: 'value',
     observerInterface: 'html',
-    handler: function(value) {
+    converter: function(value) {
         if (value !== '')
             return 'I am a &lt;b&gt;' + value + '&lt;/b&gt;';
         return '&lt;em class="meta"&gt;please type something&lt;/em&gt;';
@@ -315,31 +308,8 @@ Synapse('span').observe('input', {
 
         <h3>Primitives</h3>
 
-        <div class="example">
-            <div>
-<pre class="javascript"><code>// a simple primitive is keeping track of the
-// value of the input field. the property will be the input's name
-// attribute
-var sPrim = Synapse({}).observe('input').notify('span', {
-    subjectInterface: 'foo',
-    observerInterface: 'text',
-    event: 'change'
-});
 
-// to emulate the trigger, we just set an interval for every 100ms
-setInterval(function() {
-    sPrim.trigger('change');
-}, 100);
-
-</code></pre>
-            </div>
-
-            <div id="example2-1">
-                <input type="text" name="foo">
-                <span></span>
-            </div>
-        </div>
-
+        <!--
         <script>
           var _gaq = _gaq || [];
           _gaq.push(['_setAccount', 'UA-8483912-3']);
@@ -351,7 +321,7 @@ setInterval(function() {
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
-
+        -->
     </body>
 </html>
 
