@@ -1,59 +1,39 @@
+COFFEE_DIR = ./src
+EXAMPLES_DIR = ./examples
+DIST_DIR = ./dist
+BUILD_DIR = ./build
 PID_FILE = .watch-pid
 
-SRC_DIR = src
-DIST_DIR = dist
-EXAMPLES_DIR = examples/js
-TEST_DIR = examples/test
+SASS_DIR = ./examples/scss
+CSS_DIR = ./examples/css
 
-JQUERY_SM = ${SRC_DIR}/jquery
-UNDERSCORE_SM = ${SRC_DIR}/underscore
-BACKBONE_SM = ${SRC_DIR}/backbone
-QUNIT_SM = ${SRC_DIR}/qunit
-
-DOCCO = `which docco`
-UGLIFY = `which node` build/uglify.js --unsafe
-COMPILER = `which coffee` -b -s -p
-
-MODULES = ${SRC_DIR}/intro.coffee \
-		  ${SRC_DIR}/config.coffee \
-		  ${SRC_DIR}/core.coffee \
-		  ${SRC_DIR}/events.coffee \
-		  ${SRC_DIR}/handlers.coffee \
-		  ${SRC_DIR}/connect.coffee \
-		  ${SRC_DIR}/interfaces.coffee \
-		  ${SRC_DIR}/outro.coffee
-
-VERSION = `cat VERSION`
-DATE = `git log -1 --pretty=format:%ad`
+COMPILE_SASS = `which sass` --scss --style=compressed ${SASS_DIR}:${CSS_DIR}
+COMPILE_COFFEE = `which coffee` -b -o ${BUILD_DIR} -c ${COFFEE_DIR}
+WATCH_COFFEE = `which coffee` -w -b -o ${BUILD_DIR} -c ${COFFEE_DIR}
+REQUIRE_OPTIMIZE = `which node` bin/r.js -o build.js
 
 LATEST_TAG = `git describe --tags \`git rev-list --tags --max-count=1\``
 
-all: jquery underscore backbone qunit build uglify docs
+all: build watch
 
-jquery:
-	@echo 'Updating jQuery...'
-	@cd ${JQUERY_SM} && git checkout ${LATEST_TAG}
-	@cd ${JQUERY_SM} && make
-	@cp ${JQUERY_SM}/dist/jquery.js ${EXAMPLES_DIR}
+build: sass coffee
 
-underscore:
-	@echo 'Updating Underscore...'
-	@cd ${UNDERSCORE_SM} && git checkout ${LATEST_TAG}
-	@cp ${UNDERSCORE_SM}/underscore.js ${EXAMPLES_DIR}
+dist: build optimize
+	@echo 'Creating a source distributions...'
 
-backbone:
-	@echo 'Updating Backbone...'
-	@cd ${BACKBONE_SM} && git checkout ${LATEST_TAG}
-	@cp ${BACKBONE_SM}/backbone.js ${EXAMPLES_DIR}
+sass:
+	@echo 'Compiling Sass...'
+	@mkdir -p ${CSS_DIR}
+	@${COMPILE_SASS} --update
 
-qunit:
-	@echo 'Updating QUnit...'
-	@cd ${QUNIT_SM} && git checkout ${LATEST_TAG}
-	@cp ${QUNIT_SM}/qunit/qunit.* ${TEST_DIR}
+coffee:
+	@echo 'Compiling CoffeeScript...'
+	@${COMPILE_COFFEE}
 
 watch: unwatch
 	@echo 'Watching in the background...'
-	@${COMPILER} &> /dev/null & echo $$! > ${PID_FILE}
+	@${WATCH_COFFEE} &> /dev/null & echo $$! > ${PID_FILE}
+	@${COMPILE_SASS} --watch &> /dev/null & echo $$! >> ${PID_FILE}
 
 unwatch:
 	@if [ -f ${PID_FILE} ]; then \
@@ -62,48 +42,13 @@ unwatch:
 		rm ${PID_FILE}; \
 	fi;
 
-compile:
-	@echo 'Compiling CoffeeScript...'
-	@mkdir -p dist
-	@cat ${MODULES} | \
-		sed 's/@DATE/'"${DATE}"'/' | \
-		sed 's/@VERSION/'"${VERSION}"'/' | \
-		${COMPILER} > ${DIST_DIR}/synapse.js
-
-build: compile
-	@echo 'Building...'
-	@cp ${DIST_DIR}/synapse.js ${EXAMPLES_DIR}
-
-uglify: compile
-	@echo 'Uglifying...'
-	@${UGLIFY} ${DIST_DIR}/synapse.js > ${DIST_DIR}/synapse.min.js
-
-docs:
-	@echo 'Building docs...'
-	@rm -rf docs
-	@cat ${MODULES} | \
-		sed 's/@DATE/'"${DATE}"'/' | \
-		sed 's/@VERSION/'"${VERSION}"'/' > synapse.coffee
-	@${DOCCO} synapse.coffee
-	@rm synapse.coffee
-
-pull:
-	@echo 'Pulling latest of everything...'
-	@if [ -d .git ]; then \
-		if git submodule status | grep -q -E '^-'; then \
-			git submodule update --init --recursive; \
-		else \
-			git submodule update --init --recursive --merge; \
-		fi; \
-	fi;
-	@git submodule foreach "git pull \$$(git config remote.origin.url)"	
+optimize: clean
+	@echo 'Optimizing the javascript...'
+	@mkdir -p ${DIST_DIR}
+	@${REQUIRE_OPTIMIZE} > /dev/null
+	@cp -r ${DIST_DIR}/synapse* ${EXAMPLES_DIR}/js
 
 clean:
-	@rm -rf ${DIST_DIR} \
-		${EXAMPLES_DIR}/synapse.js \
-		${EXAMPLES_DIR}/underscore.js \
-		${EXAMPLES_DIR}/backbone.js \
-		${EXAMPLES_DIR}/jquery.js
+	@rm -rf ${DIST_DIR}
 
-
-.PHONY: all watch unwatch compile build uglify pull jquery underscore backbone qunit clean docs
+.PHONY: all sass coffee watch unwatch build optimize clean

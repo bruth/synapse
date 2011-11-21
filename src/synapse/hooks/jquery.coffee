@@ -1,89 +1,4 @@
-    # Iterates over each selector and event in ``elementInterfaces`` and
-    # compares it with the subject ``context`` (e.g. the ``jQuery`` object).
-    detectElementInterface = (elem) ->
-        elem = jQuery(elem)
-        for item in Synapse.configuration.elementInterfaces
-            [selector, interface] = item
-            if elem.is(selector) then return interface
-        if Synapse.configuration.defaultElementInterface
-            return Synapse.configuration.defaultElementInterface
-        throw new Error("Interface for #{elem} could not be detected.")
-
-    # Return an array of interfaces appropriate for the given subject/observer.
-    # If no interface is defined, only if a ``name`` or ``role`` attribute on
-    # either the subject or observer will be used by default. The following steps
-    # are invovled in determining the interfaces:
-    #
-    # - each interface is independently determined first, since the other may
-    # be inferred from the other (specifically in the case of DOM elements)
-    # - if either are not defined, each is attempted to be determined relative
-    # to the other
-    # - elements can use an arbitrary identifier such as the ``name`` or
-    # ``role`` attribute (e.g. name="title")
-    #
-    # The last step slits the string in case multiple interfaces have been
-    # defined for either side.
-    #
-    # **Special note:**
-    # If no ``subjectInterface`` has been set and the subject is a model, assume
-    # the observer wants to observe any change of the model. This generally
-    # assumes a handler of some sorts will be performing any necessary
-    # manipulation.
-    getInterfaces = (subject, observer, subjectInterface, observerInterface) ->
-
-        if not subjectInterface
-            if subject.type is Types.jquery
-                subjectInterface = detectElementInterface(subject.context)
-            else if subject.type is Types.view
-                subjectInterface = detectElementInterface(subject.context.el)
-            else if subject.type is Types.model
-                subjectInterface = ''
-
-        if not observerInterface
-            if observer.type is Types.jquery
-                observerInterface = detectElementInterface(observer.context)
-            else if observer.type is Types.view
-                observerInterface = detectElementInterface(observer.context.el)
-
-        if not subjectInterface
-            el = null
-
-            if observer.type is Types.jquery
-                el = jQuery(observer.context)
-            else if observer.type is Types.view
-                el = jQuery(observer.context.el)
-
-            if el
-                for attr in Synapse.configuration.elementBindAttributes
-                    if el.attr(attr)
-                        subjectInterface = el.attr(attr)
-                        break
-
-        if not observerInterface
-            el = null
-
-            if subject.type is Types.jquery
-                el = jQuery(subject.context)
-            else if subject.type is Types.view
-                el = jQuery(subject.context.el)
-
-            if el
-                for attr in Synapse.configuration.elementBindAttributes
-                    if el.attr(attr)
-                        observerInterface = el.attr(attr)
-                        break
-            else
-                observerInterface = subjectInterface
-
-        if not observerInterface
-            throw new Error("The interfaces between #{subject} and #{observer}
-                could be detected - #{subjectInterface} => #{observerInterface}")
-
-        if _.isString(subjectInterface) then subjectInterface = subjectInterface.split(' ')
-        if _.isString(observerInterface) then observerInterface = observerInterface.split(' ')
-
-        return [subjectInterface, observerInterface]
-
+define ['synapse/core', 'jquery'], (core, $) ->
 
     # ### Interfaces Registry
     # Simple module allowing for [un]registering interfaces. The ``get`` and
@@ -92,7 +7,7 @@
     #
     # Compound interfaces correspond to other jQuery APIs such as ``attr``,
     # ``prop`` and ``data`` and require their own ``key``, thus the
-    # ``attr:name`` convention. In this case, the ``key`` will be extracted
+    # ``attr.name`` convention. In this case, the ``key`` will be extracted
     # and passed as the first argument to the interface handler.
     interfaces = do ->
         registry: {}
@@ -103,22 +18,17 @@
         unregister: (name) ->
             delete @registry[name]
 
-        get: (context, name, args...) ->
-            if context instanceof Synapse
-                context = context.context
-
-            [name, key] = name.split ':'
+        get: (object, name, args...) ->
+            [name, key] = name.split '.'
             if key? then args = [key].concat(args)
-            @registry[name].get.apply(context, args)
+            if (interface = @registry[name])
+                return interface.get.apply(object, args)
 
-        set: (context, name, args...) ->
-            if context instanceof Synapse
-                context = context.context
-
-            [name, key] = name.split ':'
+        set: (object, name, args...) ->
+            [name, key] = name.split '.'
             if key? then args = [key].concat(args)
-            @registry[name].set.apply(context, args)
-
+            if (interface = @registry[name])
+                return interface.set.apply(object, args)
 
     # ### Built-In interfaces
     # Each setter and getter for compound interfaces are defined up front
@@ -141,7 +51,6 @@
 
         setAttribute = (key, value) ->
             if _.isObject(key) then @attr(key) else @attr(key, value)
-
 
         getStyle = (key) -> @css(key)
 
@@ -242,7 +151,7 @@
 
         # ### Compound interfaces
 
-        # ### _prop:FOO_
+        # ### _prop.FOO_
         # Gets and sets a property on the target element.
         interfaces.register
             name: 'prop'
@@ -250,7 +159,7 @@
             set: (key, value) -> setProperty.call(@, key, value)
 
 
-        # ### _attr:FOO_
+        # ### _attr.FOO_
         # Gets and sets an attribute on the target element.
         interfaces.register
             name: 'attr'
@@ -258,7 +167,7 @@
             set: (key, value) -> setAttribute.call(@, key, value)
 
 
-        # ### _style:FOO_
+        # ### _style.FOO_
         # Gets and sets a style property on the target element.
         interfaces.register
             name: 'style'
@@ -266,7 +175,7 @@
             set: (key, value) -> setStyle.call(@, key, value)
 
 
-        # ### _css:FOO_
+        # ### _css.FOO_
         # Gets and sets a CSS class on the target element.
         interfaces.register
             name: 'css'
@@ -277,14 +186,94 @@
                 if Boolean(value) then @addClass(key) else @removeClass(key)
 
 
-        # ### _data:FOO_
+        # ### _data.FOO_
         # Gets and sets an attribute on the target element using the jQuery
         # data API.
         interfaces.register
             name: 'data'
             get: (key) -> @data(key)
             set: (key, value) -> @data(key, value)
+            
 
+    # Default DOM events. When a DOM element is declared the subject of a
+    # binding and no event is specified, the element will be compared to
+    # each item in this list in order to determine the appropriate DOM
+    # event to use. Note that more specific selectors should be listed first
+    # to ensure those events are selected before less selective selectors are
+    # encountered.
+    domEvents = [
+        ['a,:button,:reset', 'click']
+        ['select,:checkbox,:radio,textarea', 'change']
+        [':submit', 'submit']
+        [':input', 'keyup']
+    ]
+    
+    # Default element interfaces relative to their selectors. Each
+    # item will be iterated over in order and compared against using
+    # the ``jQuery.fn.is()`` method for comparison. Note that more
+    # specific selectors should be listed first to ensure those events are
+    # selected before less selective selectors are encountered.
+    elementInterfaces = [
+        [':checkbox,:radio', 'checked']
+        [':input', 'value']
+    ]
 
-    Synapse.getInterfaces = getInterfaces
-    Synapse.interfaces = interfaces
+    # An array of element attributes to check for a value during interface
+    # detection. This value will be used for the opposite interface.
+    elementBindAttributes = ['name', 'role', 'data-bind']
+    
+    return {
+        typeName: 'jQuery'
+        
+        domEvents: domEvents
+        
+        elementBindAttributes: elementBindAttributes
+        
+        elementInterfaces: elementInterfaces
+
+        interfaces: interfaces        
+
+        toString: (object) ->
+            object.selector or object.attr('id') or object
+
+        checkObjectType: (object) ->
+            object instanceof $ or object.nodeType is 1 or
+                core.toString.call(object) is '[object String]'
+
+        coerceObject: (object) ->
+            $ object
+
+        getHandler: (object, key) ->
+            value = interfaces.get object, key
+            if value and object.is('input[type=number]')
+                return if value.indexOf('.') > -1 then parseFloat(value) else parseInt(value)
+            return value
+
+        setHandler: (object, key, value) ->
+            interfaces.set object, key, value
+
+        onEventHandler: (object, event, handler) ->
+            object.bind event, handler
+
+        offEventHandler: (object, event, handler) ->
+            object.unbind event, handler
+
+        triggerEventHandler: (object, event) ->
+            object.trigger event
+
+        detectEvent: (object) ->
+            for item in domEvents
+                [selector, event] = item
+                if object.is(selector) then return event
+
+        detectInterface: (object) ->
+            for item in elementInterfaces
+                [selector, interface] = item
+                if object.is(selector) then return interface
+            return 'text'
+
+        detectOtherInterface: (object) ->
+            for attr in elementBindAttributes
+                if (value = object.attr attr)
+                    return value
+    }
