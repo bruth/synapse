@@ -1,7 +1,7 @@
 What Is It
 ==========
 Synapse is a JavaScript data binding library. The API was written to work
-_all-in-code_, that is, it does not depend on any templating library or special
+_all-in-code_, that is, it does not depend on any template library or special
 attributes (e.g. ``data-bind``) to work. Hooks to support these features may
 come in the future.
 
@@ -10,9 +10,6 @@ http://bruth.github.com/synapse/docs/synapse.html
 
 Get It
 ------
-Download this (temporary until I get a better process):
-https://raw.github.com/bruth/synapse/master/examples/js/synapse.js
-
 To build from source you must have CoffeeScript (and thus Node)
 installed:
 
@@ -61,7 +58,7 @@ Synapse(A).notify(B);
 The subject ``A`` is an input element with a name attribute of _title_.
 Assuming the input element is a text input, Synapse determines the appropriate
 event to be _keyup_. That is, whenever the _keyup_ event is triggered (via user
-interaction) ``B`` will be notified of this occurence on behalf of ``A``.
+interaction) ``B`` will be notified of this occurrence on behalf of ``A``.
 
 To infer the next two components, the types of ``A`` and ``B`` in combination
 must be considered. Since ``A`` is a form element, the _data_ that is
@@ -134,9 +131,11 @@ intB.get('foo');              // get the value of the 'foo' property
 intB.set('hello', 'moto');    // sets the 'hello' property to 'moto'
 ```
 
+jQuery Interfaces
+-----------------
 Due to their greater depth and complexity, DOM element interface handlers target
 a variety of APIs on the element including attributes, properties, and styles.
-Models and plain objects are much simplier and simply get/set properties
+Models and plain objects are much simpler and simply get/set properties
 on themselves.
 
 ```javascript
@@ -156,7 +155,7 @@ intA.set('attr:foo', 'bar');  // adds an attribute 'foo=bar' on the element
 The interfaces registry can be extended by registering new interfaces or
 unregistering built-in interfaces and overriding them with custom ones.
 
-Built-in Element Interface Handlers
+Built-in jQuery Interface Handlers
 -----------------------------------
 
 **Simple**
@@ -182,13 +181,12 @@ result in the element being visible
 * ``css:<key>`` - gets/sets the CSS class name ``key``
 * ``data:<key>`` - gets/sets arbitrary data ``key`` using jQuery data API
 
-Bind Options
-------------
+Channel Configuration
+---------------------
 
 * ``event`` - The event(s) that will trigger the notification by the subject
-* ``getHandler`` - The interface handler to use by the subject for
-returning the data to be passed to all observers. For non-jQuery objects, a
-method will checked for first:
+* ``subjectInterface`` - The interface handler to use by the subject for
+returning the data to be passed to all observers.
 
 ```javascript
 var Author = Backbone.Model.extend({
@@ -202,20 +200,19 @@ var spanInt = Synapse('span').observe(model, {
 });
 ```
 
-* ``setHandler`` - The interface handler to use by the subject for
-returning the data to be passed to all observers. For non-jQuery objects, a
-method will checked for first as explained above for ``getHandler``.
+* ``observerInterface`` - The interface handler to use by the subject for
+returning the data to be passed to all observers.
+``subjectInterface`` and performs some manipulation prior to passing it to
+the ``observerInterface``.
 * ``converter`` - A function which takes the data returned from the
-``getHandler`` and performs some manipulation prior to passing it to
-the ``setHandler``.
 
 An explicit binding can be defined as follows:
 
 ```javascript
 Synapse('input').notify('span', {
     event: 'keyup',
-    getHandler: 'value',
-    setHandler: 'text'
+    subjectInterface: 'value',
+    observerInterface: 'text'
 });
 ```
 
@@ -235,7 +232,7 @@ Synapse('input').notify('span', {
 
 Hooks
 -----
-An hook provides the necessary components for interfacing with
+A hook provides the necessary components for interfacing with
 some object. As an example, two built-in hooks include interfaces
 for `jQuery` and `Backbone.Model` objects. This means that a `jQuery`
 object can seamlessly interface with `Backbone.Model` object or with
@@ -253,7 +250,7 @@ and `value` to set a property on the object.
 
 The options above allows for an object of this type to be an _observer_ of
 other objects who are capable of being _subjects_. An bare minimum example
-can be seen here for plain objects: 
+can be seen here for plain objects:
 
 For an object to be capable of being observed, these methods must be defined:
 
