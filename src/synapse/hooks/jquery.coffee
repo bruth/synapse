@@ -1,4 +1,4 @@
-define ['synapse/core', 'jquery'], (Core, $) ->
+define ['synapse/core', 'jquery'], (core, $) ->
 
     # ### Interfaces Registry
     # Simple module allowing for [un]registering interfaces. The ``get`` and
@@ -236,7 +236,7 @@ define ['synapse/core', 'jquery'], (Core, $) ->
 
         checkObjectType: (object) ->
             object instanceof $ or object.nodeType is 1 or
-                Core.toString.call(object) is '[object String]'
+                core.toString.call(object) is '[object String]'
 
         coerceObject: (object) ->
             $ object

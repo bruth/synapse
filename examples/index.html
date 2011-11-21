@@ -210,7 +210,7 @@ Synapse(model)
     // if it reaches too many
     .notify('.clicks',
         { subjectInterface: 'clicks' },
-        { subjectInterface: 'hasTooManyClicks', observerInterface: 'css:red' }
+        { subjectInterface: 'hasTooManyClicks', observerInterface: 'css.red' }
     )
      
     .notify('.clicker', 'hasTooManyClicks', 'disabled') 

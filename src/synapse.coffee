@@ -1,12 +1,12 @@
 #
-#     Synapse
-#     (c) 2011 Byron Ruth
-#     Synapse may be freely distributed under the BSD license
-#     Version: 0.3
-#     Date: 2011-11-21
+# Synapse
+# (c) 2011 Byron Ruth
+# Synapse may be freely distributed under the BSD license
+# Version: 0.3
+# Date: November 21, 2011
 #
 
-define ['synapse/connect'], (connect) ->
+define ['synapse/core', 'synapse/connect'], (core, connect) ->
     objectGuid = 1
 
     class Synapse
@@ -26,7 +26,8 @@ define ['synapse/connect'], (connect) ->
                     @raw = hook.coerceObject?(object) or object
                     @channels = []
                     return
-            throw new Error("No hook exists for #{object} types")
+
+            throw new Error("No hook exists for #{core.getType(object)} types")
 
         # Detects an appropriate event to attach an event handler to. This
         # applies only to subjects.

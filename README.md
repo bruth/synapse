@@ -8,8 +8,8 @@ come in the future.
 Read the annotated source to learn your way around a bit:
 http://bruth.github.com/synapse/docs/synapse.html
 
-Get It
-------
+Build
+-----
 To build from source you must have CoffeeScript (and thus Node)
 installed:
 
@@ -17,14 +17,34 @@ installed:
 make build
 ```
 
-you can also optionally Uglify the built file:
+This will output to a `build` directory. You can also optionally optimize
+the files:
 
 ```
-make uglify
+make optimize 
 ```
 
-in either case, there will be a ``dist`` directory created that will
-contain the built files ``synapse.js`` and ``synapse.min.js``.
+which will output to a ``dist`` directory.
+
+Integrate
+--------
+**Changes to 0.3** - Synapse now uses the AMD format for keeping code
+modularized. The core of Synapse is optimized into a single file, but
+no hooks are included by default. The general flow of bootstrapping
+Synapse is now:
+
+```javascript
+require(['synapse', 'synapse/hooks/jquery', 'synapse/hooks/object'], function(Synapse, jQueryHook, ObjectHook) {
+    // The order in which hooks are added matter. The more specific the object
+    // the earlier it should be added.
+    Synapse.addHooks(jQueryHook, ObjectHook)
+
+    // Use Synapse...
+});
+```
+
+This is due mainly to the new Hooks architecture, but also allows developers to
+freely define and add their own hooks for their application's use.
 
 Introduction
 ------------
@@ -144,12 +164,12 @@ var intA = Synapse(A);        // input element interface
 intA.get('value');            // gets the 'value' property
 intA.get('enabled');          // returns true if the 'disabled' attr is not set
 intA.get('visible');          // returns true if the element is visible
-intA.get('style:background'); // gets the element's CSS background details
+intA.get('style.background'); // gets the element's CSS background details
 
 intA.set('value', 'foobar');  // sets the 'value' property
 intA.set('visible', false);   // makes the element hidden
 intA.set('disabled', true);   // makes the element disabled
-intA.set('attr:foo', 'bar');  // adds an attribute 'foo=bar' on the element
+intA.set('attr.foo', 'bar');  // adds an attribute 'foo=bar' on the element
 ```
 
 The interfaces registry can be extended by registering new interfaces or
@@ -175,11 +195,11 @@ result in the element being visible
 
 **Compound**
 
-* ``prop:<key>`` - gets/sets the property ``key``
-* ``attr:<key>`` - gets/sets the attribute ``key``
-* ``style:<key>`` - gets/sets the CSS style ``key``
-* ``css:<key>`` - gets/sets the CSS class name ``key``
-* ``data:<key>`` - gets/sets arbitrary data ``key`` using jQuery data API
+* ``prop.<key>`` - gets/sets the property ``key``
+* ``attr.<key>`` - gets/sets the attribute ``key``
+* ``style.<key>`` - gets/sets the CSS style ``key``
+* ``css.<key>`` - gets/sets the CSS class name ``key``
+* ``data.<key>`` - gets/sets arbitrary data ``key`` using jQuery data API
 
 Channel Configuration
 ---------------------
@@ -226,7 +246,7 @@ Synapse('input').notify('span', {
 }, {
     event: 'blur',
     subjectInterface: 'value',
-    observerInterface: 'data:title'
+    observerInterface: 'data.title'
 });
 ```
 

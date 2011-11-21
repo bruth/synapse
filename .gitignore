@@ -2,3 +2,4 @@
 .sass-cache
 .watch-pid
 dist
+build
