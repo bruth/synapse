@@ -21,12 +21,14 @@ define ['synapse/core', 'jquery'], (core, $) ->
         get: (object, name, args...) ->
             [name, key] = name.split '.'
             if key? then args = [key].concat(args)
-            @registry[name].get.apply(object, args)
+            if (interface = @registry[name])
+                return interface.get.apply(object, args)
 
         set: (object, name, args...) ->
             [name, key] = name.split '.'
             if key? then args = [key].concat(args)
-            @registry[name].set.apply(object, args)
+            if (interface = @registry[name])
+                return interface.set.apply(object, args)
 
     # ### Built-In interfaces
     # Each setter and getter for compound interfaces are defined up front
@@ -243,7 +245,7 @@ define ['synapse/core', 'jquery'], (core, $) ->
 
         getHandler: (object, key) ->
             value = interfaces.get object, key
-            if object.is('input[type=number]')
+            if value and object.is('input[type=number]')
                 return if value.indexOf('.') > -1 then parseFloat(value) else parseInt(value)
             return value
 
