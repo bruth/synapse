@@ -5,9 +5,6 @@ _all-in-code_, that is, it does not depend on any template library or special
 attributes (e.g. ``data-bind``) to work. Hooks to support these features may
 come in the future.
 
-Read the annotated source to learn your way around a bit:
-http://bruth.github.com/synapse/docs/synapse.html
-
 Build
 -----
 To build from source you must have CoffeeScript (and thus Node)
