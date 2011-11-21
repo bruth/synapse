@@ -267,7 +267,7 @@ and `value` to set a property on the object.
 
 The options above allows for an object of this type to be an _observer_ of
 other objects who are capable of being _subjects_. An bare minimum example
-can be seen here for plain objects:
+can be seen here for plain objects: https://github.com/bruth/synapse/blob/master/src/synapse/hooks/object.coffee
 
 For an object to be capable of being observed, these methods must be defined:
 
@@ -291,7 +291,7 @@ for a channel
 object involved (subject or observer)
 
 These are at the core of the power and simplicity of Synapse. Take a look at
-the jQuery hook to see the potential:
+the jQuery hook to see the potential: https://github.com/bruth/synapse/blob/master/src/synapse/hooks/jquery.coffee
 
 The final method that may be defined is `coerceObject` which takes the object
 in the raw state (passed in to the Synapse constructor) and returns another
