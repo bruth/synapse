@@ -26,9 +26,9 @@
         </script>
 
         <script>
-            require(['synapse/core', 'synapse/ext/jquery', 'synapse/ext/object', 'synapse/ext/backbone-model'], function(Synapse, jQueryExt, ObjectExt, BackboneModelExt) {
+            require(['synapse/core', 'synapse/hooks/jquery', 'synapse/hooks/object', 'synapse/hooks/backbone-model'], function(Synapse, jQueryHook, ObjectHook, BackboneModelHool) {
                
-                Synapse.addExtensions(jQueryExt, BackboneModelExt, ObjectExt)
+                Synapse.addHooks(jQueryHook, BackboneModelHook, ObjectHook)
 
                 function assert(expr) { return Boolean(expr); }
 

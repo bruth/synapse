@@ -20,7 +20,7 @@ define ['synapse/connect'], (connect) ->
         constructor: (object) ->
             if object instanceof Synapse then return object
             if @constructor isnt Synapse then return new Synapse(object)
-            for ext in Synapse.extensions
+            for ext in Synapse.hooks
                 if ext.checkObjectType object
                     @type = ext.typeName
                     @ext = ext
@@ -29,7 +29,7 @@ define ['synapse/connect'], (connect) ->
                     @channels = []
                     @lastInterfaceValues = {} 
                     return
-            throw new Error("No extension exists for #{object} types")
+            throw new Error("No hook exists for #{object} types")
 
         detectEvent: ->
             if (value = @ext.detectEvent @raw, arguments...) then return value
@@ -79,9 +79,9 @@ define ['synapse/connect'], (connect) ->
             @ext.toString?(@raw) or @raw.toString()
 
     
-    # Ability to register extensions
-    Synapse.extensions = extensions = []
-    Synapse.addExtensions = ->
-        extensions.push.apply extensions, arguments
+    # Ability to register hooks
+    Synapse.hooks = hooks = []
+    Synapse.addHooks = ->
+        hooks.push.apply hooks, arguments
     
     return Synapse

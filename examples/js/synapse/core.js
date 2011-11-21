@@ -1,7 +1,7 @@
 var __slice = Array.prototype.slice;
 
 define(['synapse/connect'], function(connect) {
-  var Synapse, extensions, objectGuid;
+  var Synapse, hooks, objectGuid;
   objectGuid = 1;
   Synapse = (function() {
 
@@ -11,7 +11,7 @@ define(['synapse/connect'], function(connect) {
       var ext, _i, _len, _ref;
       if (object instanceof Synapse) return object;
       if (this.constructor !== Synapse) return new Synapse(object);
-      _ref = Synapse.extensions;
+      _ref = Synapse.hooks;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         ext = _ref[_i];
         if (ext.checkObjectType(object)) {
@@ -24,7 +24,7 @@ define(['synapse/connect'], function(connect) {
           return;
         }
       }
-      throw new Error("No extension exists for " + object + " types");
+      throw new Error("No hook exists for " + object + " types");
     }
 
     Synapse.prototype.detectEvent = function() {
@@ -110,9 +110,9 @@ define(['synapse/connect'], function(connect) {
     return Synapse;
 
   })();
-  Synapse.extensions = extensions = [];
-  Synapse.addExtensions = function() {
-    return extensions.push.apply(extensions, arguments);
+  Synapse.hooks = hooks = [];
+  Synapse.addHooks = function() {
+    return hooks.push.apply(hooks, arguments);
   };
   return Synapse;
 });
