@@ -1,7 +1,7 @@
 var __slice = Array.prototype.slice;
 
-define(['jquery'], function($) {
-  var domEvents, elementBindAttributes, elementInterfaces, interfaces, toString;
+define(['synapse/core', 'jquery'], function(Core, $) {
+  var domEvents, elementBindAttributes, elementInterfaces, interfaces;
   interfaces = (function() {
     return {
       registry: {},
@@ -14,14 +14,14 @@ define(['jquery'], function($) {
       get: function() {
         var args, key, name, object, _ref;
         object = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-        _ref = name.split(':'), name = _ref[0], key = _ref[1];
+        _ref = name.split('.'), name = _ref[0], key = _ref[1];
         if (key != null) args = [key].concat(args);
         return this.registry[name].get.apply(object, args);
       },
       set: function() {
         var args, key, name, object, _ref;
         object = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-        _ref = name.split(':'), name = _ref[0], key = _ref[1];
+        _ref = name.split('.'), name = _ref[0], key = _ref[1];
         if (key != null) args = [key].concat(args);
         return this.registry[name].set.apply(object, args);
       }
@@ -199,14 +199,17 @@ define(['jquery'], function($) {
   domEvents = [['a,:button,:reset', 'click'], ['select,:checkbox,:radio,textarea', 'change'], [':submit', 'submit'], [':input', 'keyup']];
   elementInterfaces = [[':checkbox,:radio', 'checked'], [':input', 'value']];
   elementBindAttributes = ['name', 'role', 'data-bind'];
-  toString = Object.prototype.toString;
   return {
     typeName: 'jQuery',
+    domEvents: domEvents,
+    elementBindAttributes: elementBindAttributes,
+    elementInterfaces: elementInterfaces,
+    interfaces: interfaces,
     toString: function(object) {
-      return object.selector || object[0];
+      return object.selector || object.attr('id') || object;
     },
     checkObjectType: function(object) {
-      return object instanceof $ || object.nodeType === 1 || toString.call(object) === '[object String]';
+      return object instanceof $ || object.nodeType === 1 || Core.toString.call(object) === '[object String]';
     },
     coerceObject: function(object) {
       return $(object);

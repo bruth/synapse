@@ -1,4 +1,4 @@
-define ['jquery'], ($) ->
+define ['synapse/core', 'jquery'], (Core, $) ->
 
     # ### Interfaces Registry
     # Simple module allowing for [un]registering interfaces. The ``get`` and
@@ -7,7 +7,7 @@ define ['jquery'], ($) ->
     #
     # Compound interfaces correspond to other jQuery APIs such as ``attr``,
     # ``prop`` and ``data`` and require their own ``key``, thus the
-    # ``attr:name`` convention. In this case, the ``key`` will be extracted
+    # ``attr.name`` convention. In this case, the ``key`` will be extracted
     # and passed as the first argument to the interface handler.
     interfaces = do ->
         registry: {}
@@ -19,12 +19,12 @@ define ['jquery'], ($) ->
             delete @registry[name]
 
         get: (object, name, args...) ->
-            [name, key] = name.split ':'
+            [name, key] = name.split '.'
             if key? then args = [key].concat(args)
             @registry[name].get.apply(object, args)
 
         set: (object, name, args...) ->
-            [name, key] = name.split ':'
+            [name, key] = name.split '.'
             if key? then args = [key].concat(args)
             @registry[name].set.apply(object, args)
 
@@ -149,7 +149,7 @@ define ['jquery'], ($) ->
 
         # ### Compound interfaces
 
-        # ### _prop:FOO_
+        # ### _prop.FOO_
         # Gets and sets a property on the target element.
         interfaces.register
             name: 'prop'
@@ -157,7 +157,7 @@ define ['jquery'], ($) ->
             set: (key, value) -> setProperty.call(@, key, value)
 
 
-        # ### _attr:FOO_
+        # ### _attr.FOO_
         # Gets and sets an attribute on the target element.
         interfaces.register
             name: 'attr'
@@ -165,7 +165,7 @@ define ['jquery'], ($) ->
             set: (key, value) -> setAttribute.call(@, key, value)
 
 
-        # ### _style:FOO_
+        # ### _style.FOO_
         # Gets and sets a style property on the target element.
         interfaces.register
             name: 'style'
@@ -173,7 +173,7 @@ define ['jquery'], ($) ->
             set: (key, value) -> setStyle.call(@, key, value)
 
 
-        # ### _css:FOO_
+        # ### _css.FOO_
         # Gets and sets a CSS class on the target element.
         interfaces.register
             name: 'css'
@@ -184,7 +184,7 @@ define ['jquery'], ($) ->
                 if Boolean(value) then @addClass(key) else @removeClass(key)
 
 
-        # ### _data:FOO_
+        # ### _data.FOO_
         # Gets and sets an attribute on the target element using the jQuery
         # data API.
         interfaces.register
@@ -219,18 +219,24 @@ define ['jquery'], ($) ->
     # An array of element attributes to check for a value during interface
     # detection. This value will be used for the opposite interface.
     elementBindAttributes = ['name', 'role', 'data-bind']
-
-    toString = Object.prototype.toString
     
     return {
         typeName: 'jQuery'
+        
+        domEvents: domEvents
+        
+        elementBindAttributes: elementBindAttributes
+        
+        elementInterfaces: elementInterfaces
+
+        interfaces: interfaces        
 
         toString: (object) ->
-            object.selector or object[0]
+            object.selector or object.attr('id') or object
 
         checkObjectType: (object) ->
             object instanceof $ or object.nodeType is 1 or
-                toString.call(object) is '[object String]'
+                Core.toString.call(object) is '[object String]'
 
         coerceObject: (object) ->
             $ object

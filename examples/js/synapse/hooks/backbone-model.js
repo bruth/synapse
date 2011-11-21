@@ -1,10 +1,7 @@
 
 define(['backbone'], function() {
   return {
-    typeName: 'Backbone.Model',
-    toString: function(object) {
-      return object.cid;
-    },
+    typeName: 'Backbone Model',
     checkObjectType: function(object) {
       return object instanceof Backbone.Model;
     },

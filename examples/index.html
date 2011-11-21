@@ -13,9 +13,7 @@
         <style>.red { color: red; }</style>
 
         <script>
-            var require = {
-                baseUrl: 'js/'
-            };
+            var require = { baseUrl: 'js/' };
         </script>
         <script src="js/underscore.js"></script>
         <script src="js/require.js"></script>
@@ -26,7 +24,7 @@
         </script>
 
         <script>
-            require(['synapse/core', 'synapse/hooks/jquery', 'synapse/hooks/object', 'synapse/hooks/backbone-model'], function(Synapse, jQueryHook, ObjectHook, BackboneModelHool) {
+            require(['synapse', 'synapse/hooks/jquery', 'synapse/hooks/object', 'synapse/hooks/backbone-model'], function(Synapse, jQueryHook, ObjectHook, BackboneModelHook) {
                
                 Synapse.addHooks(jQueryHook, BackboneModelHook, ObjectHook)
 
@@ -81,7 +79,7 @@
                         })
                         .notify('.clicks',
                             { subjectInterface: 'clicks' },
-                            { subjectInterface: 'hasTooManyClicks', observerInterface: 'css:red' }
+                            { subjectInterface: 'hasTooManyClicks', observerInterface: 'css.red' }
                         )
                         .notify('#example0-3 .clicker', 'hasTooManyClicks', 'disabled') 
                         .notify('#example0-3 .message', 'hasTooManyClicks', 'visible');

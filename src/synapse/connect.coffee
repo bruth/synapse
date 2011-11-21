@@ -1,24 +1,4 @@
-define ->
-    cache = {}
-
-    # Pub/Sub components
-    publish = (channel, args...) ->
-        subscribers = cache[channel] or []
-        for sub in subscribers
-            sub.handler.apply sub.context, args
-
-    subscribe = (channel, handler, context) ->
-        if not cache[channel] then cache[channel] = []
-        sub = handler: handler, context: context or handler
-        cache[channel].push sub
-        return [channel, sub]
-
-    unsubscribe = (handle) ->
-        if (subscribers = cache[handle[0]])
-            for i, sub in subscribers
-                if sub is handle[1]
-                    subscribers.splice(i, 1)
-                    break
+define ['synapse/core'], (core) ->
 
     # ## Create a Connection
     #
@@ -41,11 +21,13 @@ define ->
     # and ``observer``. Note, the ``subject`` and ``observer``
     connectOne = (subject, observer, options) ->
 
-        _.defaults(options, defaultConnectOptions)
+        for key, value of defaultConnectOptions
+            if not options[key]
+                options[key] = value
 
         # A converter may be defined as a string which is assumed to be a
         # method name on the original object
-        if (converter = options.converter) and not _.isFunction(converter)
+        if (converter = options.converter) and core.getType(converter) isnt 'function'
             converter = observer.object[converter]
         
         # Detect the interface for the subject if not defined
@@ -61,7 +43,7 @@ define ->
         # Get the events that trigger the subject's change in state
         if not (events = options.event)
             events = subject.detectEvent(subjectInterface)
-        if not _.isArray(events) then events = [events]
+        if core.getType(events) isnt 'array' then events = [events]
 
         triggerOnBind = options.triggerOnBind
         
@@ -74,14 +56,14 @@ define ->
 
             observer.channels.push channel
             
-            subscribe channel, (value) ->
+            core.subscribe channel, (value) ->
                 if converter then value = converter(value)
                 observer.set observerInterface, value
             
             handler = (event) ->
                 value = subject.get subjectInterface
                 # If subjectInterface is not undefined, cache the value
-                publish channel, value
+                core.publish channel, value
 
             subject.on event, handler            
             if triggerOnBind then handler()
@@ -109,15 +91,15 @@ define ->
         arg0 = args[0]
         arg1 = args[1]
 
-        if _.isFunction(arg0)
+        if core.getType(arg0) is 'function'
             options = converter: arg0
-        else if _.isArray(arg0) or not _.isObject(arg0)
+        else if core.getType(arg0) is 'array' or core.getType(arg0) isnt 'object'
             options =
                 subjectInterface: arg0
                 observerInterface: arg1
 
         # the configuration is already defined as an object
-        if not _.isArray(options)
+        if core.getType(options) isnt 'array'
             options = [options]
 
         for opt in options
