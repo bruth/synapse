@@ -1,399 +1,200 @@
-var obj, model, view, collection, dom, cxt, text, check,
-    radio, select, span, button, email, submit;
-
-$(function() {
-    obj = Synapse({});
-    model = Synapse(new Backbone.Model);
-    view = Synapse(new Backbone.View);
-    collection = Synapse(new Backbone.Collection);
-    dom = Synapse(document.getElementById('text-input'));
-
-    cxt = $('#qunit-fixture');
-
-    text = Synapse('[type=text]', cxt);
-    check = Synapse('[type=checkbox]', cxt);
-    radio = Synapse('[type=radio]', cxt);
-    select = Synapse('select', cxt);
-    span = Synapse('span', cxt);
-    button = Synapse('button', cxt);
-    email = Synapse('[type=email]', cxt);
-    submit = Synapse('[type=submit]', cxt);
+asyncTest('Core', function() {
+    require(['synapse'], function() {
+        start();
+        expect(1);
+        raises(function() {
+            Synapse({});
+        }, 'No hooks have been added, therefore no objects are supported');
+    });
 });
 
-module('Utilities');
+module('Object Hook');
 
-test('getEvents', function() {
-    expect(9);
-
-    deepEqual(Synapse.getEvents(text), ['keyup'], 'text input');
-    deepEqual(Synapse.getEvents(check), ['change'], 'checkbox');
-    deepEqual(Synapse.getEvents(radio), ['change'], 'radio button');
-    deepEqual(Synapse.getEvents(select), ['change'], 'select box');
-    deepEqual(Synapse.getEvents(button), ['click'], 'button');
-    deepEqual(Synapse.getEvents(email), ['keyup'], 'email (variant of text input)');
-    deepEqual(Synapse.getEvents(submit), ['submit'], 'submit button');
-
-    raises(function() {
-        Synapse.getEvents(span);
-    }, 'span element has to default DOM event');
-
-    deepEqual(Synapse.getEvents(model), ['change']);
+asyncTest('checkObjectType', function() {
+    require(['synapse/hooks/object'], function(hook) {
+        start();
+        expect(2);
+        ok(hook.checkObjectType({}));
+        ok(hook.checkObjectType(new Object));
+    });
 });
 
-
-test('getInterfaces', function() {
-    expect(9);
-
-    deepEqual(Synapse.getInterfaces(text, model), [['value'], ['text']]);
-    deepEqual(Synapse.getInterfaces(check, text), [['checked'], ['value']]);
-    deepEqual(Synapse.getInterfaces(radio, text), [['checked'], ['value']]);
-    deepEqual(Synapse.getInterfaces(select, model), [['value'], ['select']]);
-    deepEqual(Synapse.getInterfaces(model, button), [['button'], ['html']]);
-    deepEqual(Synapse.getInterfaces(email, model), [['value'], ['email']]);
-    deepEqual(Synapse.getInterfaces(span, text), [['text'], ['value']]);
-    deepEqual(Synapse.getInterfaces(model, span), [[''], ['text']]);
-
-    raises(function() {
-        Synapse.getInterfaces(model, model);
-    }, 'model observing a model.. ambiguous interfaces');
+asyncTest('getHandler', function() {
+    require(['synapse/hooks/object'], function(hook) {
+        start();
+        expect(3);
+        var obj = {
+            foo: 'bar',
+            baz: function() {
+                return 'qux';
+            }
+        };
+        equal(hook.getHandler(obj, 'foo'), 'bar', 'property');
+        equal(hook.getHandler(obj, 'baz'), 'qux', 'method');
+        equal(undefined, hook.getHandler(obj, 'nope'), 'undefined');
+    });
 });
 
-
-test('getInterfaces - notifier interface', function() {
-    expect(4);
-
-    deepEqual(Synapse.getInterfaces(model, text, 'title'), [['title'], ['value']]);
-    deepEqual(Synapse.getInterfaces(model, check, 'public'), [['public'], ['checked']]);
-    deepEqual(Synapse.getInterfaces(model, text, ['first', 'last']), [['first', 'last'], ['value']]);
-    deepEqual(Synapse.getInterfaces(model, span, 'title'), [['title'], ['text']]);
+asyncTest('setHandler', function() {
+    require(['synapse/hooks/object'], function(hook) {
+        start();
+        expect(2);
+        var obj = {
+            foo: 'bar',
+            baz: function(value) {
+                this._secret = value;
+            }
+        };
+        hook.setHandler(obj, 'foo', 3);
+        ok(obj.foo, 3, 'property');
+        hook.setHandler(obj, 'baz', 5);
+        ok(obj._secret, 5, 'method');
+    });
 });
 
-
-module('Built-in Interfaces', {
-    setup: function() {
-        // we use native methods here to ensure these don't break
-        span.context.html('Hello World');
-        text.context.val('hello world');
-        check.context.prop('checked', true);
-        radio.context.prop('disabled', true);
-        select.context.hide().val('');
-        button.context.html('Click Me!');
-    }
+asyncTest('eventHandler', function() {
+    require(['synapse/hooks/object'], function(hook) {
+        start();
+        expect(1);
+        raises(function() {
+            hook.onEventHandler({}, 'foo', function() {});
+        }, 'Plain objects do not support events');
+    });
 });
 
-test('get value', function() {
-    expect(4);
+module('Backbone Model');
 
-    equals(text.get('value'), 'hello world', 'alias');
-    equals(text.get('prop:value'), 'hello world', 'prop');
-
-    equals(select.get('value'), '', 'alias');
-    equals(select.get('prop:value'), '', 'prop');
+asyncTest('checkObjectType', function() {
+    require(['synapse/hooks/backbone-model'], function(hook) {
+        start();
+        expect(1);
+        ok(hook.checkObjectType(new Backbone.Model));
+    });
 });
 
-test('set value', function() {
-    expect(10);
-
-    // input
-    text.set('value', 'foobar');
-    equals(text.get('value'), 'foobar', 'text, string');
-
-    text.set('value', 1);
-    equals(text.get('value'), '1', 'text, number');
-
-    text.set('value', []);
-    equals(text.get('value'), '', 'text, array');
-
-    text.set('value', true);
-    equals(text.get('value'), 'true', 'text, bool');
-
-    // select
-    select.set('value', 'not an option');
-    equals(select.get('value'), '', 'select, string');
-
-    select.set('value', 1);
-    equals(select.get('value'), '1', 'select, number');
-
-    select.set('value', []);
-    equals(select.get('value'), null, 'select, array (empty)');
-
-    select.set('value', [1]);
-    equals(select.get('value'), '1', 'select, array (choice)');
-
-    select.set('value', ['foo']);
-    equals(select.get('value'), '', 'select, array (bad choice)');
-
-    select.set('value', true);
-    equals(select.get('value'), '', 'select, bool');
-
-});
-
-
-test('get text', function() {
-    expect(2);
-
-    equals(span.get('text'), 'Hello World', 'span');
-    equals(span.get('prop:innerText'), 'Hello World', 'span');
-
-});
-
-
-test('set text', function() {
-    expect(3);
-
-    span.set('text', 'Foo Bar');
-    equals(span.get('text'), 'Foo Bar', 'span string');
-
-    span.set('text', 1);
-    equals(span.get('text'), '1', 'span number');
-
-    span.set('text', []);
-    equals(span.get('text'), '', 'span array');
-
-});
-
-
-test('get html', function() {
-    expect(2);
-
-    equals(span.get('html'), 'Hello World', 'alias');
-    equals(span.get('prop:innerHTML'), 'Hello World', 'prop');
-
-});
-
-
-test('set html', function() {
-    expect(4);
-
-    span.set('html', '<em>Hello</em>');
-    equals(span.get('html').toLowerCase(), '<em>hello</em>', 'span html');
-
-    span.set('html', 'Hello');
-    equals(span.get('html'), 'Hello', 'span string');
-
-    span.set('html', 1);
-    equals(span.get('html'), '1', 'span number');
-
-    span.set('html', []);
-    equals(span.get('html'), '', 'span array');
-
-});
-
-
-test('get checked', function() {
-    expect(4);
-
-    equals(check.get('checked'), true, 'checkbox alias');
-    equals(check.get('prop:checked'), true, 'checkbox prop');
-
-    equals(radio.get('checked'), false, 'radio alias');
-    equals(radio.get('prop:checked'), false, 'radio prop');
-
-});
-
-
-test('set checked', function() {
-    expect(4);
-
-    check.set('checked', true);
-    equals(check.get('checked'), true, 'checkbox bool');
-
-    check.set('checked', 0);
-    equals(check.get('checked'), false, 'checkbox zero');
-
-    check.set('checked', []);
-    equals(check.get('checked'), false, 'checkbox empty array');
-
-    check.set('checked', null);
-    equals(check.get('checked'), false, 'checkbox null');
-
-});
-
-
-test('get disabled', function() {
-    expect(4);
-
-    equals(check.get('disabled'), false, 'checkbox alias');
-    equals(check.get('prop:disabled'), false, 'checkbox prop');
-
-    equals(radio.get('disabled'), true, 'radio alias');
-    equals(radio.get('prop:disabled'), true, 'radio prop');
-
-});
-
-
-test('set disabled', function() {
-    expect(4);
-
-    check.set('disabled', true);
-    equals(check.get('disabled'), true, 'checkbox bool');
-
-    check.set('disabled', 0);
-    equals(check.get('disabled'), false, 'checkbox zero');
-
-    check.set('disabled', []);
-    equals(check.get('disabled'), false, 'checkbox empty array');
-
-    check.set('disabled', null);
-    equals(check.get('disabled'), false, 'checkbox null');
-
-});
-
-
-test('get enabled', function() {
-    expect(4);
-
-    equals(check.get('enabled'), true, 'checkbox alias');
-    equals(!check.get('prop:disabled'), true, 'checkbox prop');
-
-    equals(radio.get('enabled'), false, 'radio alias');
-    equals(!radio.get('prop:disabled'), false, 'radio prop');
-
-});
-
-
-test('set enabled', function() {
-    expect(4);
-
-    check.set('enabled', true);
-    equals(check.get('enabled'), true, 'checkbox bool');
-
-    check.set('enabled', 0);
-    equals(check.get('enabled'), false, 'checkbox zero');
-
-    check.set('enabled', []);
-    equals(check.get('enabled'), false, 'checkbox empty array');
-
-    check.set('enabled', null);
-    equals(check.get('enabled'), false, 'checkbox null');
-
-});
-
-
-test('get visible', function() {
-    expect(2);
-    equals(select.get('visible'), false, 'alias');
-    equals(select.get('style:display'), 'none', 'style');
-});
-
-
-test('get hidden', function() {
-    expect(2);
-    equals(select.get('hidden'), true, 'alias');
-    equals(select.get('style:display'), 'none', 'style');
-});
-
-
-test('css', function() {
-    expect(3);
-
-    submit.set('css:fancy', false);
-    equals(submit.get('css:fancy'), false, 'css bool');
-
-    submit.set('css:fancy', 'Hello');
-    equals(submit.get('css:fancy'), true, 'css string');
-
-    submit.set('css:fancy', []);
-    equals(submit.get('css:fancy'), false, 'css empty array');
-});
-
-
-
-module('Connections', {
-    setup: function() {
-        span.context.html('Hello World');
-        text.context.val('hello world');
-        check.context.prop('checked', true);
-        radio.context.prop('disabled', true);
-        select.context.hide().val('');
-        button.context.html('Click Me!');
-        model.unbind();
-    }
-});
-
-test('model => DOM, single attr', function() {
-    expect(1);
-    // shorthand for specifying a particular interface for the observers
-    model.notify(span, 'title');
-    model.set({title: 'Cool Title'});
-    equals(span.get('text'), 'Cool Title', 'the span element observes the title attr on the model');
-});
-
-test('model => DOM, multiple attrs', function() {
-    expect(1);
-
-    model.notify(span, {
-        subjectInterface: ['title', 'author'],
-        converter: function() {
-            return model.get('title') + ' by ' + model.get('author');
+asyncTest('getHandler', function() {
+    require(['synapse/hooks/backbone-model'], function(hook) {
+        start();
+        expect(3);
+        var obj = new Backbone.Model;
+        obj.set({foo: 'bar'});
+        obj.baz = function() {
+            return 'qux';
         }
+
+        equal(hook.getHandler(obj, 'foo'), 'bar', 'property');
+        equal(hook.getHandler(obj, 'baz'), 'qux', 'method');
+        equal(undefined, hook.getHandler(obj, 'nope'), 'undefined');
     });
-    model.set({ title: 'Yet Again!', author: 'John Doe' });
-    equals(span.get('text'), 'Yet Again! by John Doe', 'the span element observes the title and author attr on the model'); 
 });
 
-test('model => model, single attr', function() {
-    expect(3);
-
-    var model2 = new Backbone.Model({
-        foo: 'Bar'
+asyncTest('setHandler', function() {
+    require(['synapse/hooks/backbone-model'], function(hook) {
+        start();
+        expect(2);
+        var obj = new Backbone.Model;
+        obj.baz = function(value) {
+            this.set({qux: value});
+        }
+        hook.setHandler(obj, 'foo', 3);
+        ok(obj.get('foo'), 3, 'property');
+        hook.setHandler(obj, 'baz', 5);
+        ok(obj.get('qux'), 5, 'method');
     });
-
-    model.observe(model2, 'foo');
-    equals(model.get('foo'), 'Bar', 'initial value');
-    model2.set({foo: 'Hello'});
-    equals(model.get('foo'), 'Hello', 'new value');
-    model.set({foo: 'Moto'});
-    equals(model2.get('foo'), 'Hello', 'notifier value still the same');
-});
-
-
-test('model => model => DOM, single attr', function() {
-    expect(2);
-
-    var model2 = new Backbone.Model({
-        foo: 'Bar'
-    });
-
-    model.observe(model2, 'foo');
-    text.observe(model, 'foo');
-    equals(text.get('value'), 'Bar');
-
-    model2.set({foo: 'Hello'});
-
-    equals(text.get('value'), 'Hello');
-});
-
-test('model => model, multiple attrs', function() {
-    expect(4);
-
-    var model2 = new Backbone.Model({
-        foo: 'Hello',
-        bar: 'Moto'
-    });
-
-    model.observe(model2, ['foo', 'bar']);
-    equals(model.get('foo'), 'Hello');
-    equals(model.get('bar'), 'Moto');
-
-    model.set({foo: 'Something'});
-    equals(model.get('foo'), 'Something', 'changed');
-    equals(model.get('bar'), 'Moto', 'stayed the same');
 });
 
 
-test('model <=> DOM, single attr', function() {
+asyncTest('eventHandler', function() {
+    require(['synapse/hooks/backbone-model'], function(hook) {
+        start();
+        expect(1);
 
-    model.sync(text);
+        var obj = new Backbone.Model;
 
-    equals(text.get('value'), 'hello world');
-    equals(model.get('text'), 'hello world');
+        hook.onEventHandler(obj, 'change:foo', function() {
+            ok(1);
+        });
+        hook.triggerEventHandler(obj, 'change:foo');
+        hook.offEventHandler(obj, 'change:foo');
+        hook.triggerEventHandler(obj, 'change:foo');
+    });
+});
 
-    model.set('text', 'something new');
-    equals(text.get('value'), 'something new');
+asyncTest('detectEvent', function() {
+    require(['synapse/hooks/backbone-model'], function(hook) {
+        start();
+        expect(2);
 
-    text.set('value', 'another value');
-    // mimic the event trigger
-    text.context.keyup();
-    equals(model.get('text'), 'another value');
+        var obj = new Backbone.Model;
+        equal(hook.detectEvent(obj), 'change');
+        equal(hook.detectEvent(obj, 'foo'), 'change:foo');
+    });
+});
+
+
+module('jQuery Hook');
+
+asyncTest('checkObjectType', function() {
+    require(['synapse/hooks/jquery'], function(hook) {
+        start();
+        expect(3);
+        ok(hook.checkObjectType('input'));
+        ok(hook.checkObjectType(document.createElement('input')));
+        ok(hook.checkObjectType(jQuery('input')));
+    });
+});
+
+asyncTest('getHandler', function() {
+    require(['synapse/hooks/jquery'], function(hook) {
+        start();
+        expect(3);
+
+        var obj = jQuery('<input type="text" style="color: #ddd" value="hello world">');
+
+        equal(hook.getHandler(obj, 'value'), 'hello world', 'simple interface');
+        equal(hook.getHandler(obj, 'style.color'), 'rgb(221, 221, 221)', 'complex');
+        equal(hook.getHandler(obj, 'nope'), undefined, 'undefined');
+    });
+});
+
+
+asyncTest('setHandler', function() {
+    require(['synapse/hooks/jquery'], function(hook) {
+        start();
+        expect(2);
+
+        var obj = jQuery('<input type="text" value="hello world">');
+
+        hook.setHandler(obj, 'value', 'foobar');
+        equal(obj.val(), 'foobar', 'simple interface');
+        hook.setHandler(obj, 'style.color', '#ddd');
+        equal(obj.css('color'), 'rgb(221, 221, 221)', 'complex');
+    });
+});
+
+
+asyncTest('eventHandler', function() {
+    require(['synapse/hooks/jquery'], function(hook) {
+        start();
+        expect(1);
+
+        var obj = jQuery('<input type="text" value="hello world">');
+
+        hook.onEventHandler(obj, 'keyup', function() {
+            ok(1);
+        });
+        hook.triggerEventHandler(obj, 'keyup');
+        hook.offEventHandler(obj, 'keyup');
+        hook.triggerEventHandler(obj, 'keyup');
+    });
+});
+
+asyncTest('detectEvent', function() {
+    require(['synapse/hooks/jquery'], function(hook) {
+        start();
+        expect(1);
+
+        var obj = jQuery('<input type="text" value="hello world">');
+        equal(hook.detectEvent(obj), 'keyup');
+    });
 });
