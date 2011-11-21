@@ -25,7 +25,7 @@ which will output to a ``dist`` directory.
 
 Integrate
 --------
-**Changes to 0.3** - Synapse now uses the AMD format for keeping code
+**Change in 0.3** - Synapse now uses the AMD format for keeping code
 modularized. The core of Synapse is optimized into a single file, but
 no hooks are included by default. The general flow of bootstrapping
 Synapse is now:
@@ -191,6 +191,10 @@ result in the element being hidden
 result in the element being visible
 
 **Compound**
+
+Breaking change in 0.3: The delimiter between the compound key and actual `key` is now
+a period (.) rather than a colon (:). This mentally maps better to a it's
+utility.
 
 * ``prop.<key>`` - gets/sets the property ``key``
 * ``attr.<key>`` - gets/sets the attribute ``key``
