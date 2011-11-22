@@ -233,9 +233,6 @@ define ['synapse/core', 'jquery'], (core, $) ->
 
         interfaces: interfaces        
 
-        toString: (object) ->
-            object.selector or object.attr('id') or object
-
         checkObjectType: (object) ->
             object instanceof $ or object.nodeType is 1 or
                 core.toString.call(object) is '[object String]'

@@ -1,1 +1,39 @@
-define("synapse/hooks/backbone-model",["backbone"],function(){return{typeName:"Backbone Model",checkObjectType:function(a){return a instanceof Backbone.Model},getHandler:function(a,b){return a[b]!=null?a[b]():a.get(b)},setHandler:function(a,b,c){var d;return a[b]!=null?a[b](c):(d={},d[b]=c,a.set(d))},onEventHandler:function(a,b,c){return a.bind(b,c)},offEventHandler:function(a,b,c){return a.unbind(b,c)},triggerEventHandler:function(a,b){return a.trigger(b)},detectEvent:function(a,b){return b&&!a[b]?"change:"+b:"change"}}})
+
+define(['backbone'], function() {
+  return {
+    typeName: 'Backbone Model',
+    checkObjectType: function(object) {
+      return object instanceof Backbone.Model;
+    },
+    getHandler: function(object, key) {
+      if (object[key] != null) {
+        return object[key]();
+      } else {
+        return object.get(key);
+      }
+    },
+    setHandler: function(object, key, value) {
+      var attrs;
+      if (object[key] != null) {
+        return object[key](value);
+      } else {
+        attrs = {};
+        attrs[key] = value;
+        return object.set(attrs);
+      }
+    },
+    onEventHandler: function(object, event, handler) {
+      return object.bind(event, handler);
+    },
+    offEventHandler: function(object, event, handler) {
+      return object.unbind(event, handler);
+    },
+    triggerEventHandler: function(object, event) {
+      return object.trigger(event);
+    },
+    detectEvent: function(object, interface) {
+      if (interface && !object[interface]) return "change:" + interface;
+      return 'change';
+    }
+  };
+});

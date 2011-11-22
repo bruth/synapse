@@ -35,15 +35,15 @@
 
                     // example pre
                     var obj = {};
-                    $('#example-pre span').text(assert(obj === Synapse(obj).raw));
+                    $('#example-pre span').text(assert(obj === new Synapse(obj).raw));
 
                     // example 0
-                    var model = new Backbone.Model({ title: 'Hello World' });
-                    Synapse('#example0-1 input').notify(model);
-                    Synapse('#example0-1 .output').observe(model, 'title');
-                    Synapse('#example0-1 .meta').observe(model, function() {
-                        return 'Last updated: ' + (new Date()).toString();
-                    });
+                    var model = Synapse(new Backbone.Model({ title: 'Hello World' }))
+                        .observe('#example0-1 input')
+                        .notify('#example0-1 .output', 'title')
+                        .notify('#example0-1 .meta', function() {
+                            return 'Last updated: ' + (new Date()).toString();
+                        });
 
                     var Model = Backbone.Model.extend({
                         fullName: function() {
@@ -51,8 +51,7 @@
                         }
                     });
 
-                    var model = new Model;
-                    Synapse(model)
+                    var model = Synapse(new Model)
                         .observe('#example0-2 [name=firstName]')
                         .observe('#example0-2 [name=lastName]')
                         .notify('#example0-2 .fullName', 'fullName');
@@ -70,9 +69,7 @@
                         }
                     });
 
-                    var model = new Model;
-
-                    Synapse(model)
+                    var model = Synapse(new Model)
                         .observe('#example0-3 .clicker', {
                             observerInterface: 'addClick',
                             triggerOnBind: false
@@ -82,15 +79,16 @@
                             { subjectInterface: 'hasTooManyClicks', observerInterface: 'css.red' }
                         )
                         .notify('#example0-3 .clicker', 'hasTooManyClicks', 'disabled') 
-                        .notify('#example0-3 .message', 'hasTooManyClicks', 'visible');
-
-                    Synapse('#example0-3 .reset').notify(model, {observerInterface: 'resetClicks'});
+                        .notify('#example0-3 .message', 'hasTooManyClicks', 'visible')
+                        .observe('#example0-3 .reset', {
+                            observerInterface: 'resetClicks'
+                        });
 
                     // example 1 
-                    Synapse('#example1-1 span').observe('#example1-1 input');
-                    Synapse('#example1-2 input.one').sync('#example1-2 input.two');
-                    Synapse('#example1-3 :text').observe('#example1-3 :checkbox', 'checked', 'enabled');
-                    Synapse('#example1-4 span').observe('#example1-4 input', {
+                    new Synapse('#example1-1 span').observe('#example1-1 input');
+                    new Synapse('#example1-2 input.one').sync('#example1-2 input.two');
+                    new Synapse('#example1-3 :text').observe('#example1-3 :checkbox', 'checked', 'enabled');
+                    new Synapse('#example1-4 span').observe('#example1-4 input', {
                         subjectInterface: 'value',
                         observerInterface: 'html',
                         converter: function(value) {
@@ -102,7 +100,17 @@
                 });
             });
         </script>
+        <script>
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-8483912-3']);
+          _gaq.push(['_trackPageview']);
 
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+        </script>
     </head>
     <body>        
         <h1>Synapse</h1>
@@ -114,17 +122,17 @@
         <div class="example">
             <div>
 <pre class="javascript">
-<code>// Synapse supports object primitives
+<code>// new Synapse supports object primitives
 var obj = {};
 
 // simple constructor to wrap objects for use with the API, returns
-// the Synapse object.
+// the new Synapse object.
 // the original object is a property called ``raw``.
-assert(Synapse(obj).raw === obj);
+assert(new Synapse(obj).raw === obj);
 </code></pre>
             </div>
             <div id="example-pre">
-                <code>assert(Synapse(obj).raw === obj)</code><br>
+                <code>assert(new Synapse(obj).raw === obj)</code><br>
                 <span class="meta"></span>
             </div>
         </div>
@@ -136,18 +144,20 @@ assert(Synapse(obj).raw === obj);
 <pre class="javascript">
 <code>// initialize a new model object 
 var model = new Backbone.Model({ title: 'Hello World' });
+// Using Synapse as a function, augments the model with `observe`,
+// `notify` and `sync`
+Synapse(model);
 
 // the model will observe the value of this input (the attribute
 // is equal to the 'name' attribute on the input, i.e. 'title'
-Synapse('input').sync(model);
-
-// the span will observe the 'title' attribute on this model
-Synapse('span').observe(model, 'title');
-
-// if no interface is auto-detected for the model, the observer
-// will be notified when _anything_ changes.
-Synapse('.meta').observe(model, function() {
-    return 'Last updated: ' + (new Date()).toString();
+model.sync('input')
+    // the span will observe the 'title' attribute on this model
+    .notify('span', 'title')
+    // if no interface is auto-detected for the model, the observer
+    // will be notified when _anything_ changes.
+    .notify('.meta', function() {
+        return 'Last updated: ' + (new Date()).toString();
+    });
 });
 </code></pre>
             </div>
@@ -198,9 +208,7 @@ Synapse(new Model)
     }
 });
 
-var model = new Model;
-
-Synapse(model)
+var model = Synapse(new Model)
     // watch the "Click Me!" button on each click
     .observe('.clicker', {
         observerInterface: 'addClick',
@@ -208,15 +216,16 @@ Synapse(model)
     })
     // notify the counter of the clicks and update clicks
     // if it reaches too many
-    .notify('.clicks',
-        { subjectInterface: 'clicks' },
-        { subjectInterface: 'hasTooManyClicks', observerInterface: 'css.red' }
-    )
-     
+    .notify('.clicks', {
+        subjectInterface: 'clicks'
+    }, {
+        subjectInterface: 'hasTooManyClicks', observerInterface: 'css.red'
+    })
     .notify('.clicker', 'hasTooManyClicks', 'disabled') 
-    .notify('.message', 'hasTooManyClicks', 'visible');
-
-Synapse('.reset').notify(model, {observerInterface: 'resetClicks'});
+    .notify('.message', 'hasTooManyClicks', 'visible')
+    .observe('.reset', {
+        observerInterface: 'resetClicks'
+    });
 </code></pre>
             </div>
             <div id="example0-3">
@@ -228,21 +237,15 @@ Synapse('.reset').notify(model, {observerInterface: 'resetClicks'});
             </div>
         </div>
 
-
-
-
-
         <h3>DOM to DOM</h3>
-
-        <p></p>
 
         <div class="example">
             <div>
-<pre class="javascript"><code>// the ``span`` observes the ``input``. Synapse autodetects to use
+<pre class="javascript"><code>// the ``span`` observes the ``input``. new Synapse autodetects to use
 // the "html" interface for the ``span`` and the "value" of  the
 // ``input``. The event is auto-detected relative to the subject type,
 // which will be "keyup".
-Synapse('span').observe('input');
+new Synapse('span').observe('input');
 </code></pre>
             </div>
 
@@ -258,7 +261,7 @@ Synapse('span').observe('input');
 // synced. that is, both are observing each other. this merely a
 // convenience syntax and can be accomplished using two ``observe()``
 // calls
-Synapse('input.one').sync('input.two');
+new Synapse('input.one').sync('input.two');
 </code></pre>
             </div>
 
@@ -272,7 +275,7 @@ Synapse('input.one').sync('input.two');
             <div>
 <pre class="javascript"><code>// interfaces can be explicitly set. this one reads, the ``:text``
 // input will be "enabled" only when the ``:checkbox`` is "checked".
-Synapse(':text').observe(':checkbox', 'enabled', 'checked');
+new Synapse(':text').observe(':checkbox', 'enabled', 'checked');
 </code></pre>
             </div>
 
@@ -287,7 +290,7 @@ Synapse(':text').observe(':checkbox', 'enabled', 'checked');
 <pre class="javascript"><code>// add a converter that takes the subject and value that has changed
 // state as arguments. the returned values from the handler will be
 // used as the value for the observers interface.
-Synapse('span').observe('input', {
+new Synapse('span').observe('input', {
     subjectInterface: 'value',
     observerInterface: 'html',
     converter: function(value) {
@@ -303,23 +306,6 @@ Synapse('span').observe('input', {
                 <span class="output"></span>
             </div>
         </div>
-
-        <h3>Primitives</h3>
-
-
-        <!--
-        <script>
-          var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', 'UA-8483912-3']);
-          _gaq.push(['_trackPageview']);
-
-          (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-          })();
-        </script>
-        -->
     </body>
 </html>
 

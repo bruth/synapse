@@ -2,7 +2,7 @@
 # Synapse
 # (c) 2011 Byron Ruth
 # Synapse may be freely distributed under the BSD license
-# Version: 0.3
+# Version: 0.3.1
 # Date: November 21, 2011
 #
 
@@ -10,45 +10,68 @@ define ['synapse/core', 'synapse/connect'], (core, connect) ->
     objectGuid = 1
 
     class Synapse
-        version: '0.3'
+        version: '0.3.1'
        
         # ## Constructor
         # Ensure the ``object`` is not already an instance of ``Synapse``.
         constructor: (object) ->
-            if object instanceof Synapse then return object
-            if @constructor isnt Synapse then return new Synapse(object)
+            if object instanceof Synapse
+                return object
 
+            # If called with `new`, process as normal which returns the wrapped
+            # object. Otherwise, augment the object with the primary methods.
+            if @constructor isnt Synapse
+                wrapped = new Synapse(object)
+
+                object.observe = ->
+                    wrapped.observe arguments...
+                    return @
+
+                object.notify = ->
+                    wrapped.notify arguments...
+                    return @
+
+                object.sync = ->
+                    wrapped.sync arguments...
+                    return @
+
+                return wrapped.raw
+
+            # Find the appropriate hook
             for hook in Synapse.hooks
                 if hook.checkObjectType object
-                    @type = hook.typeName
-                    @hook = hook
-                    @guid = objectGuid++
-                    @raw = hook.coerceObject?(object) or object
-                    @channels = []
-                    return
+                    break
+                hook = null
 
-            throw new Error("No hook exists for #{core.getType(object)} types")
+            # No hook was found for this object type
+            if not hook
+                throw new Error "No hook exists for #{core.getType(object)} types"
+
+            @raw = hook.coerceObject?(object) or object
+            @hook = hook
+            @guid = objectGuid++
+            @channels = []
 
         # Detects an appropriate event to attach an event handler to. This
         # applies only to subjects.
         detectEvent: ->
             if (value = @hook.detectEvent @raw, arguments...) then return value
-            throw new Error "#{@type} types do not support events"
+            throw new Error "#{@hook.typeName} types do not support events"
 
         # Attaches an event handler. This applies only to subjects.
         on: ->
             if (value = @hook.onEventHandler? @raw, arguments...) then return @
-            throw new Error "#{@type} types do not support events"
+            throw new Error "#{@hook.typeName} types do not support events"
 
         # Detaches an event handler. This applies only to subjects.
         off: ->
             if (value = @hook.offEventHandler? @raw, arguments...) then return @
-            throw new Error "#{@type} types do not support events"
+            throw new Error "#{@hook.typeName} types do not support events"
         
         # Triggers an event handler. This applies only to subjects.
         trigger: ->
             if (value = @hook.triggerEventHandler? @raw, arguments...) then return @
-            throw new Error "#{@type} types do not support events"
+            throw new Error "#{@hook.typeName} types do not support events"
 
         # Detects an appropriate interface (property or method) to use as a
         # data source for a given communication channel.
@@ -89,13 +112,10 @@ define ['synapse/core', 'synapse/connect'], (core, connect) ->
             @observe(other).notify(other)
             return @
 
-        toString: ->
-            @hook.toString?(@raw) or @raw.toString()
 
-    
-    # Ability to register hooks
+    # Register hooks
     Synapse.hooks = hooks = []
     Synapse.addHooks = ->
         hooks.push.apply hooks, arguments
-    
+
     return Synapse

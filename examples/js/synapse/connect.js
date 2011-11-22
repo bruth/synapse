@@ -1,1 +1,77 @@
-var __slice=Array.prototype.slice;define(["synapse/core"],function(a){var b,c,d;return d={event:null,subjectInterface:null,observerInterface:null,converter:null,triggerOnBind:!0},c=function(b,c,e){var f,g,h,i,j,k,l,m,n,o,p,q;for(k in d)o=d[k],e[k]||(e[k]=o);(g=e.converter)&&a.getType(g)!=="function"&&(g=c.object[g]);if(!(m=e.subjectInterface)&&!(m=b.detectInterface()||c.detectOtherInterface())&&!g)throw new Error("An interface for "+b.type+" objects could not be detected");if(!(l=e.observerInterface)&&!(l=c.detectInterface()||b.detectOtherInterface()))throw new Error("An interface for "+c.type+" objects could not be detected");(i=e.event)||(i=b.detectEvent(m)),a.getType(i)!=="array"&&(i=[i]),n=e.triggerOnBind;for(p=0,q=i.length;p<q;p++)h=i[p],m?f=""+b.guid+":"+m:f=""+b.guid+":"+h,c.channels.push(f),a.subscribe(f,function(a){return g&&(a=g(a)),c.set(l,a)}),j=function(c){return o=b.get(m),a.publish(f,o)},b.on(h,j),n&&j()},b=function(){var b,d,e,f,g,h,i,j,k;i=arguments[0],f=arguments[1],e=3>arguments.length?[]:__slice.call(arguments,2),h=e,b=e[0],d=e[1];if(a.getType(b)==="function")h={converter:b};else if(a.getType(b)==="array"||a.getType(b)!=="object")h={subjectInterface:b,observerInterface:d};a.getType(h)!=="array"&&(h=[h]);for(j=0,k=h.length;j<k;j++)g=h[j],c(i,f,g)},b})
+var __slice = Array.prototype.slice;
+
+define(['synapse/core'], function(core) {
+  var connect, connectOne, defaultConnectOptions;
+  defaultConnectOptions = {
+    event: null,
+    subjectInterface: null,
+    observerInterface: null,
+    converter: null,
+    triggerOnBind: true
+  };
+  connectOne = function(subject, observer, options) {
+    var channel, converter, event, events, handler, key, observerInterface, subjectInterface, triggerOnBind, value, _i, _len;
+    for (key in defaultConnectOptions) {
+      value = defaultConnectOptions[key];
+      if (!options[key]) options[key] = value;
+    }
+    if ((converter = options.converter) && core.getType(converter) !== 'function') {
+      converter = observer.object[converter];
+    }
+    if (!(subjectInterface = options.subjectInterface)) {
+      if (!(subjectInterface = subject.detectInterface() || observer.detectOtherInterface()) && !converter) {
+        throw new Error("An interface for " + subject.type + " objects could not be detected");
+      }
+    }
+    if (!(observerInterface = options.observerInterface)) {
+      if (!(observerInterface = observer.detectInterface() || subject.detectOtherInterface())) {
+        throw new Error("An interface for " + observer.type + " objects could not be detected");
+      }
+    }
+    if (!(events = options.event)) events = subject.detectEvent(subjectInterface);
+    if (core.getType(events) !== 'array') events = [events];
+    triggerOnBind = options.triggerOnBind;
+    for (_i = 0, _len = events.length; _i < _len; _i++) {
+      event = events[_i];
+      if (subjectInterface) {
+        channel = "" + subject.guid + ":" + subjectInterface;
+      } else {
+        channel = "" + subject.guid + ":" + event;
+      }
+      observer.channels.push(channel);
+      core.subscribe(channel, function(value) {
+        if (converter) value = converter(value);
+        return observer.set(observerInterface, value);
+      });
+      handler = function(event) {
+        value = subject.get(subjectInterface);
+        return core.publish(channel, value);
+      };
+      subject.on(event, handler);
+      if (triggerOnBind) handler();
+    }
+  };
+  connect = function() {
+    var arg0, arg1, args, observer, opt, options, subject, _i, _len;
+    subject = arguments[0], observer = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    options = args;
+    arg0 = args[0];
+    arg1 = args[1];
+    if (core.getType(arg0) === 'function') {
+      options = {
+        converter: arg0
+      };
+    } else if (core.getType(arg0) === 'array' || core.getType(arg0) !== 'object') {
+      options = {
+        subjectInterface: arg0,
+        observerInterface: arg1
+      };
+    }
+    if (core.getType(options) !== 'array') options = [options];
+    for (_i = 0, _len = options.length; _i < _len; _i++) {
+      opt = options[_i];
+      connectOne(subject, observer, opt);
+    }
+  };
+  return connect;
+});
