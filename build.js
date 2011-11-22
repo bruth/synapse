@@ -20,7 +20,8 @@
     // to the correct file system location.
     paths: {
         'jquery': 'empty:',
-        'backbone': 'empty:'
+        'backbone': 'empty:',
+        'zepto': 'empty:'
     },
 
     // an array of modules to compile
@@ -29,6 +30,9 @@
     }, {
         name: 'synapse/hooks/jquery',
         exclude: ['synapse/core', 'jquery']
+    }, {
+        name: 'synapse/hooks/zepto',
+        exclude: ['synapse/core', 'zepto']
     }, {
         name: 'synapse/hooks/backbone-model',
         exclude: ['synapse/core', 'backbone']

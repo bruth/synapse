@@ -272,3 +272,72 @@ asyncTest('detectEvent', function() {
         equal(hook.detectEvent(obj), 'keyup');
     });
 });
+
+module('Zepto Hook');
+
+asyncTest('checkObjectType', function() {
+    require(['synapse/hooks/zepto'], function(hook) {
+        start();
+        expect(3);
+        ok(hook.checkObjectType('input'));
+        ok(hook.checkObjectType(document.createElement('input')));
+        ok(hook.checkObjectType(Zepto('input')));
+    });
+});
+
+asyncTest('getHandler', function() {
+    require(['synapse/hooks/zepto'], function(hook) {
+        start();
+        expect(3);
+
+        var obj = Zepto('<input type="text" style="color: #ddd" value="hello world">');
+
+        equal(hook.getHandler(obj, 'value'), 'hello world', 'simple interface');
+        equal(hook.getHandler(obj, 'style.color'), 'rgb(221, 221, 221)', 'complex');
+        equal(hook.getHandler(obj, 'nope'), undefined, 'undefined');
+    });
+});
+
+
+asyncTest('setHandler', function() {
+    require(['synapse/hooks/zepto'], function(hook) {
+        start();
+        expect(2);
+
+        var obj = Zepto('<input type="text" value="hello world">');
+
+        hook.setHandler(obj, 'value', 'foobar');
+        equal(obj.val(), 'foobar', 'simple interface');
+        hook.setHandler(obj, 'style.color', '#ddd');
+        equal(obj.css('color'), 'rgb(221, 221, 221)', 'complex');
+    });
+});
+
+
+asyncTest('eventHandler', function() {
+    require(['synapse/hooks/zepto'], function(hook) {
+        start();
+        expect(1);
+
+        var obj = Zepto('<input type="text" value="hello world">');
+
+        hook.onEventHandler(obj, 'keyup', function() {
+            ok(1);
+        });
+        hook.triggerEventHandler(obj, 'keyup');
+        hook.offEventHandler(obj, 'keyup');
+        hook.triggerEventHandler(obj, 'keyup');
+    });
+});
+
+asyncTest('detectEvent', function() {
+    require(['synapse/hooks/zepto'], function(hook) {
+        start();
+        expect(1);
+
+        var obj = Zepto('<input type="text" value="hello world">');
+        equal(hook.detectEvent(obj), 'keyup');
+    });
+});
+
+

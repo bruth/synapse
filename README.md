@@ -48,7 +48,8 @@ freely define and add their own hooks for their application's use.
 Bundled Hooks
 -------------
 
-- jQuery objects, CSS selectors, DOM elements (all via jQuery)
+- jQuery objects
+- Zepto objects
 - Backbone Model objects
 - Backbone View objects
 - Plain objects (observer only)
