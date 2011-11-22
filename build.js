@@ -33,6 +33,9 @@
         name: 'synapse/hooks/backbone-model',
         exclude: ['synapse/core', 'backbone']
     }, {
+        name: 'synapse/hooks/backbone-view',
+        exclude: ['synapse/core', 'synapse/hooks/jquery', 'backbone']
+    }, {
         name: 'synapse/hooks/object',
         exclude: ['synapse/core']
     }]
