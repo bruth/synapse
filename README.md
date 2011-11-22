@@ -5,6 +5,8 @@ _all-in-code_, that is, it does not depend on any template library or special
 attributes (e.g. ``data-bind``) to work. Hooks to support these features may
 come in the future.
 
+Try the interactive demo: http://jsfiddle.net/bruth/bufeK/
+
 Build
 -----
 To build from source you must have CoffeeScript (and thus Node)
