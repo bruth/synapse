@@ -45,6 +45,14 @@ require(['synapse', 'synapse/hooks/jquery', 'synapse/hooks/object'], function(Sy
 This is due mainly to the new Hooks architecture, but also allows developers to
 freely define and add their own hooks for their application's use.
 
+Bundled Hooks
+-------------
+
+- jQuery objects, CSS selectors, DOM elements (all via jQuery)
+- Backbone Model objects
+- Backbone View objects
+- Plain objects (observer only)
+
 Introduction
 ------------
 Synapse provides a mechanism for defining a communication channel between two
