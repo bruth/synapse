@@ -17,6 +17,7 @@ LATEST_TAG = `git describe --tags \`git rev-list --tags --max-count=1\``
 all: build watch
 
 build: sass coffee
+	@cp -r ${BUILD_DIR}/synapse* ${EXAMPLES_DIR}/js
 
 dist: build optimize
 	@echo 'Creating a source distributions...'
@@ -46,7 +47,6 @@ optimize: clean
 	@echo 'Optimizing the javascript...'
 	@mkdir -p ${DIST_DIR}
 	@${REQUIRE_OPTIMIZE} > /dev/null
-	@cp -r ${DIST_DIR}/synapse* ${EXAMPLES_DIR}/js
 
 clean:
 	@rm -rf ${DIST_DIR}
