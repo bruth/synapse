@@ -1,6 +1,6 @@
 # Components for the Backbone Model hook
 
-define ['backbone'], ->
+define ['synapse/core', 'backbone'], (core) ->
 
     return {
         typeName: 'Backbone Model'
@@ -13,7 +13,10 @@ define ['backbone'], ->
         # is a function and call it to retrieve the value. Otherwise use
         # the `get` method.
         getHandler: (object, key) ->
-            if object[key]? then object[key]() else object.get key
+            if core.getType(object[key]) is 'function'
+                object[key]()
+            else
+                object.get key
 
         # If the `key` exists directly on the model instance, assume it
         # is a function, pass in the arguments and call it to set the value.
@@ -21,7 +24,7 @@ define ['backbone'], ->
         # into an object until https://github.com/documentcloud/backbone/pull/570
         # or one of the other variants are merged into Backbone.
         setHandler: (object, key, value) ->
-            if object[key]?
+            if core.getType(object[key]) is 'function'
                 object[key](value)
             else
                 attrs = {}

@@ -1,12 +1,12 @@
 
-define(['backbone'], function() {
+define(['synapse/core', 'backbone'], function(core) {
   return {
     typeName: 'Backbone Model',
     checkObjectType: function(object) {
       return object instanceof Backbone.Model;
     },
     getHandler: function(object, key) {
-      if (object[key] != null) {
+      if (core.getType(object[key]) === 'function') {
         return object[key]();
       } else {
         return object.get(key);
@@ -14,7 +14,7 @@ define(['backbone'], function() {
     },
     setHandler: function(object, key, value) {
       var attrs;
-      if (object[key] != null) {
+      if (core.getType(object[key]) === 'function') {
         return object[key](value);
       } else {
         attrs = {};
