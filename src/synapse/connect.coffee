@@ -27,7 +27,7 @@ define ['synapse/core'], (core) ->
 
         # A converter may be defined as a string which is assumed to be a
         # method name on the original object
-        if (converter = options.converter) and core.getType(converter) isnt 'function'
+        if (converter = options.converter) and not core.isFunction(converter)
             converter = observer.object[converter]
         
         # Detect the interface for the subject if not defined
@@ -43,7 +43,7 @@ define ['synapse/core'], (core) ->
         # Get the events that trigger the subject's change in state
         if not (events = options.event)
             events = subject.detectEvent(subjectInterface)
-        if core.getType(events) isnt 'array' then events = [events]
+        if not core.isArray(events) then events = [events]
 
         triggerOnBind = options.triggerOnBind
         
@@ -91,15 +91,15 @@ define ['synapse/core'], (core) ->
         arg0 = args[0]
         arg1 = args[1]
 
-        if core.getType(arg0) is 'function'
+        if core.isFunction(arg0)
             options = converter: arg0
-        else if core.getType(arg0) is 'array' or core.getType(arg0) isnt 'object'
+        else if core.isArray(arg0) or not core.isObject(arg0)
             options =
                 subjectInterface: arg0
                 observerInterface: arg1
 
         # the configuration is already defined as an object
-        if core.getType(options) isnt 'array'
+        if not core.isArray(options)
             options = [options]
 
         for opt in options

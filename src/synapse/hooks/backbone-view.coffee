@@ -12,7 +12,7 @@ define ['synapse/core', 'synapse/hooks/jquery', 'backbone'], (core, hook) ->
         # and call it to retrieve the value. Otherwise pass it off to the
         # hook.
         getHandler: (object, key) ->
-            if core.getType(object[key]) is 'function'
+            if core.isFunction(object[key])
                 return object[key]()
             return hook.getHandler hook.coerceObject(object.el), key
 
@@ -20,7 +20,7 @@ define ['synapse/core', 'synapse/hooks/jquery', 'backbone'], (core, hook) ->
         # is a function, pass in the arguments and call it to set the value.
         # Otherwise pass it off to the hook
         setHandler: (object, key, value) ->
-            if core.getType(object[key]) is 'function'
+            if core.isFunction(object[key])
                 return object[key](value)
             return hook.setHandler hook.coerceObject(object.el), key, value
 

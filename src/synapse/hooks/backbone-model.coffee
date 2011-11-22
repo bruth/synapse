@@ -13,7 +13,7 @@ define ['synapse/core', 'backbone'], (core) ->
         # is a function and call it to retrieve the value. Otherwise use
         # the `get` method.
         getHandler: (object, key) ->
-            if core.getType(object[key]) is 'function'
+            if core.isFunction(object[key])
                 object[key]()
             else
                 object.get key
@@ -24,7 +24,7 @@ define ['synapse/core', 'backbone'], (core) ->
         # into an object until https://github.com/documentcloud/backbone/pull/570
         # or one of the other variants are merged into Backbone.
         setHandler: (object, key, value) ->
-            if core.getType(object[key]) is 'function'
+            if core.isFunction(object[key])
                 object[key](value)
             else
                 attrs = {}

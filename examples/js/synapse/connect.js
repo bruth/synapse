@@ -15,7 +15,7 @@ define(['synapse/core'], function(core) {
       value = defaultConnectOptions[key];
       if (!options[key]) options[key] = value;
     }
-    if ((converter = options.converter) && core.getType(converter) !== 'function') {
+    if ((converter = options.converter) && !core.isFunction(converter)) {
       converter = observer.object[converter];
     }
     if (!(subjectInterface = options.subjectInterface)) {
@@ -29,7 +29,7 @@ define(['synapse/core'], function(core) {
       }
     }
     if (!(events = options.event)) events = subject.detectEvent(subjectInterface);
-    if (core.getType(events) !== 'array') events = [events];
+    if (!core.isArray(events)) events = [events];
     triggerOnBind = options.triggerOnBind;
     for (_i = 0, _len = events.length; _i < _len; _i++) {
       event = events[_i];
@@ -57,17 +57,17 @@ define(['synapse/core'], function(core) {
     options = args;
     arg0 = args[0];
     arg1 = args[1];
-    if (core.getType(arg0) === 'function') {
+    if (core.isFunction(arg0)) {
       options = {
         converter: arg0
       };
-    } else if (core.getType(arg0) === 'array' || core.getType(arg0) !== 'object') {
+    } else if (core.isArray(arg0) || !core.isObject(arg0)) {
       options = {
         subjectInterface: arg0,
         observerInterface: arg1
       };
     }
-    if (core.getType(options) !== 'array') options = [options];
+    if (!core.isArray(options)) options = [options];
     for (_i = 0, _len = options.length; _i < _len; _i++) {
       opt = options[_i];
       connectOne(subject, observer, opt);

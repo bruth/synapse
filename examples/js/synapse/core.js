@@ -6,7 +6,19 @@ define(function() {
   return {
     toString: Object.prototype.toString,
     getType: function(object) {
-      return this.toString.call(object).match(/^\[object\s(.*)\]$/)[1].toLowerCase();
+      return this.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
+    },
+    isObject: function(object) {
+      return this.getType(object) === 'Object';
+    },
+    isArray: function(object) {
+      return this.getType(object) === 'Array';
+    },
+    isFunction: function(object) {
+      return this.getType(object) === 'Function';
+    },
+    isString: function(object) {
+      return this.getType(object) === 'String';
     },
     publish: function() {
       var args, channel, sub, subscribers, _i, _len, _results;

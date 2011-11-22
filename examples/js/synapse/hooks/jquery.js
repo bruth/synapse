@@ -48,7 +48,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
       return this.attr(key);
     };
     setAttribute = function(key, value) {
-      if (_.isObject(key)) {
+      if (core.isObject(key)) {
         return this.attr(key);
       } else {
         return this.attr(key, value);
@@ -58,7 +58,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
       return this.css(key);
     };
     setStyle = function(key, value) {
-      if (_.isObject(key)) {
+      if (core.isObject(key)) {
         return this.css(key);
       } else {
         return this.css(key, value);
@@ -97,7 +97,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
         return !getProperty.call(this, 'disabled');
       },
       set: function(value) {
-        if (_.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) value = false;
         return setProperty.call(this, 'disabled', !Boolean(value));
       }
     });
@@ -107,7 +107,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
         return getProperty.call(this, 'disabled');
       },
       set: function(value) {
-        if (_.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) value = false;
         return setProperty.call(this, 'disabled', Boolean(value));
       }
     });
@@ -117,7 +117,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
         return getProperty.call(this, 'checked');
       },
       set: function(value) {
-        if (_.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) value = false;
         return setProperty.call(this, 'checked', Boolean(value));
       }
     });
@@ -127,7 +127,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
         return getStyle.call(this, 'display') === !'none';
       },
       set: function(value) {
-        if (_.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) value = false;
         if (Boolean(value)) {
           return this.show();
         } else {
@@ -141,7 +141,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
         return getStyle.call(this, 'display') === 'none';
       },
       set: function(value) {
-        if (_.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) value = false;
         if (Boolean(value)) {
           return this.hide();
         } else {
@@ -182,7 +182,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
         return this.hasClass(key);
       },
       set: function(key, value) {
-        if (_.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) value = false;
         if (Boolean(value)) {
           return this.addClass(key);
         } else {
@@ -200,8 +200,8 @@ define(['synapse/core', 'jquery'], function(core, $) {
       }
     });
   })();
-  domEvents = [['a,:button,:reset', 'click'], ['select,:checkbox,:radio,textarea', 'change'], [':submit', 'submit'], [':input', 'keyup']];
-  elementInterfaces = [[':checkbox,:radio', 'checked'], [':input', 'value']];
+  domEvents = [['a,button,[type=button],[type=reset]', 'click'], ['select,[type=checkbox],[type=radio],textarea', 'change'], ['[type=submit]', 'submit'], ['input', 'keyup']];
+  elementInterfaces = [['[type=checkbox],[type=radio]', 'checked'], ['input,textarea,select', 'value']];
   elementBindAttributes = ['name', 'role', 'data-bind'];
   return {
     typeName: 'jQuery',
@@ -210,7 +210,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
     elementInterfaces: elementInterfaces,
     interfaces: interfaces,
     checkObjectType: function(object) {
-      return object instanceof $ || object.nodeType === 1 || core.toString.call(object) === '[object String]';
+      return object instanceof $ || object.nodeType === 1 || core.isString(object);
     },
     coerceObject: function(object) {
       return $(object);
@@ -218,7 +218,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
     getHandler: function(object, key) {
       var value;
       value = interfaces.get(object, key);
-      if (value && object.is('input[type=number]')) {
+      if (value && object.is('[type=number]')) {
         if (value.indexOf('.') > -1) {
           return parseFloat(value);
         } else {

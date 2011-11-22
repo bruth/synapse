@@ -50,12 +50,12 @@ define ['synapse/core', 'jquery'], (core, $) ->
         getAttribute = (key) -> @attr(key)
 
         setAttribute = (key, value) ->
-            if _.isObject(key) then @attr(key) else @attr(key, value)
+            if core.isObject(key) then @attr(key) else @attr(key, value)
 
         getStyle = (key) -> @css(key)
 
         setStyle = (key, value) ->
-            if _.isObject(key) then @css(key) else @css(key, value)
+            if core.isObject(key) then @css(key) else @css(key, value)
 
         # ### _text_
         # Gets and sets the ``innerText`` of the element
@@ -91,7 +91,7 @@ define ['synapse/core', 'jquery'], (core, $) ->
             get: ->
                 !getProperty.call(@, 'disabled')
             set: (value) ->
-                if _.isArray(value) and value.length is 0
+                if core.isArray(value) and value.length is 0
                     value = false
                 setProperty.call(@, 'disabled', !Boolean(value))
 
@@ -105,7 +105,7 @@ define ['synapse/core', 'jquery'], (core, $) ->
             get: ->
                 getProperty.call(@, 'disabled')
             set: (value) ->
-                if _.isArray(value) and value.length is 0
+                if core.isArray(value) and value.length is 0
                     value = false
                 setProperty.call(@, 'disabled', Boolean(value))
 
@@ -118,7 +118,7 @@ define ['synapse/core', 'jquery'], (core, $) ->
             get: ->
                 getProperty.call(@, 'checked')
             set: (value) ->
-                if _.isArray(value) and value.length is 0
+                if core.isArray(value) and value.length is 0
                     value = false
                 setProperty.call(@, 'checked', Boolean(value))
 
@@ -131,7 +131,7 @@ define ['synapse/core', 'jquery'], (core, $) ->
             get: ->
                 getStyle.call(@, 'display') is not 'none'
             set: (value) ->
-                if _.isArray(value) and value.length is 0
+                if core.isArray(value) and value.length is 0
                     value = false
                 if Boolean(value) then @show() else @hide()
 
@@ -144,7 +144,7 @@ define ['synapse/core', 'jquery'], (core, $) ->
             get: ->
                 getStyle.call(@, 'display') is 'none'
             set: (value) ->
-                if _.isArray(value) and value.length is 0
+                if core.isArray(value) and value.length is 0
                     value = false
                 if Boolean(value) then @hide() else @show()
 
@@ -181,7 +181,7 @@ define ['synapse/core', 'jquery'], (core, $) ->
             name: 'css'
             get: (key) -> @hasClass(key)
             set: (key, value) ->
-                if _.isArray(value) and value.length is 0
+                if core.isArray(value) and value.length is 0
                     value = false
                 if Boolean(value) then @addClass(key) else @removeClass(key)
 
@@ -202,20 +202,20 @@ define ['synapse/core', 'jquery'], (core, $) ->
     # to ensure those events are selected before less selective selectors are
     # encountered.
     domEvents = [
-        ['a,:button,:reset', 'click']
-        ['select,:checkbox,:radio,textarea', 'change']
-        [':submit', 'submit']
-        [':input', 'keyup']
+        ['a,button,[type=button],[type=reset]', 'click']
+        ['select,[type=checkbox],[type=radio],textarea', 'change']
+        ['[type=submit]', 'submit']
+        ['input', 'keyup']
     ]
     
     # Default element interfaces relative to their selectors. Each
     # item will be iterated over in order and compared against using
-    # the ``jQuery.fn.is()`` method for comparison. Note that more
+    # the ``Zepto.fn.is()`` method for comparison. Note that more
     # specific selectors should be listed first to ensure those events are
     # selected before less selective selectors are encountered.
     elementInterfaces = [
-        [':checkbox,:radio', 'checked']
-        [':input', 'value']
+        ['[type=checkbox],[type=radio]', 'checked']
+        ['input,textarea,select', 'value']
     ]
 
     # An array of element attributes to check for a value during interface
@@ -234,15 +234,14 @@ define ['synapse/core', 'jquery'], (core, $) ->
         interfaces: interfaces        
 
         checkObjectType: (object) ->
-            object instanceof $ or object.nodeType is 1 or
-                core.toString.call(object) is '[object String]'
+            object instanceof $ or object.nodeType is 1 or core.isString(object)
 
         coerceObject: (object) ->
             $ object
 
         getHandler: (object, key) ->
             value = interfaces.get object, key
-            if value and object.is('input[type=number]')
+            if value and object.is('[type=number]')
                 return if value.indexOf('.') > -1 then parseFloat(value) else parseInt(value)
             return value
 

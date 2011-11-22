@@ -6,11 +6,11 @@ define(['synapse/core', 'synapse/hooks/jquery', 'backbone'], function(core, hook
       return object instanceof Backbone.View;
     },
     getHandler: function(object, key) {
-      if (core.getType(object[key]) === 'function') return object[key]();
+      if (core.isFunction(object[key])) return object[key]();
       return hook.getHandler(hook.coerceObject(object.el), key);
     },
     setHandler: function(object, key, value) {
-      if (core.getType(object[key]) === 'function') return object[key](value);
+      if (core.isFunction(object[key])) return object[key](value);
       return hook.setHandler(hook.coerceObject(object.el), key, value);
     },
     onEventHandler: function(object, event, handler) {
