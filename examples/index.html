@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-    <html lang="en">
+    <html lang=en>
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -8,98 +8,90 @@
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <link rel="stylesheet" href="css/ir_black.css">
-        <link rel="stylesheet" href="css/style.css">
-        <style>.red { color: red; }</style>
+        <link rel="stylesheet" href="css/prettify.css">
+        <link rel="stylesheet" href="css/bootstrap.css">
 
-        <script>
-            var require = { baseUrl: 'js/' };
-        </script>
+        <style>
+            body {
+                background: #f3f6fe;
+                font-size: 14px;
+                text-shadow: 0 1px 1px #fff;
+            }
+
+            p {
+                font-size: 14px;
+                line-height: 22px;
+            }
+
+            header {
+                box-shadow: 0 2px 3px #ccc;
+            }
+
+            .topbar-inner {
+                background: #333 url(img/connect-dark.png);
+            }
+
+            #content {
+                background-color: #fcfcfc;
+                box-shadow: -2px 0 3px #dde0e6;
+                border-left: 1px solid #ccc;
+                padding: 0 20px;
+                position: fixed;
+                left: 240px;
+                right: 0;
+                top: 40px;
+                bottom: 0;
+                overflow: auto;
+                text-shadow: 0 1px 0 #fff;
+            }
+
+            span.label {
+                text-shadow: none;
+            }
+
+            .prettyprint {
+                margin-bottom: 20px;
+            }
+
+            #content h1 {
+                color: #999;
+                margin-top: 10px;
+            }
+
+            #sidebar {
+                position: fixed;
+                top: 40px;
+                bottom: 0;
+                left: 0;
+                width: 240px;
+                padding-left: 20px;
+                overflow: auto;
+            }
+
+            #sidebar li, #content li {
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+
+            @media (min-width: 1241px) {
+                .row {
+                    margin-bottom: 10px;
+                }
+            }
+
+
+            @media (max-width: 1240px) {
+                .span5 { width: 640px; }
+                .span16 { width: 640px; }
+            }
+        </style>
+
+        <script>var require = { baseUrl: 'js/' };</script>
         <script src="js/underscore.js"></script>
         <script src="js/require.js"></script>
-        <script src="js/highlight.pack.js"></script>
-        <script>
-            hljs.tabReplace = '    ';
-            hljs.initHighlightingOnLoad();
-        </script>
+        <script src="js/prettify.js"></script>
 
-        <script>
-            require(['synapse', 'synapse/hooks/jquery', 'synapse/hooks/object', 'synapse/hooks/backbone-model'], function(Synapse, jQueryHook, ObjectHook, BackboneModelHook) {
-               
-                Synapse.addHooks(jQueryHook, BackboneModelHook, ObjectHook)
-
-                function assert(expr) { return Boolean(expr); }
-
-                $(function() {
-
-
-                    // example pre
-                    var obj = {};
-                    $('#example-pre span').text(assert(obj === new Synapse(obj).raw));
-
-                    // example 0
-                    var model = Synapse(new Backbone.Model({ title: 'Hello World' }))
-                        .observe('#example0-1 input')
-                        .notify('#example0-1 .output', 'title')
-                        .notify('#example0-1 .meta', function() {
-                            return 'Last updated: ' + (new Date()).toString();
-                        });
-
-                    var Model = Backbone.Model.extend({
-                        fullName: function() {
-                            return this.get('firstName') + ' ' + this.get('lastName');
-                        }
-                    });
-
-                    var model = Synapse(new Model)
-                        .observe('#example0-2 [name=firstName]')
-                        .observe('#example0-2 [name=lastName]')
-                        .notify('#example0-2 .fullName', 'fullName');
-
-                    var Model = Backbone.Model.extend({
-                        defaults: { clicks: 0 },
-                        addClick: function() {
-                            this.set({clicks: this.get('clicks')+1});
-                        },
-                        hasTooManyClicks: function() {
-                            return this.get('clicks') >= 3;
-                        },
-                        resetClicks: function() {
-                            this.set({clicks: this.defaults.clicks});
-                        }
-                    });
-
-                    var model = Synapse(new Model)
-                        .observe('#example0-3 .clicker', {
-                            observerInterface: 'addClick',
-                            triggerOnBind: false
-                        })
-                        .notify('.clicks',
-                            { subjectInterface: 'clicks' },
-                            { subjectInterface: 'hasTooManyClicks', observerInterface: 'css.red' }
-                        )
-                        .notify('#example0-3 .clicker', 'hasTooManyClicks', 'disabled') 
-                        .notify('#example0-3 .message', 'hasTooManyClicks', 'visible')
-                        .observe('#example0-3 .reset', {
-                            observerInterface: 'resetClicks'
-                        });
-
-                    // example 1 
-                    new Synapse('#example1-1 span').observe('#example1-1 input');
-                    new Synapse('#example1-2 input.one').sync('#example1-2 input.two');
-                    new Synapse('#example1-3 :text').observe('#example1-3 :checkbox', 'checked', 'enabled');
-                    new Synapse('#example1-4 span').observe('#example1-4 input', {
-                        subjectInterface: 'value',
-                        observerInterface: 'html',
-                        converter: function(value) {
-                            if (value !== '')
-                                return 'I am a <b>' + value + '</b>';
-                            return '<em class="meta">please type something</em>';
-                        }
-                    });
-                });
-            });
-        </script>
+        <!--
         <script>
           var _gaq = _gaq || [];
           _gaq.push(['_setAccount', 'UA-8483912-3']);
@@ -111,201 +103,426 @@
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
+        -->
     </head>
-    <body>        
-        <h1>Synapse</h1>
+    <body onload="prettyPrint()">
 
-        <p class="meta"><a href="./test/">View tests</a> (only tested in Chrome)</p>
-
-        <h3>The Basics</h3>
-
-        <div class="example">
-            <div>
-<pre class="javascript">
-<code>// new Synapse supports object primitives
-var obj = {};
-
-// simple constructor to wrap objects for use with the API, returns
-// the new Synapse object.
-// the original object is a property called ``raw``.
-assert(new Synapse(obj).raw === obj);
-</code></pre>
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div class="container-fluid">
+                    <a class="brand" href="#">Synapse</a>
+                    <ul>
+                        <li><a href="https://github.com/bruth/synapse/">GitHub Repository</a>
+                        <li><a href="http://jsfiddle.net/bruth/bufeK/">jsFiddle Demo</a>
+                    </ul>
+                </div>
             </div>
-            <div id="example-pre">
-                <code>assert(new Synapse(obj).raw === obj)</code><br>
-                <span class="meta"></span>
-            </div>
-        </div>
+        </header>
 
-        <h3>DOM to Model</h3>
+        <nav id=sidebar>
+            <h3>Learn</h3>
+            <ul class=unstyled>
+                <li><a href=#background>Background</a>
+                <li><a href=#basics>The Basics</a>
+                <li><a href=#channels>Channels</a>
+                <li><a href=#interfaces>Interfaces</a>
+            </ul>
 
-        <div class="example">
-            <div>
-<pre class="javascript">
-<code>// initialize a new model object 
-var model = new Backbone.Model({ title: 'Hello World' });
-// Using Synapse as a function, augments the model with `observe`,
-// `notify` and `sync`
-Synapse(model);
+            <h3>APIs</h3>
+            <ul class=unstyled>
+                <li><a href=#constructor-api>Constructor API</a>
+                <li><a href=#object-api>Object API</a>
+                    <ul>
+                        <li><a href=#object-api-properties>Properties</a>
+                        <li><a href=#object-api-channel>Channel Methods</a>
+                        <li><a href=#object-api-interface>Interface Methods</a>
+                    </ul>
+                <li><a href=#hooks>Hook API</a>
+                    <ul>
+                        <li><a href=#hooks-base>Base</a>
+                        <li><a href=#hooks-observer>Observer</a>
+                        <li><a href=#hooks-subject>Subject</a>
+                        <li><a href=#hooks-helpers>Helpers</a>
+                    </ul>
+            </ul>
 
-// the model will observe the value of this input (the attribute
-// is equal to the 'name' attribute on the input, i.e. 'title'
-model.sync('input')
-    // the span will observe the 'title' attribute on this model
-    .notify('span', 'title')
-    // if no interface is auto-detected for the model, the observer
-    // will be notified when _anything_ changes.
-    .notify('.meta', function() {
-        return 'Last updated: ' + (new Date()).toString();
-    });
-});
-</code></pre>
-            </div>
+            <h3>Supported Hooks</h3>
+            <ul class=unstyled>
+                <li><a href=#plain-objects>Plain Objects</a>
+                <li><a href=#evented-objects>"Evented" Objects</a>
+                <li><a href=#jquery>jQuery</a>
+                    <ul>
+                        <li><a href=#jquery-interfaces>Interfaces</a>
+                    </ul>
+                <li><a href=#zepto>Zepto</a>
+                    <ul>
+                        <li><a href=#zepto-interfaces>Interfaces</a>
+                    </ul>
+                <li><a href=#backbone-view>Backbone View</a>
+                <li><a href=#backbone-model>Backbone Model</a>
+            </ul>
+        </nav>
 
-            <div id="example0-1">
-                <input type="text" name="title">
-                <span class="output"></span><br>
-                <span class="meta"></span>
-            </div>
-        </div>
+        <div id="content">
 
+            <h1>Synapse - Data Binding For The Rest Of Us</h1>
 
-        <div class="example">
-            <div>
-<pre class="javascript">
-<code>var Model = new Backbone.Model.extend({
-    fullName: function() {
-        return this.get('firstName') + ' ' + this.get('lastName');
-    }
-});
+            <h3 id="background">Background</h3>
 
-Synapse(new Model)
-    .observe('[name=firstName]')
-    .observe('[name=lastName]')
-    .notify('.fullName', 'fullName');
-</code></pre>
-            </div>
-            <div id="example0-2">
-                First name: <input type="text" name="firstName" value="Planet"><br>
-                Last name: <input type="text" name="lastName" value="Earth"><br><br>
-                Hello, <span class="fullName"></span>
-            </div>
-        </div>
+            <section class="row">
+                <span class="span16">
+                    <p>Synapse is a JavaScript data binding library. The API was written
+                    to work <strong>all-in-code</strong>, that is, it does not depend on
+                    any template library or special attributes (e.g. <code>data-bind</code>)
+                    to work. The focus has been placed into defining the minimal components
+                    necessary to enable data binding to work across various objects.</p>
+                    
+                    <p>Fundamentally, there are two parties involved: <strong>subjects</strong>
+                    and <strong>observers</strong>. Keep the following in mind.</p>
+                    
+                    <p>Any object can be an observer. It simply waits until the subject's state
+                    changes and then does something with that information. In the context of data
+                    binding, it typically records that change in state in some way or performs an
+                    action as a result of the change.</p>
 
-        <div class="example">
-            <div>
-<pre class="javascript">
-<code>var Model = Backbone.Model.extend({
-    defaults: { clicks: 0 },
-    addClick: function() {
-        this.set({ clicks: this.get('clicks')++ });
-    },
-    hasTooManyClicks: function() {
-        return this.get('clicks') &gt;= 3;
-    },
-    resetClicks: function() {
-        this.set({ clicks: this.defaults.clicks });
-    }
-});
-
-var model = Synapse(new Model)
-    // watch the "Click Me!" button on each click
-    .observe('.clicker', {
-        observerInterface: 'addClick',
-        triggerOnBind: false
-    })
-    // notify the counter of the clicks and update clicks
-    // if it reaches too many
-    .notify('.clicks', {
-        subjectInterface: 'clicks'
-    }, {
-        subjectInterface: 'hasTooManyClicks', observerInterface: 'css.red'
-    })
-    .notify('.clicker', 'hasTooManyClicks', 'disabled') 
-    .notify('.message', 'hasTooManyClicks', 'visible')
-    .observe('.reset', {
-        observerInterface: 'resetClicks'
-    });
-</code></pre>
-            </div>
-            <div id="example0-3">
-                You've clicked <span class="clicks"></span><br>
-                <button class="clicker">Click Me!</button>
-                <span class="message">
-                    Too many clicks... <button class="reset">Reset Clicks</button>
+                    <p>Subjects on the other hand must have a mechanism for being aware of actions
+                    or events that are performed on itself. In the case of the DOM, when a user
+                    clicks a button, the <code>onclick</code> event is triggered on that DOM
+                    element. These actions can cause a cascade of events all of which can be used
+                    to respond to the state changes.</p>
                 </span>
-            </div>
+            </section>
+
+            <h3 id="basics">The Basics</h3>
+
+            <h5>AMD &amp; Dependencies</h5>
+            <section class="row">
+                <span class="span5">
+                    <p>Synapse supports the Asynchronous Module Definition
+                    (AMD) and has no dependencies.</p>
+                </span> 
+                <span class="span11">
+<pre class="prettyprint linenums">
+require(['synapse'], function(Synapse) { ... });
+</pre>
+                </span>
+            </section>
+
+            <h3 id=channels>Channels</h3>
+
+            <section class="row">
+                <span class="span5">
+                    <p>Synapse provides a mechanism for defining a communication channel
+                    between two objects. In order for two objects to communicate, there
+                    are three components needing to be defined for <code>A</code>
+                    &rarr; <code>B</code>:</p>
+                    <ol>
+                        <li>The event that will trigger when <code>A</code>'s state changes
+                        <li>The function to call on/for <code>A</code> that returns a
+                        representation of the changed state (typically the data that has
+                        changed)
+                        <li>The function to call on/for <code>B</code> that handles this
+                        received data from <code>A</code>
+                    </ol>
+                    <p>The channel can be defined with respect to either the subject A or
+                    the observer B depending on the system. In either case, whenever a change
+                    in state occurs in A, B (and all other observers of that event) will be
+                    notified.</p>
+                </span> 
+                <span class="span11">
+
+<pre id="ex1">
+<input type=text value="Hello World!"> <span></span>
+</pre>
+
+<pre class="prettyprint linenums">
+var A = $('input'),
+    B = $('span');
+
+A.bind('keyup', function() {
+    B.text(A.val());
+});
+
+// Synapse abstracts away the need to write this spaghetti
+// code. The following are equivalent
+Synapse(A).notify(B);
+Synapse(B).observe(A);
+</pre>
+                </span>
+            </section>
+
+            <h3 id=interfaces>Interfaces</h3>
+
+            <section class="row">
+                <span class="span5">
+                    <p>The above examples explain the most simple interactions between two
+                    objects. But how is data returned from or sent to each object if they
+                    are of different types?</p>
+
+                    <p>Synapse interfaces provide a way to generically get and set properties
+                    on supported objects. A Synapse object has <code>get</code> and
+                    <code>set</code> methods which allow for a consistent API regardless of the
+                    underlying object type.</p>
+                </span> 
+                <span class="span11">
+
+<pre class="prettyprint linenums">
+// Use Synapse as a constructor exposes the interface
+// methods. We are using the jQuery hook here to detect
+// the type passed in (a CSS selector).
+var A = new Synapse('input'),
+    B = new Synapse('span');
+
+// These 'interfaces' map to jQuery methods on the
+// object, $.fn.val() and $.fn.text()
+A.get('value'); // 'hello world'
+B.set('text', A.get('value'));
+B.get('text'); // 'hello world'
+</pre>
+                </span>
+            </section>
+
+
+            <h3 id="constructor-api">Constructor API</h3>
+
+            <section class="row">
+                <span class="span5">
+                    <p><code>Synapse</code> can be used as a constructor or a
+                    function. Using it as a <strong>constructor</strong> <em>wraps</em>
+                    the object and exposes the full <code>Synapse</code> Object API. Using it
+                    as a <strong>function</strong> will <em>augment</em> the passed in
+                    <code>object</code> with a limited API.
+                    </p>
+                </span> 
+
+                <span class="span11">
+<pre class="prettyprint linenums">
+var wrapped = new Synapse(object);
+var object = Synapse(object);
+</pre>
+                </span>
+            </section>
+
+            <h3 id=object-api>Object API</h3>
+
+            <section class=row>
+                <span class=span16>
+                    <p>To keep things simple, there are only three main 
+                    API methods <code>observe</code>, <code>notify</code>,
+                    and <code>sync</code>. Although other methods are
+                    exposed, there isn't really a need to use them.</p>
+                </span>
+            </section>
+
+            <h5 id=object-api-properties>Properties</h5>
+
+            <section class=row>
+                <span class=span5>
+                    <ul>
+                        <li><code>raw</code> - a reference to the original object.
+                        <strong>Note, if the hook this object is used with has a
+                        <code>coerceObject</code> method defined, <code>raw</code>
+                        will be the object that is returned from this function.</strong>
+                    </ul>
+                </span>
+
+                <span class=span11>
+<pre class="prettyprint linenums">
+wrapped.raw; // reference to `object`
+</pre>
+                </span>
+            </section>
+
+            <h5 id=object-api-channel>Channel Methods
+                <span class="label notice">limited api</span></h5>
+
+            <section class=row>
+                <span class=span5>
+                    <ul>
+                        <li><code>observe</code> - opens a one-way channel between this
+                        object and a subject where this object <em>observes</em> state changes
+                        of the subject.
+                        <li><code>notify</code> - opens a one-way channel between this object
+                        and an observer where this object <em>notifies</em> it's state
+                        changes to the observer.
+                        <li><code>sync</code> - opens a two-way channel between this object
+                        and another where each acts as a subject and observer.
+                    </ul>
+
+                </span> 
+                <span class="span11">
+<pre class="prettyprint linenums">
+wrapped.observe(subject, [options]);
+wrapped.notify(observer, [options]);
+wrapped.sync(other, [options]);
+</pre>
+                </span>
+            </section>
+
+            <h5 id=object-api-interface>Interface Methods</h5>
+
+            <section class=row>
+                <span class=span5>
+                    <ul>
+                        <li><code>get</code> - <span class="label success">subject</span>
+                        given an interface identifier, return a representation of this
+                        subject's change in state.
+                        <li><code>set</code> - <span class="label warning">observer</span>
+                        given an interface identifier and a value provided by the subject,
+                        <em>sets</em> the value.
+                    </ul>
+                </span>
+
+                <span class=span11>
+<pre class="prettyprint linenums">
+wrapped.get(interface);
+wrapped.set(interface, value);
+</pre>
+                </span>
+            </section>
+
+            <h3 id=hooks>Hook API</h3>
+
+            <section class="row">
+                <span class="span16">
+                    <p>Synapse relies on <strong>hooks</strong> being defined to
+                    perform the <em>under-the-hood</em> operations. The Synapse
+                    constructor is simply an abstraction for these hooks which are
+                    defined on a per-object-type basis. Depending on the specificity
+                    of the type, objects can <em>fallback</em> to less specific hooks
+                    to have at least minimal functionality.</p>
+                </span>
+            </section>
+
+            <h5 id=hooks-base>Base</h5>
+
+            <section class="row">
+                <span class="span5">
+                    <p>A hook is simply an object. To make it distributable, it is recommended
+                    to define it as a standalone module. The base parts of a hook include.</p>
+                    <ul>
+                        <li><code>typeName</code> - name of the object type this hook
+                        represents
+                        <li><code>checkObjectType</code> - a method which checks if the
+                        object is applicable for this hook
+                    </ul>
+                </span>
+                <span class=span11>
+<pre class="prettyprint linenums">
+define('awesome-hook', function() {
+    return {
+        // the name of the type this hook represents
+        typeName: 'The Awesome Type',
+
+        // checks whether the object is the correct type for this hook
+        checkObjectType: function(object) {},
+</pre>
+                </span>
+            </section>
+
+            <h5 id=hooks-interfaces>Interfaces</h5>
+
+            <section class=row>
+                <span class=span5>
+                    <p>The following methods are required for an object to an observer.</p>
+                    <ul>
+                        <li><code>getHandler</code> - a method which takes an object
+                        and an interface identifier and returns a value
+                        <li><code>setHandler</code> - a method which takes an object,
+                        an interface identifier, and a value and sets the value
+                    </ul>
+                </span>
+
+                <span class=span11>
+<pre class="prettyprint linenums">
+        ...
+        // takes an object and a interface identifier and returns a value
+        getHandler: function(object, interface) {},
+
+        // takes an object, inteface identifier and value and sets the value
+        setHandler: function(object, interface, value) {},
+        ...
+</pre>
+                </span>
+            </section>
+
+            <h5 id=hooks-events>Events</h5>
+
+            <section class=row>
+                <span class=span5>
+                    <p>The following methods are required for an object to a subject.</p>
+                    <ul>
+                        <li><code>onEventHandler</code> - a method which attaches an
+                        event handler to an object
+                        <li><code>offEventHandler</code> - a method which detaches an
+                        event handler from an object
+                        <li><code>triggerEventHandler</code> - a method which triggers
+                        and event on an object
+                    </ul>
+                </span>
+
+                <span class=span11>
+<pre class="prettyprint linenums">
+        ...
+        // takes an object, event and handler and attaches the handler
+        onEventHandler: function(object, event, handler) {},
+
+        // take an object, event and handler and detaches the handler
+        offEventHandler: function(object, event, handler) {},
+
+        // takes an object and triggers an event on it
+        triggerEventHandler: function(object, event) {},
+        ...
+</pre>
+                </span>
+            </section>
+
+            <h5 id=hooks-helpers>Helpers</h5>
+
+            <section class=row>
+                <span class=span5>
+                    <p>The following methods are optional, but can be very useful.</p>
+                    <ul>
+                        <li><code>coerceObject</code> - takes the raw object passed in
+                        to <code>Synapse</code> and coerces the object into a more
+                        useful object (think CSS selector &rarr; jQuery object)
+                        <li><code>detectEvent</code> - (subjects only) detects an
+                        appropriate event for the given object which will trigger the
+                        downstream notification to observers
+                        <li><code>detectInterface</code> - detects an appropriate interface
+                        for the given object
+                        <li><code>detectOtherInterface</code> - detects an appropriate
+                        interface for the other object involved (either subject or observer)
+                        <li><code>detectEvent</code> - (subjects only) detects an
+                        appropriate event for the given object which will trigger the
+                        downstream notification to observers
+                    </ul>
+                </span> 
+                <span class="span11">
+<pre class="prettyprint linenums">
+        // takes the raw object passed in to Synapse and coerces the object into
+        // a more useful object (think CSS selector --> jQuery object)
+        coerceObject: function(object) {},
+
+        // detects an appropriate interface for the given object
+        detectInterface: function(object) {},
+
+        // detects an appropriate interface for the other object involved (either
+        // subject or observer)
+        detectOtherInterface: function(object) {},
+
+        // detects an appropriate event for the given object which will trigger
+        // the downstream notification to observers
+        detectEvent: function(object, [interface]) {}
+    };
+});
+</pre>
+                </span>
+            </section>
+
         </div>
 
-        <h3>DOM to DOM</h3>
-
-        <div class="example">
-            <div>
-<pre class="javascript"><code>// the ``span`` observes the ``input``. new Synapse autodetects to use
-// the "html" interface for the ``span`` and the "value" of  the
-// ``input``. The event is auto-detected relative to the subject type,
-// which will be "keyup".
-new Synapse('span').observe('input');
-</code></pre>
-            </div>
-
-            <div id="example1-1">
-                <input type="text">
-                <span class="output"></span>
-            </div>
-        </div>
-
-        <div class="example">
-            <div>
-<pre class="javascript"><code>// actionable objects (ones that have detectable events) can be 
-// synced. that is, both are observing each other. this merely a
-// convenience syntax and can be accomplished using two ``observe()``
-// calls
-new Synapse('input.one').sync('input.two');
-</code></pre>
-            </div>
-
-            <div id="example1-2">
-                <input class="one" type="text">
-                <input class="two" type="text">
-            </div>
-        </div>
-
-        <div class="example">
-            <div>
-<pre class="javascript"><code>// interfaces can be explicitly set. this one reads, the ``:text``
-// input will be "enabled" only when the ``:checkbox`` is "checked".
-new Synapse(':text').observe(':checkbox', 'enabled', 'checked');
-</code></pre>
-            </div>
-
-            <div id="example1-3">
-                <input type="checkbox">
-                <input class="one" type="text" value="can you edit me?">
-            </div>
-        </div>
-
-        <div class="example">
-            <div>
-<pre class="javascript"><code>// add a converter that takes the subject and value that has changed
-// state as arguments. the returned values from the handler will be
-// used as the value for the observers interface.
-new Synapse('span').observe('input', {
-    subjectInterface: 'value',
-    observerInterface: 'html',
-    converter: function(value) {
-        if (value !== '')
-            return 'I am a &lt;b&gt;' + value + '&lt;/b&gt;';
-        return '&lt;em class="meta"&gt;please type something&lt;/em&gt;';
-    }
-});</code></pre>
-            </div>
-
-            <div id="example1-4">
-                <input type="text">
-                <span class="output"></span>
-            </div>
-        </div>
+        <script src="js/examples.js"></script>
     </body>
 </html>
 

@@ -22,20 +22,21 @@ define ['synapse/core', 'synapse/connect'], (core, connect) ->
             # object. Otherwise, augment the object with the primary methods.
             if @constructor isnt Synapse
                 wrapped = new Synapse(object)
+                raw = wrapped.raw
 
-                object.observe = ->
+                raw.observe = ->
                     wrapped.observe arguments...
                     return @
 
-                object.notify = ->
+                raw.notify = ->
                     wrapped.notify arguments...
                     return @
 
-                object.sync = ->
+                raw.sync = ->
                     wrapped.sync arguments...
                     return @
 
-                return wrapped.raw
+                return raw
 
             # Find the appropriate hook
             for hook in Synapse.hooks

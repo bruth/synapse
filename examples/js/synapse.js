@@ -8,23 +8,24 @@ define(['synapse/core', 'synapse/connect'], function(core, connect) {
     Synapse.prototype.version = '0.3.1';
 
     function Synapse(object) {
-      var hook, wrapped, _i, _len, _ref;
+      var hook, raw, wrapped, _i, _len, _ref;
       if (object instanceof Synapse) return object;
       if (this.constructor !== Synapse) {
         wrapped = new Synapse(object);
-        object.observe = function() {
+        raw = wrapped.raw;
+        raw.observe = function() {
           wrapped.observe.apply(wrapped, arguments);
           return this;
         };
-        object.notify = function() {
+        raw.notify = function() {
           wrapped.notify.apply(wrapped, arguments);
           return this;
         };
-        object.sync = function() {
+        raw.sync = function() {
           wrapped.sync.apply(wrapped, arguments);
           return this;
         };
-        return wrapped.raw;
+        return raw;
       }
       _ref = Synapse.hooks;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
