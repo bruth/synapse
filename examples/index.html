@@ -73,14 +73,18 @@
                 margin-bottom: 5px;
             }
 
-            @media (min-width: 1241px) {
+            @media screen and (max-width: 1240px) {
+                .span5 { width: 640px; }
+                .span16 { width: 640px; }
+            }
+
+            @media screen and (min-width: 1241px) {
                 .row {
                     margin-bottom: 10px;
                 }
             }
 
-
-            @media (max-width: 1240px) {
+            @media screen and (min-width: 1581px) {
                 .span5 { width: 640px; }
                 .span16 { width: 640px; }
             }
@@ -297,8 +301,9 @@ B.get('text'); // 'hello world'
 
                 <span class="span11">
 <pre class="prettyprint linenums">
+var object = $('input');
 var wrapped = new Synapse(object);
-var object = Synapse(object);
+Synapse(object);
 </pre>
                 </span>
             </section>
@@ -322,7 +327,7 @@ var object = Synapse(object);
                         <li><code>raw</code> - a reference to the original object.
                         <strong>Note, if the hook this object is used with has a
                         <code>coerceObject</code> method defined, <code>raw</code>
-                        will be the object that is returned from this function.</strong>
+                        will be the object that is returned from that function.</strong>
                     </ul>
                 </span>
 
@@ -515,6 +520,47 @@ define('awesome-hook', function() {
         // the downstream notification to observers
         detectEvent: function(object, [interface]) {}
     };
+});
+</pre>
+                </span>
+            </section>
+
+
+            <h3 id=plain-objects>Plain Objects</h3>
+
+            <section class=row>
+                <span class=span5>
+                    <p><strong>Supported Type.</strong> Plain objects are typically just
+                    object primitives, e.g. <code>{}</code>, or objects created from the
+                    <code>Object</code> constructor, e.g. <code>new Object()</code>.</p>
+
+                    <p><strong>Events.</strong> These objects are assumed to <em>not</em> have
+                    support for events and thus can only be observers. As a result, using this
+                    hook alone is pretty useless since it has nothing to observe.. it is a lonely
+                    object.</p>
+
+                    <p><strong>Interfaces.</strong> The interfaces available for plain objects
+                    are simply, their properties and methods. Methods always take precedence over
+                    properties.</p>
+                </span>
+
+                <span class=span11>
+<pre class="prettyprint linenums">
+require(['synapse', 'synapse/hooks/object'], function(Synapse, ObjectHook) {
+    // Register the hook
+    Synapse.addHooks(ObjectHook);
+
+    var obj = new Synapse({
+        foo: function(value) {
+            this._foo = 'Hello ' + value;
+        }
+    });
+
+    obj.set('foo', 'Byron');
+    obj.raw._foo === 'Hello Byron'; // true
+
+    obj.set('hello', 'world');
+    obj.raw.hello === 'world'; // true
 });
 </pre>
                 </span>
