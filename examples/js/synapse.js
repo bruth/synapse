@@ -42,48 +42,6 @@ define(['synapse/core', 'synapse/connect'], function(core, connect) {
       this.channels = [];
     }
 
-    Synapse.prototype.detectEvent = function() {
-      var value, _ref;
-      if ((value = (_ref = this.hook).detectEvent.apply(_ref, [this.raw].concat(__slice.call(arguments))))) {
-        return value;
-      }
-      throw new Error("" + this.hook.typeName + " types do not support events");
-    };
-
-    Synapse.prototype.on = function() {
-      var value, _base;
-      if ((value = typeof (_base = this.hook).onEventHandler === "function" ? _base.onEventHandler.apply(_base, [this.raw].concat(__slice.call(arguments))) : void 0)) {
-        return this;
-      }
-      throw new Error("" + this.hook.typeName + " types do not support events");
-    };
-
-    Synapse.prototype.off = function() {
-      var value, _base;
-      if ((value = typeof (_base = this.hook).offEventHandler === "function" ? _base.offEventHandler.apply(_base, [this.raw].concat(__slice.call(arguments))) : void 0)) {
-        return this;
-      }
-      throw new Error("" + this.hook.typeName + " types do not support events");
-    };
-
-    Synapse.prototype.trigger = function() {
-      var value, _base;
-      if ((value = typeof (_base = this.hook).triggerEventHandler === "function" ? _base.triggerEventHandler.apply(_base, [this.raw].concat(__slice.call(arguments))) : void 0)) {
-        return this;
-      }
-      throw new Error("" + this.hook.typeName + " types do not support events");
-    };
-
-    Synapse.prototype.detectInterface = function() {
-      var _base;
-      return typeof (_base = this.hook).detectInterface === "function" ? _base.detectInterface(this.raw) : void 0;
-    };
-
-    Synapse.prototype.detectOtherInterface = function() {
-      var _base;
-      return typeof (_base = this.hook).detectOtherInterface === "function" ? _base.detectOtherInterface(this.raw) : void 0;
-    };
-
     Synapse.prototype.get = function() {
       var _ref;
       return (_ref = this.hook).getHandler.apply(_ref, [this.raw].concat(__slice.call(arguments)));

@@ -1,5 +1,40 @@
 define ['synapse/core'], (core) ->
 
+    # Detects an appropriate event to attach an event handler to. This
+    # applies only to subjects.
+    detectEvent = (object, args...) ->
+        if (value = object.hook.detectEvent object.raw, args...)
+            return value
+        throw new Error "#{object.hook.typeName} types do not support events"
+
+    # Attaches an event handler. This applies only to subjects.
+    onEvent = (object, args...) ->
+        if (value = object.hook.onEventHandler? object.raw, args...)
+            return object
+        throw new Error "#{object.hook.typeName} types do not support events"
+
+    # Detaches an event handler. This applies only to subjects.
+    offEvent = (object, args...) ->
+        if (value = object.hook.offEventHandler? object.raw, args...)
+            return object
+        throw new Error "#{object.hook.typeName} types do not support events"
+    
+    # Triggers an event handler. This applies only to subjects.
+    triggerEvent = (object, args...) ->
+        if (value = object.hook.triggerEventHandler? object.raw, args...)
+            return object
+        throw new Error "#{object.hook.typeName} types do not support events"
+
+    # Detects an appropriate interface (property or method) to use as a
+    # data source for a given communication channel.
+    detectInterface = (object) ->
+        object.hook.detectInterface? object.raw
+
+    # Detects an interface for the other end of the channel.
+    detectOtherInterface = (object) ->
+        object.hook.detectOtherInterface? object.raw
+
+
     # ## Create a Connection
     #
     # - ``event`` - the event that will trigger the ``subjectInterface`` to be
@@ -32,17 +67,17 @@ define ['synapse/core'], (core) ->
         
         # Detect the interface for the subject if not defined
         if not (subjectInterface = options.subjectInterface)
-            if not (subjectInterface = subject.detectInterface() or observer.detectOtherInterface()) and not converter
-                throw new Error "An interface for #{subject.type} objects could not be detected"
+            if not (subjectInterface = detectInterface(subject) or detectOtherInterface(observer)) and not converter
+                throw new Error "An interface for #{subject.hook.typeName} objects could not be detected"
 
         # Detect the interface for the observer if not defined
         if not (observerInterface = options.observerInterface)
-            if not (observerInterface = observer.detectInterface() or subject.detectOtherInterface())
-                throw new Error "An interface for #{observer.type} objects could not be detected"
+            if not (observerInterface = detectInterface(observer) or detectOtherInterface(subject))
+                throw new Error "An interface for #{observer.hook.typeName} objects could not be detected"
 
         # Get the events that trigger the subject's change in state
         if not (events = options.event)
-            events = subject.detectEvent(subjectInterface)
+            events = detectEvent(subject, subjectInterface)
         if not core.isArray(events) then events = [events]
 
         triggerOnBind = options.triggerOnBind
@@ -65,7 +100,7 @@ define ['synapse/core'], (core) ->
                 # If subjectInterface is not undefined, cache the value
                 core.publish channel, value
 
-            subject.on event, handler            
+            onEvent(subject, event, handler)
             if triggerOnBind then handler()
 
         return
@@ -105,6 +140,5 @@ define ['synapse/core'], (core) ->
         for opt in options
             connectOne(subject, observer, opt)
         return
-
 
     return connect

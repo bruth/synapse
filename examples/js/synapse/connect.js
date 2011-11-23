@@ -1,7 +1,47 @@
 var __slice = Array.prototype.slice;
 
 define(['synapse/core'], function(core) {
-  var connect, connectOne, defaultConnectOptions;
+  var connect, connectOne, defaultConnectOptions, detectEvent, detectInterface, detectOtherInterface, offEvent, onEvent, triggerEvent;
+  detectEvent = function() {
+    var args, object, value, _ref;
+    object = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if ((value = (_ref = object.hook).detectEvent.apply(_ref, [object.raw].concat(__slice.call(args))))) {
+      return value;
+    }
+    throw new Error("" + object.hook.typeName + " types do not support events");
+  };
+  onEvent = function() {
+    var args, object, value, _base;
+    object = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if ((value = typeof (_base = object.hook).onEventHandler === "function" ? _base.onEventHandler.apply(_base, [object.raw].concat(__slice.call(args))) : void 0)) {
+      return object;
+    }
+    throw new Error("" + object.hook.typeName + " types do not support events");
+  };
+  offEvent = function() {
+    var args, object, value, _base;
+    object = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if ((value = typeof (_base = object.hook).offEventHandler === "function" ? _base.offEventHandler.apply(_base, [object.raw].concat(__slice.call(args))) : void 0)) {
+      return object;
+    }
+    throw new Error("" + object.hook.typeName + " types do not support events");
+  };
+  triggerEvent = function() {
+    var args, object, value, _base;
+    object = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if ((value = typeof (_base = object.hook).triggerEventHandler === "function" ? _base.triggerEventHandler.apply(_base, [object.raw].concat(__slice.call(args))) : void 0)) {
+      return object;
+    }
+    throw new Error("" + object.hook.typeName + " types do not support events");
+  };
+  detectInterface = function(object) {
+    var _base;
+    return typeof (_base = object.hook).detectInterface === "function" ? _base.detectInterface(object.raw) : void 0;
+  };
+  detectOtherInterface = function(object) {
+    var _base;
+    return typeof (_base = object.hook).detectOtherInterface === "function" ? _base.detectOtherInterface(object.raw) : void 0;
+  };
   defaultConnectOptions = {
     event: null,
     subjectInterface: null,
@@ -19,16 +59,16 @@ define(['synapse/core'], function(core) {
       converter = observer.object[converter];
     }
     if (!(subjectInterface = options.subjectInterface)) {
-      if (!(subjectInterface = subject.detectInterface() || observer.detectOtherInterface()) && !converter) {
-        throw new Error("An interface for " + subject.type + " objects could not be detected");
+      if (!(subjectInterface = detectInterface(subject) || detectOtherInterface(observer)) && !converter) {
+        throw new Error("An interface for " + subject.hook.typeName + " objects could not be detected");
       }
     }
     if (!(observerInterface = options.observerInterface)) {
-      if (!(observerInterface = observer.detectInterface() || subject.detectOtherInterface())) {
-        throw new Error("An interface for " + observer.type + " objects could not be detected");
+      if (!(observerInterface = detectInterface(observer) || detectOtherInterface(subject))) {
+        throw new Error("An interface for " + observer.hook.typeName + " objects could not be detected");
       }
     }
-    if (!(events = options.event)) events = subject.detectEvent(subjectInterface);
+    if (!(events = options.event)) events = detectEvent(subject, subjectInterface);
     if (!core.isArray(events)) events = [events];
     triggerOnBind = options.triggerOnBind;
     for (_i = 0, _len = events.length; _i < _len; _i++) {
@@ -47,7 +87,7 @@ define(['synapse/core'], function(core) {
         value = subject.get(subjectInterface);
         return core.publish(channel, value);
       };
-      subject.on(event, handler);
+      onEvent(subject, event, handler);
       if (triggerOnBind) handler();
     }
   };

@@ -53,36 +53,6 @@ define ['synapse/core', 'synapse/connect'], (core, connect) ->
             @guid = objectGuid++
             @channels = []
 
-        # Detects an appropriate event to attach an event handler to. This
-        # applies only to subjects.
-        detectEvent: ->
-            if (value = @hook.detectEvent @raw, arguments...) then return value
-            throw new Error "#{@hook.typeName} types do not support events"
-
-        # Attaches an event handler. This applies only to subjects.
-        on: ->
-            if (value = @hook.onEventHandler? @raw, arguments...) then return @
-            throw new Error "#{@hook.typeName} types do not support events"
-
-        # Detaches an event handler. This applies only to subjects.
-        off: ->
-            if (value = @hook.offEventHandler? @raw, arguments...) then return @
-            throw new Error "#{@hook.typeName} types do not support events"
-        
-        # Triggers an event handler. This applies only to subjects.
-        trigger: ->
-            if (value = @hook.triggerEventHandler? @raw, arguments...) then return @
-            throw new Error "#{@hook.typeName} types do not support events"
-
-        # Detects an appropriate interface (property or method) to use as a
-        # data source for a given communication channel.
-        detectInterface: ->
-            @hook.detectInterface? @raw
-
-        # Detects an interface for the other end of the channel.
-        detectOtherInterface: ->
-            @hook.detectOtherInterface? @raw
-
         # Gets a value for a given interface.
         get: ->
             @hook.getHandler @raw, arguments...
