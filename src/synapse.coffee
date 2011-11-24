@@ -2,15 +2,15 @@
 # Synapse
 # (c) 2011 Byron Ruth
 # Synapse may be freely distributed under the BSD license
-# Version: 0.3.1
-# Date: November 21, 2011
+# Version: 0.3.2
+# Date: November 24, 2011
 #
 
 define ['synapse/core', 'synapse/connect'], (core, connect) ->
     objectGuid = 1
 
     class Synapse
-        version: '0.3.1'
+        version: '0.3.2'
        
         # ## Constructor
         # Ensure the ``object`` is not already an instance of ``Synapse``.

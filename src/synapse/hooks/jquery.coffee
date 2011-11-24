@@ -52,9 +52,9 @@ define ['synapse/core', 'jquery'], (core, $) ->
         setAttribute = (key, value) ->
             if core.isObject(key) then @attr(key) else @attr(key, value)
 
-        getStyle = (key) -> @css(key)
+        getCss = (key) -> @css(key)
 
-        setStyle = (key, value) ->
+        setCss = (key, value) ->
             if core.isObject(key) then @css(key) else @css(key, value)
 
         # ### _text_
@@ -129,7 +129,7 @@ define ['synapse/core', 'jquery'], (core, $) ->
         interfaces.register
             name: 'visible'
             get: ->
-                getStyle.call(@, 'display') is not 'none'
+                getCss.call(@, 'display') is not 'none'
             set: (value) ->
                 if core.isArray(value) and value.length is 0
                     value = false
@@ -142,11 +142,21 @@ define ['synapse/core', 'jquery'], (core, $) ->
         interfaces.register
             name: 'hidden'
             get: ->
-                getStyle.call(@, 'display') is 'none'
+                getCss.call(@, 'display') is 'none'
             set: (value) ->
                 if core.isArray(value) and value.length is 0
                     value = false
                 if Boolean(value) then @hide() else @show()
+
+
+        # ### _class_
+        # Gets and sets a CSS class on the target element.
+        interfaces.register
+            name: 'class'
+            get: -> getProperty('className')
+            set: (value) ->
+                @removeClass()
+                @addClass(value)
 
 
         # ### Compound interfaces
@@ -167,23 +177,12 @@ define ['synapse/core', 'jquery'], (core, $) ->
             set: (key, value) -> setAttribute.call(@, key, value)
 
 
-        # ### _style.FOO_
+        # ### _css.FOO_
         # Gets and sets a style property on the target element.
         interfaces.register
-            name: 'style'
-            get: (key) -> getStyle.call(@, key)
-            set: (key, value) -> setStyle.call(@, key, value)
-
-
-        # ### _css.FOO_
-        # Gets and sets a CSS class on the target element.
-        interfaces.register
             name: 'css'
-            get: (key) -> @hasClass(key)
-            set: (key, value) ->
-                if core.isArray(value) and value.length is 0
-                    value = false
-                if Boolean(value) then @addClass(key) else @removeClass(key)
+            get: (key) -> getCss.call(@, key)
+            set: (key, value) -> setCss.call(@, key, value)
 
 
         # ### _data.FOO_
