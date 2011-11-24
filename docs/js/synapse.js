@@ -5,7 +5,7 @@ define(['synapse/core', 'synapse/connect'], function(core, connect) {
   objectGuid = 1;
   Synapse = (function() {
 
-    Synapse.prototype.version = '0.3.1';
+    Synapse.prototype.version = '0.3.2';
 
     function Synapse(object) {
       var hook, raw, wrapped, _i, _len, _ref;

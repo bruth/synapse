@@ -10,92 +10,8 @@
 
         <link rel="stylesheet" href="css/prettify.css">
         <link rel="stylesheet" href="css/bootstrap.css">
-
-        <style>
-            body {
-                background: #f3f6fe;
-                font-size: 14px;
-                text-shadow: 0 1px 1px #fff;
-            }
-
-            p {
-                font-size: 14px;
-                line-height: 22px;
-            }
-
-            header {
-                box-shadow: 0 2px 3px #ccc;
-            }
-
-            .topbar-inner {
-                background: #333 url(img/connect-dark.png);
-            }
-
-            #content {
-                background-color: #fcfcfc;
-                box-shadow: -2px 0 3px #dde0e6;
-                border-left: 1px solid #ccc;
-                padding: 0 20px;
-                position: fixed;
-                left: 240px;
-                right: 0;
-                top: 40px;
-                bottom: 0;
-                overflow: auto;
-                text-shadow: 0 1px 0 #fff;
-            }
-
-            span.label {
-                text-shadow: none;
-            }
-
-            .prettyprint {
-                margin-bottom: 20px;
-            }
-
-            #content h1 {
-                color: #999;
-                margin-top: 10px;
-            }
-
-            #sidebar {
-                position: fixed;
-                top: 40px;
-                bottom: 0;
-                left: 0;
-                width: 240px;
-                padding-left: 20px;
-                overflow: auto;
-            }
-
-            #sidebar li, #content li {
-                margin-top: 5px;
-                margin-bottom: 5px;
-            }
-
-            @media screen and (max-width: 1240px) {
-                .span5 { width: 640px; }
-                .span16 { width: 640px; }
-            }
-
-            @media screen and (min-width: 1241px) {
-                .row {
-                    margin-bottom: 10px;
-                }
-            }
-
-            @media screen and (min-width: 1581px) {
-                .span5 { width: 640px; }
-                .span16 { width: 640px; }
-            }
-        </style>
-
-        <script>var require = { baseUrl: 'js/' };</script>
-        <script src="js/underscore.js"></script>
-        <script src="js/require.js"></script>
-        <script src="js/prettify.js"></script>
-
-        <!--
+        <link rel="stylesheet" href="css/style.css">
+        
         <script>
           var _gaq = _gaq || [];
           _gaq.push(['_setAccount', 'UA-8483912-3']);
@@ -107,9 +23,8 @@
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
-        -->
     </head>
-    <body onload="prettyPrint()">
+    <body>
 
         <header class="topbar">
             <div class="topbar-inner">
@@ -144,8 +59,8 @@
                 <li><a href=#hooks>Hook API</a>
                     <ul>
                         <li><a href=#hooks-base>Base</a>
-                        <li><a href=#hooks-observer>Observer</a>
-                        <li><a href=#hooks-subject>Subject</a>
+                        <li><a href=#hooks-interfaces>Interfaces</a>
+                        <li><a href=#hooks-events>Events</a>
                         <li><a href=#hooks-helpers>Helpers</a>
                     </ul>
             </ul>
@@ -153,15 +68,12 @@
             <h3>Supported Hooks</h3>
             <ul class=unstyled>
                 <li><a href=#plain-objects>Plain Objects</a>
-                <li><a href=#evented-objects>"Evented" Objects</a>
                 <li><a href=#jquery>jQuery</a>
                     <ul>
-                        <li><a href=#jquery-interfaces>Interfaces</a>
+                        <li><a href=#jquery-simple-interfaces>Simple Interfaces</a>
+                        <li><a href=#jquery-compound-interfaces>Compound Interfaces</a>
                     </ul>
                 <li><a href=#zepto>Zepto</a>
-                    <ul>
-                        <li><a href=#zepto-interfaces>Interfaces</a>
-                    </ul>
                 <li><a href=#backbone-view>Backbone View</a>
                 <li><a href=#backbone-model>Backbone Model</a>
             </ul>
@@ -529,7 +441,7 @@ define('awesome-hook', function() {
             <h3 id=plain-objects>Plain Objects</h3>
 
             <section class=row>
-                <span class=span5>
+                <span class=span16>
                     <p><strong>Supported Type.</strong> Plain objects are typically just
                     object primitives, e.g. <code>{}</code>, or objects created from the
                     <code>Object</code> constructor, e.g. <code>new Object()</code>.</p>
@@ -544,31 +456,207 @@ define('awesome-hook', function() {
                     properties.</p>
                 </span>
 
-                <span class=span11>
-<pre class="prettyprint linenums">
-require(['synapse', 'synapse/hooks/object'], function(Synapse, ObjectHook) {
-    // Register the hook
-    Synapse.addHooks(ObjectHook);
+            </section>
 
-    var obj = new Synapse({
-        foo: function(value) {
-            this._foo = 'Hello ' + value;
-        }
-    });
+            <h3 id=jquery>jQuery</h3>
 
-    obj.set('foo', 'Byron');
-    obj.raw._foo === 'Hello Byron'; // true
+            <section class=row>
+                <span class=span16>
+                    <p><strong>Supported Type.</strong> jQuery objects, CSS selectors,
+                    and DOM elements.</p>
 
-    obj.set('hello', 'world');
-    obj.raw.hello === 'world'; // true
-});
-</pre>
+                    <p><strong>Events.</strong> DOM events via jQuery's <code>on</code>,
+                    <code>off</code>, and <code>trigger</code> methods</p>
+
+                    <p><strong>Interfaces.</strong> jQuery provides a very nice
+                    API which encapsulates cross-browser inconsistencies with a
+                    few other niceties. Full list below.</p>
+                </span>
+            </section>
+
+            <h5 id=jquery-simple-interfaces>Simple Interfaces</h5>
+
+            <section class=row>
+                <span class=span16>
+
+                    <p>Most of the simple interfaces are relate to value-based or
+                    toggle-like properties.</p>
+
+                    <p><span class="label warning">0.3.2</span> The <code>css</code>
+                    interface has been renamed to <code>class</code> and demoted to
+                    a simple interface. As a result, the <code>style</code>
+                    interface has been renamed to <code>css</code> for consistency
+                    with jQuery and Zepto.</p>
+
+                    <table id=ex2>
+                        <tbody>
+                            <tr>
+                                <td><code>text</code></td>
+                                <td><input type=text value="Hello World!"></td>
+                                <td><span></span></td>
+                            </tr>
+                            <tr>
+                                <td><code>html</code></td>
+                                <td><input type=text value="<strong>Hello World!</strong>"></td>
+                                <td><span></span></td>
+                            </tr>
+                            <tr>
+                                <td><code>value</code></td>
+                                <td><input type=text value="Hello World!"></td>
+                                <td><input type=text></td>
+                            </tr>
+                            <tr>
+                                <td><code>enabled</code></td>
+                                <td><input type=checkbox></td>
+                                <td><input type=text></td>
+                            </tr>
+                            <tr>
+                                <td><code>disabled</code></td>
+                                <td><input type=checkbox checked></td>
+                                <td><input type=text></td>
+                            </tr>
+                            <tr>
+                                <td><code>checked</code></td>
+                                <td><input type=checkbox></td>
+                                <td><input type=checkbox></td>
+                            </tr>
+                            <tr>
+                                <td><code>visible</code></td>
+                                <td><input type=checkbox checked></td>
+                                <td><input type=text></td>
+                            </tr>
+                            <tr>
+                                <td><code>hidden</code></td>
+                                <td><input type=checkbox></td>
+                                <td><input type=text></td>
+                            </tr>
+                            <tr>
+                                <td><code>class</code></td>
+                                <td><input class=span3 type=text value="btn primary"></td>
+                                <td><span>new!</span></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </span>
+            </section>
+
+            <h5 id=jquery-compound-interfaces>Compound Interfaces</h5>
+
+            <section class=row>
+                <span class=span16>
+                    <p><span class="label warning">0.3.2</span> The <code>css</code>
+                    interface has been renamed to <code>class</code> and demoted to
+                    a simple interface. As a result, the <code>style</code>
+                    interface has been renamed to <code>css</code> for consistency
+                    with jQuery and Zepto.</p>
+
+                    <p><span class="label warning">0.3</span> Breaking change, the delimiter
+                    between compond interface keys is now a period (.) rather than
+                    a colon (:). This mentally maps better to it's multi-method/property
+                    traversal on the object.</p>
+
+                    <p>Compound intefaces map more directly to the underlying object API
+                    and exposes more granular control.</p>
+
+                    <p>Compound interface identifiers are delimited by a period (.). The
+                    first key is the <em>reference</em> interface and typically maps to
+                    a method on the object in which it itself takes a key (thus being
+                    compound).</p>
+
+                    <table id=ex3>
+                        <tbody>
+                            <tr>
+                                <td><code>prop.value</code></td>
+                                <td><input type=text value="Hello World!"></td>
+                                <td><input type=text></td>
+                            </tr>
+                            <tr>
+                                <td><code>attr.href</code></td>
+                                <td><input type=text value="http://example.com"></td>
+                                <td><a href="#">Variable Link</a></td>
+                            </tr>
+                            <tr>
+                                <td><code>css.color</code></td>
+                                <td><input type=text value="red"></td>
+                                <td><strong>Color</strong></td>
+                            </tr>
+                            <tr>
+                                <td><code>data.role</code></td>
+                                <td><input type=text value="nothing"></td>
+                                <td><span>Nothing to show, but for the curious
+                                    open up the console and type
+                                    <code>document.ex3.data('role')</code></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
+            </section>
+
+            <h3 id=zepto>Zepto</h3>
+
+            <section class=row>
+                <span class=span16>
+                    <p><strong>Supported Type.</strong> Zepto arrays, CSS selectors,
+                    and DOM elements.</p>
+
+                    <p><strong>Events.</strong> DOM events via Zepto's <code>bind</code>,
+                    <code>unbind</code>, and <code>trigger</code> methods</p>
+
+                    <p><strong>Interfaces.</strong> The Zepto hook implements the
+                    same interfaces as the jQuery hook with the exception of the
+                    <code>prop.&lt;key&gt;</code> compound interface since Zepto
+                    does not differentiate between properties and attributes in
+                    the API.</p>
+                </span>
+            </section>
+
+            <h3 id=backbone-view>Backbone View</h3>
+
+            <section class=row>
+                <span class=span16>
+                    <p><strong>Supported Type.</strong> <code>Backbone.View</code>
+                    objects</p>
+
+                    <p><strong>Events.</strong> Extends the jQuery hook under the
+                    hood, therefore using the DOM events mentioned above.</p>
+
+                    <p><strong>Interfaces.</strong> Extends the jQuery hook under the
+                    hood, therefore all interfaces above work for these objects. In
+                    addition, interface identifier that reference a method name on
+                    the <code>Backbone.View</code> object directly may be used. Note,
+                    this will take precedence over the above jQuery interfaces of the
+                    same name.</p>
+                </span>
+            </section>
+
+            <h3 id=backbone-model>Backbone Model</h3>
+
+            <section class=row>
+                <span class=span16>
+                    <p><strong>Supported Type.</strong> <code>Backbone.Model</code>
+                    objects</p>
+
+                    <p><strong>Events.</strong> Uses the built-in event system Backbone
+                    provides.</p>
+
+                    <p><strong>Interfaces.</strong> Similar to the plain objects
+                    above, the interface identifiers correspond to properties and
+                    methods. Under the hood, getting and setting the properties
+                    will be done via the object's native <code>get</code> and
+                    <code>set</code> methods (this ensures when a property is
+                    set, the change events fire).</p>
                 </span>
             </section>
 
         </div>
 
-        <script src="js/examples.js"></script>
+        <script>var require = { baseUrl: 'js/' };</script>
+        <script src="js/underscore.js"></script>
+        <script src="js/require.js"></script>
+        <script src="js/prettify.js"></script>
+        <script src="js/docs.js"></script>
     </body>
 </html>
 

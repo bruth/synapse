@@ -32,7 +32,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
     };
   })();
   (function() {
-    var getAttribute, getProperty, getStyle, setAttribute, setProperty, setStyle;
+    var getAttribute, getCss, getProperty, setAttribute, setCss, setProperty;
     getProperty = function(key) {
       if (this.prop != null) return this.prop(key);
       return getAttribute.call(this, key);
@@ -54,10 +54,10 @@ define(['synapse/core', 'jquery'], function(core, $) {
         return this.attr(key, value);
       }
     };
-    getStyle = function(key) {
+    getCss = function(key) {
       return this.css(key);
     };
-    setStyle = function(key, value) {
+    setCss = function(key, value) {
       if (core.isObject(key)) {
         return this.css(key);
       } else {
@@ -124,7 +124,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
     interfaces.register({
       name: 'visible',
       get: function() {
-        return getStyle.call(this, 'display') === !'none';
+        return getCss.call(this, 'display') === !'none';
       },
       set: function(value) {
         if (core.isArray(value) && value.length === 0) value = false;
@@ -138,7 +138,7 @@ define(['synapse/core', 'jquery'], function(core, $) {
     interfaces.register({
       name: 'hidden',
       get: function() {
-        return getStyle.call(this, 'display') === 'none';
+        return getCss.call(this, 'display') === 'none';
       },
       set: function(value) {
         if (core.isArray(value) && value.length === 0) value = false;
@@ -147,6 +147,16 @@ define(['synapse/core', 'jquery'], function(core, $) {
         } else {
           return this.show();
         }
+      }
+    });
+    interfaces.register({
+      name: 'class',
+      get: function() {
+        return getProperty('className');
+      },
+      set: function(value) {
+        this.removeClass();
+        return this.addClass(value);
       }
     });
     interfaces.register({
@@ -168,26 +178,12 @@ define(['synapse/core', 'jquery'], function(core, $) {
       }
     });
     interfaces.register({
-      name: 'style',
-      get: function(key) {
-        return getStyle.call(this, key);
-      },
-      set: function(key, value) {
-        return setStyle.call(this, key, value);
-      }
-    });
-    interfaces.register({
       name: 'css',
       get: function(key) {
-        return this.hasClass(key);
+        return getCss.call(this, key);
       },
       set: function(key, value) {
-        if (core.isArray(value) && value.length === 0) value = false;
-        if (Boolean(value)) {
-          return this.addClass(key);
-        } else {
-          return this.removeClass(key);
-        }
+        return setCss.call(this, key, value);
       }
     });
     return interfaces.register({

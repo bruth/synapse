@@ -317,4 +317,4 @@ using the wrapped object for the remaining setup of the channel.
 Examples
 --------
 View examples here to gradually learn the API:
-http://bruth.github.com/synapse/examples/
+http://bruth.github.com/synapse/docs/

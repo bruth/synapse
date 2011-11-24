@@ -1,11 +1,11 @@
 COFFEE_DIR = ./src
-EXAMPLES_DIR = ./examples
+EXAMPLES_DIR = ./docs
 DIST_DIR = ./dist
 BUILD_DIR = ./build
 PID_FILE = .watch-pid
 
-SASS_DIR = ./examples/scss
-CSS_DIR = ./examples/css
+SASS_DIR = ./docs/scss
+CSS_DIR = ./docs/css
 
 COMPILE_SASS = `which sass` --scss --style=compressed ${SASS_DIR}:${CSS_DIR}
 COMPILE_COFFEE = `which coffee` -b -o ${BUILD_DIR} -c ${COFFEE_DIR}
