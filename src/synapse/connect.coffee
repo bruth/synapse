@@ -1,4 +1,15 @@
-define ['synapse/core'], (core) ->
+((root, factory) ->
+    if typeof exports isnt 'undefined'
+        # Node/CommonJS
+        factory(root, exports, require('synapse/core'))
+    else if typeof define is 'function' and define.amd
+        # AMD
+        define 'synapse/connect', ['synapse/core', 'exports'], (core, exports) ->
+            factory(root, exports, core)
+    else
+        # Browser globals
+        root.SynapseConnect = factory(root, {}, root.SynapseCore)
+) @, (root, connect, core) ->
 
     # Detects an appropriate event to attach an event handler to. This
     # applies only to subjects.

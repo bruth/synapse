@@ -6,7 +6,19 @@
 # Date: November 24, 2011
 #
 
-define ['synapse/core', 'synapse/connect'], (core, connect) ->
+((root, factory) ->
+    if typeof exports isnt 'undefined'
+        # Node/CommonJS
+        factory(root, exports, require('synapse/core'), require('synapse/connect'))
+    else if typeof define is 'function' and define.amd
+        # AMD
+        define 'synapse', ['synapse/core', 'synapse/connect', 'exports'], (core, connect, exports) ->
+            factory(root, exports, core, connect)
+    else
+        # Browser globals
+        root.Synapse = factory(root, {}, root.SynapseCore, root.SynapseConnect)
+) @, (root, Synapse, core, connect) ->
+
     objectGuid = 1
 
     class Synapse

@@ -1,6 +1,16 @@
 var __slice = Array.prototype.slice;
 
-define(function() {
+(function(root, factory) {
+  if (typeof exports !== 'undefined') {
+    return factory(root, exports);
+  } else if (typeof define === 'function' && define.amd) {
+    return define('synapse/core', ['exports'], function(exports) {
+      return factory(root, exports);
+    });
+  } else {
+    return root.SynapseCore = factory(root, {});
+  }
+})(this, function(root, core) {
   var channels;
   channels = {};
   return {

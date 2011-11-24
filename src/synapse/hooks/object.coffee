@@ -2,7 +2,18 @@
 # built-in thus this Hook only allows these objects to be observers of other
 # event-_ready_ objects.
 
-define ['synapse/core'], (core)->
+((root, factory) ->
+    if typeof exports isnt 'undefined'
+        # Node/CommonJS
+        factory(root, exports, require('synapse/core'))
+    else if typeof define is 'function' and define.amd
+        # AMD
+        define 'synapse/hooks/object', ['synapse/core', 'exports'], (core, exports) ->
+            factory(root, exports, core)
+    else
+        # Browser globals
+        root.ObjectHook = factory(root, {}, root.SynapseCore)
+) @, (root, ObjectHook, core) ->
 
     return {
         typeName: 'Plain Object'

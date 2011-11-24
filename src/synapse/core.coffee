@@ -1,4 +1,16 @@
-define ->
+((root, factory) ->
+    if typeof exports isnt 'undefined'
+        # Node/CommonJS
+        factory(root, exports)
+    else if typeof define is 'function' and define.amd
+        # AMD
+        define 'synapse/core', ['exports'], (exports) ->
+            factory(root, exports)
+    else
+        # Browser globals
+        root.SynapseCore = factory(root, {})
+) @, (root, core) ->
+
     channels = {}
     
     return {

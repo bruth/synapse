@@ -1,6 +1,18 @@
 # Components for the Backbone Model hook
 
-define ['synapse/core', 'backbone'], (core) ->
+((root, factory) ->
+    if typeof exports isnt 'undefined'
+        # Node/CommonJS
+        factory(root, exports, require('synapse/core'), require('backbone'))
+    else if typeof define is 'function' and define.amd
+        # AMD
+        define 'synapse/hooks/backbone-model', ['synapse/core', 'backbone', 'exports'], (core, Backbone, exports) ->
+            factory(root, exports, core, Backbone)
+    else
+        # Browser globals
+        root.BackboneModelHook = factory(root, {}, root.SynapseCore, root.Backbone)
+    # Backbone does not use a module syntax and thus will be a global
+) @, (root, BackboneModelHook, core) ->
 
     return {
         typeName: 'Backbone Model'

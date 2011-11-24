@@ -1,7 +1,17 @@
 var __slice = Array.prototype.slice;
 
-define(['synapse/core'], function(core) {
-  var connect, connectOne, defaultConnectOptions, detectEvent, detectInterface, detectOtherInterface, offEvent, onEvent, triggerEvent;
+(function(root, factory) {
+  if (typeof exports !== 'undefined') {
+    return factory(root, exports, require('synapse/core'));
+  } else if (typeof define === 'function' && define.amd) {
+    return define('synapse/connect', ['synapse/core', 'exports'], function(core, exports) {
+      return factory(root, exports, core);
+    });
+  } else {
+    return root.SynapseConnect = factory(root, {}, root.SynapseCore);
+  }
+})(this, function(root, connect, core) {
+  var connectOne, defaultConnectOptions, detectEvent, detectInterface, detectOtherInterface, offEvent, onEvent, triggerEvent;
   detectEvent = function() {
     var args, object, value, _ref;
     object = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];

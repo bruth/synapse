@@ -1,343 +1,268 @@
-asyncTest('Core', function() {
-    require(['synapse'], function() {
-        start();
-        expect(1);
-        raises(function() {
-            Synapse({});
-        }, 'No hooks have been added, therefore no objects are supported');
-    });
+test('Core', function() {
+    expect(1);
+    raises(function() {
+    Synapse({});
+    }, 'No hooks have been added, therefore no objects are supported');
 });
 
 module('Object Hook');
 
-asyncTest('checkObjectType', function() {
-    require(['synapse/hooks/object'], function(hook) {
-        start();
-        expect(2);
-        ok(hook.checkObjectType({}));
-        ok(hook.checkObjectType(new Object));
-    });
+test('checkObjectType', function() {
+    expect(2);
+    ok(ObjectHook.checkObjectType({}));
+    ok(ObjectHook.checkObjectType(new Object));
 });
 
-asyncTest('getHandler', function() {
-    require(['synapse/hooks/object'], function(hook) {
-        start();
-        expect(3);
-        var obj = {
-            foo: 'bar',
-            baz: function() {
-                return 'qux';
-            }
-        };
-        equal(hook.getHandler(obj, 'foo'), 'bar', 'property');
-        equal(hook.getHandler(obj, 'baz'), 'qux', 'method');
-        equal(undefined, hook.getHandler(obj, 'nope'), 'undefined');
-    });
+test('getHandler', function() {
+    expect(3);
+    var obj = {
+        foo: 'bar',
+        baz: function() {
+        return 'qux';
+        }
+    };
+    equal(ObjectHook.getHandler(obj, 'foo'), 'bar', 'property');
+    equal(ObjectHook.getHandler(obj, 'baz'), 'qux', 'method');
+    equal(undefined, ObjectHook.getHandler(obj, 'nope'), 'undefined');
 });
 
-asyncTest('setHandler', function() {
-    require(['synapse/hooks/object'], function(hook) {
-        start();
-        expect(2);
-        var obj = {
-            foo: 'bar',
-            baz: function(value) {
-                this._secret = value;
-            }
-        };
-        hook.setHandler(obj, 'foo', 3);
-        ok(obj.foo, 3, 'property');
-        hook.setHandler(obj, 'baz', 5);
-        ok(obj._secret, 5, 'method');
-    });
+test('setHandler', function() {
+    expect(2);
+    var obj = {
+        foo: 'bar',
+        baz: function(value) {
+        this._secret = value;
+        }
+    };
+    ObjectHook.setHandler(obj, 'foo', 3);
+    ok(obj.foo, 3, 'property');
+    ObjectHook.setHandler(obj, 'baz', 5);
+    ok(obj._secret, 5, 'method');
 });
 
-asyncTest('eventHandler', function() {
-    require(['synapse/hooks/object'], function(hook) {
-        start();
-        expect(1);
-        raises(function() {
-            hook.onEventHandler({}, 'foo', function() {});
-        }, 'Plain objects do not support events');
-    });
+test('eventHandler', function() {
+    expect(1);
+    raises(function() {
+        ObjectHook.onEventHandler({}, 'foo', function() {});
+    }, 'Plain objects do not support events');
 });
 
 module('Backbone Model');
 
-asyncTest('checkObjectType', function() {
-    require(['synapse/hooks/backbone-model'], function(hook) {
-        start();
-        expect(1);
-        ok(hook.checkObjectType(new Backbone.Model));
-    });
+test('checkObjectType', function() {
+    expect(1);
+    ok(BackboneModelHook.checkObjectType(new Backbone.Model));
 });
 
-asyncTest('getHandler', function() {
-    require(['synapse/hooks/backbone-model'], function(hook) {
-        start();
-        expect(3);
-        var obj = new Backbone.Model;
-        obj.set({foo: 'bar'});
-        obj.baz = function() {
-            return 'qux';
-        }
+test('getHandler', function() {
+    expect(3);
+    var obj = new Backbone.Model;
+    obj.set({foo: 'bar'});
+    obj.baz = function() {
+        return 'qux';
+    }
 
-        equal(hook.getHandler(obj, 'foo'), 'bar', 'property');
-        equal(hook.getHandler(obj, 'baz'), 'qux', 'method');
-        equal(undefined, hook.getHandler(obj, 'nope'), 'undefined');
-    });
+    equal(BackboneModelHook.getHandler(obj, 'foo'), 'bar', 'property');
+    equal(BackboneModelHook.getHandler(obj, 'baz'), 'qux', 'method');
+    equal(undefined, BackboneModelHook.getHandler(obj, 'nope'), 'undefined');
 });
 
-asyncTest('setHandler', function() {
-    require(['synapse/hooks/backbone-model'], function(hook) {
-        start();
-        expect(2);
-        var obj = new Backbone.Model;
-        obj.baz = function(value) {
-            this.set({qux: value});
-        }
-        hook.setHandler(obj, 'foo', 3);
-        ok(obj.get('foo'), 3, 'property');
-        hook.setHandler(obj, 'baz', 5);
-        ok(obj.get('qux'), 5, 'method');
-    });
+test('setHandler', function() {
+    expect(2);
+    var obj = new Backbone.Model;
+    obj.baz = function(value) {
+        this.set({qux: value});
+    }
+    BackboneModelHook.setHandler(obj, 'foo', 3);
+    ok(obj.get('foo'), 3, 'property');
+    BackboneModelHook.setHandler(obj, 'baz', 5);
+    ok(obj.get('qux'), 5, 'method');
 });
 
 
-asyncTest('eventHandler', function() {
-    require(['synapse/hooks/backbone-model'], function(hook) {
-        start();
-        expect(1);
+test('eventHandler', function() {
+    expect(1);
 
-        var obj = new Backbone.Model;
+    var obj = new Backbone.Model;
 
-        hook.onEventHandler(obj, 'change:foo', function() {
-            ok(1);
-        });
-        hook.triggerEventHandler(obj, 'change:foo');
-        hook.offEventHandler(obj, 'change:foo');
-        hook.triggerEventHandler(obj, 'change:foo');
+    BackboneModelHook.onEventHandler(obj, 'change:foo', function() {
+        ok(1);
     });
+    BackboneModelHook.triggerEventHandler(obj, 'change:foo');
+    BackboneModelHook.offEventHandler(obj, 'change:foo');
+    BackboneModelHook.triggerEventHandler(obj, 'change:foo');
 });
 
-asyncTest('detectEvent', function() {
-    require(['synapse/hooks/backbone-model'], function(hook) {
-        start();
-        expect(2);
+test('detectEvent', function() {
+    expect(2);
 
-        var obj = new Backbone.Model;
-        equal(hook.detectEvent(obj), 'change');
-        equal(hook.detectEvent(obj, 'foo'), 'change:foo');
-    });
+    var obj = new Backbone.Model;
+    equal(BackboneModelHook.detectEvent(obj), 'change');
+    equal(BackboneModelHook.detectEvent(obj, 'foo'), 'change:foo');
 });
 
 
 module('jQuery Hook');
 
-asyncTest('checkObjectType', function() {
-    require(['synapse/hooks/jquery'], function(hook) {
-        start();
-        expect(3);
-        ok(hook.checkObjectType('input'));
-        ok(hook.checkObjectType(document.createElement('input')));
-        ok(hook.checkObjectType(jQuery('input')));
-    });
+test('checkObjectType', function() {
+    expect(3);
+    ok(jQueryHook.checkObjectType('input'));
+    ok(jQueryHook.checkObjectType(document.createElement('input')));
+    ok(jQueryHook.checkObjectType(jQuery('input')));
 });
 
-asyncTest('getHandler', function() {
-    require(['synapse/hooks/jquery'], function(hook) {
-        start();
-        expect(3);
+test('getHandler', function() {
+    expect(3);
 
-        var obj = jQuery('<input type="text" style="color: #ddd" value="hello world">');
+    var obj = jQuery('<input type="text" style="color: #ddd" value="hello world">');
 
-        equal(hook.getHandler(obj, 'value'), 'hello world', 'simple interface');
-        equal(hook.getHandler(obj, 'style.color'), 'rgb(221, 221, 221)', 'complex');
-        equal(hook.getHandler(obj, 'nope'), undefined, 'undefined');
-    });
+    equal(jQueryHook.getHandler(obj, 'value'), 'hello world', 'simple interface');
+    equal(jQueryHook.getHandler(obj, 'css.color'), 'rgb(221, 221, 221)', 'complex');
+    equal(jQueryHook.getHandler(obj, 'nope'), undefined, 'undefined');
 });
 
 
-asyncTest('setHandler', function() {
-    require(['synapse/hooks/jquery'], function(hook) {
-        start();
-        expect(2);
+test('setHandler', function() {
+    expect(2);
 
-        var obj = jQuery('<input type="text" value="hello world">');
+    var obj = jQuery('<input type="text" value="hello world">');
 
-        hook.setHandler(obj, 'value', 'foobar');
-        equal(obj.val(), 'foobar', 'simple interface');
-        hook.setHandler(obj, 'style.color', '#ddd');
-        equal(obj.css('color'), 'rgb(221, 221, 221)', 'complex');
-    });
+    jQueryHook.setHandler(obj, 'value', 'foobar');
+    equal(obj.val(), 'foobar', 'simple interface');
+    jQueryHook.setHandler(obj, 'css.color', '#ddd');
+    equal(obj.css('color'), 'rgb(221, 221, 221)', 'complex');
 });
 
 
-asyncTest('eventHandler', function() {
-    require(['synapse/hooks/jquery'], function(hook) {
-        start();
-        expect(1);
+test('eventHandler', function() {
+    expect(1);
 
-        var obj = jQuery('<input type="text" value="hello world">');
+    var obj = jQuery('<input type="text" value="hello world">');
 
-        hook.onEventHandler(obj, 'keyup', function() {
-            ok(1);
-        });
-        hook.triggerEventHandler(obj, 'keyup');
-        hook.offEventHandler(obj, 'keyup');
-        hook.triggerEventHandler(obj, 'keyup');
+    jQueryHook.onEventHandler(obj, 'keyup', function() {
+        ok(1);
     });
+    jQueryHook.triggerEventHandler(obj, 'keyup');
+    jQueryHook.offEventHandler(obj, 'keyup');
+    jQueryHook.triggerEventHandler(obj, 'keyup');
 });
 
-asyncTest('detectEvent', function() {
-    require(['synapse/hooks/jquery'], function(hook) {
-        start();
-        expect(1);
+test('detectEvent', function() {
+    expect(1);
 
-        var obj = jQuery('<input type="text" value="hello world">');
-        equal(hook.detectEvent(obj), 'keyup');
-    });
+    var obj = jQuery('<input type="text" value="hello world">');
+    equal(jQueryHook.detectEvent(obj), 'keyup');
 });
 
 
 module('Backbone View');
 
-asyncTest('checkObjectType', function() {
-    require(['synapse/hooks/backbone-view', 'jquery'], function(hook, $) {
-        start();
-        expect(1);
-        ok(hook.checkObjectType(new Backbone.View));
-    });
+test('checkObjectType', function() {
+    expect(1);
+    ok(BackboneViewHook.checkObjectType(new Backbone.View));
 });
 
-asyncTest('getHandler', function() {
-    require(['synapse/hooks/backbone-view', 'jquery'], function(hook, $) {
-        start();
-        expect(3);
+test('getHandler', function() {
+    expect(3);
 
-        var obj = new Backbone.View({
-            el: jQuery('<input type="text" style="color: #ddd" value="hello world">')
-        });
-
-        equal(hook.getHandler(obj, 'value'), 'hello world', 'simple interface');
-        equal(hook.getHandler(obj, 'style.color'), 'rgb(221, 221, 221)', 'complex');
-        equal(hook.getHandler(obj, 'nope'), undefined, 'undefined');
+    var obj = new Backbone.View({
+        el: jQuery('<input type="text" style="color: #ddd" value="hello world">')
     });
+
+    equal(BackboneViewHook.getHandler(obj, 'value'), 'hello world', 'simple interface');
+    equal(BackboneViewHook.getHandler(obj, 'css.color'), 'rgb(221, 221, 221)', 'complex');
+    equal(BackboneViewHook.getHandler(obj, 'nope'), undefined, 'undefined');
 });
 
 
-asyncTest('setHandler', function() {
-    require(['synapse/hooks/backbone-view', 'jquery'], function(hook, $) {
-        start();
-        expect(2);
+test('setHandler', function() {
+    expect(2);
 
-        var obj = new Backbone.View({
-            el: jQuery('<input type="text" value="hello world">')
-        });
-
-        hook.setHandler(obj, 'value', 'foobar');
-        equal(obj.el.val(), 'foobar', 'simple interface');
-        hook.setHandler(obj, 'style.color', '#ddd');
-        equal(obj.el.css('color'), 'rgb(221, 221, 221)', 'complex');
+    var obj = new Backbone.View({
+        el: jQuery('<input type="text" value="hello world">')
     });
+
+    BackboneViewHook.setHandler(obj, 'value', 'foobar');
+    equal(obj.el.val(), 'foobar', 'simple interface');
+    BackboneViewHook.setHandler(obj, 'css.color', '#ddd');
+    equal(obj.el.css('color'), 'rgb(221, 221, 221)', 'complex');
 });
 
 
-asyncTest('eventHandler', function() {
-    require(['synapse/hooks/backbone-view', 'jquery'], function(hook, $) {
-        start();
-        expect(1);
+test('eventHandler', function() {
+    expect(1);
 
-        var obj = new Backbone.View({
-            el: jQuery('<input type="text" value="hello world">')
-        });
-
-        hook.onEventHandler(obj, 'keyup', function() {
-            ok(1);
-        });
-        hook.triggerEventHandler(obj, 'keyup');
-        hook.offEventHandler(obj, 'keyup');
-        hook.triggerEventHandler(obj, 'keyup');
+    var obj = new Backbone.View({
+        el: jQuery('<input type="text" value="hello world">')
     });
+
+    BackboneViewHook.onEventHandler(obj, 'keyup', function() {
+        ok(1);
+    });
+    BackboneViewHook.triggerEventHandler(obj, 'keyup');
+    BackboneViewHook.offEventHandler(obj, 'keyup');
+    BackboneViewHook.triggerEventHandler(obj, 'keyup');
 });
 
-asyncTest('detectEvent', function() {
-    require(['synapse/hooks/backbone-view', 'jquery'], function(hook, $) {
-        start();
-        expect(1);
+test('detectEvent', function() {
+    expect(1);
 
-        var obj = new Backbone.View({
-            el: jQuery('<input type="text" value="hello world">')
-        });
-        equal(hook.detectEvent(obj), 'keyup');
+    var obj = new Backbone.View({
+        el: jQuery('<input type="text" value="hello world">')
     });
+    equal(BackboneViewHook.detectEvent(obj), 'keyup');
 });
 
 module('Zepto Hook');
 
-asyncTest('checkObjectType', function() {
-    require(['synapse/hooks/zepto'], function(hook) {
-        start();
-        expect(3);
-        ok(hook.checkObjectType('input'));
-        ok(hook.checkObjectType(document.createElement('input')));
-        ok(hook.checkObjectType(Zepto('input')));
-    });
+test('checkObjectType', function() {
+    expect(3);
+    ok(ZeptoHook.checkObjectType('input'));
+    ok(ZeptoHook.checkObjectType(document.createElement('input')));
+    ok(ZeptoHook.checkObjectType(Zepto('input')));
 });
 
-asyncTest('getHandler', function() {
-    require(['synapse/hooks/zepto'], function(hook) {
-        start();
-        expect(3);
+test('getHandler', function() {
+    expect(3);
 
-        var obj = Zepto('<input type="text" style="color: #ddd" value="hello world">');
+    var obj = Zepto('<input type="text" style="color: #ddd" value="hello world">');
 
-        equal(hook.getHandler(obj, 'value'), 'hello world', 'simple interface');
-        equal(hook.getHandler(obj, 'style.color'), 'rgb(221, 221, 221)', 'complex');
-        equal(hook.getHandler(obj, 'nope'), undefined, 'undefined');
-    });
+    equal(ZeptoHook.getHandler(obj, 'value'), 'hello world', 'simple interface');
+    equal(ZeptoHook.getHandler(obj, 'css.color'), 'rgb(221, 221, 221)', 'complex');
+    equal(ZeptoHook.getHandler(obj, 'nope'), undefined, 'undefined');
 });
 
 
-asyncTest('setHandler', function() {
-    require(['synapse/hooks/zepto'], function(hook) {
-        start();
-        expect(2);
+test('setHandler', function() {
+    expect(2);
 
-        var obj = Zepto('<input type="text" value="hello world">');
+    var obj = Zepto('<input type="text" value="hello world">');
 
-        hook.setHandler(obj, 'value', 'foobar');
-        equal(obj.val(), 'foobar', 'simple interface');
-        hook.setHandler(obj, 'style.color', '#ddd');
-        equal(obj.css('color'), 'rgb(221, 221, 221)', 'complex');
-    });
+    ZeptoHook.setHandler(obj, 'value', 'foobar');
+    equal(obj.val(), 'foobar', 'simple interface');
+    ZeptoHook.setHandler(obj, 'css.color', '#ddd');
+    equal(obj.css('color'), 'rgb(221, 221, 221)', 'complex');
 });
 
 
-asyncTest('eventHandler', function() {
-    require(['synapse/hooks/zepto'], function(hook) {
-        start();
-        expect(1);
+test('eventHandler', function() {
+    expect(1);
 
-        var obj = Zepto('<input type="text" value="hello world">');
+    var obj = Zepto('<input type="text" value="hello world">');
 
-        hook.onEventHandler(obj, 'keyup', function() {
-            ok(1);
-        });
-        hook.triggerEventHandler(obj, 'keyup');
-        hook.offEventHandler(obj, 'keyup');
-        hook.triggerEventHandler(obj, 'keyup');
+    ZeptoHook.onEventHandler(obj, 'keyup', function() {
+        ok(1);
     });
+    ZeptoHook.triggerEventHandler(obj, 'keyup');
+    ZeptoHook.offEventHandler(obj, 'keyup');
+    ZeptoHook.triggerEventHandler(obj, 'keyup');
 });
 
-asyncTest('detectEvent', function() {
-    require(['synapse/hooks/zepto'], function(hook) {
-        start();
-        expect(1);
+test('detectEvent', function() {
+    expect(1);
 
-        var obj = Zepto('<input type="text" value="hello world">');
-        equal(hook.detectEvent(obj), 'keyup');
-    });
+    var obj = Zepto('<input type="text" value="hello world">');
+    equal(ZeptoHook.detectEvent(obj), 'keyup');
 });
 
 

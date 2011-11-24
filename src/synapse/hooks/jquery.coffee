@@ -1,4 +1,13 @@
-define ['synapse/core', 'jquery'], (core, $) ->
+((root, factory) ->
+    # Hook is not supported in Node/CommonJS environment
+    if typeof define is 'function' and define.amd
+        # AMD
+        define 'synapse/hooks/jquery', ['synapse/core', 'jquery', 'exports'], (core, $, exports) ->
+            factory(root, exports, core, $)
+    else if typeof exports is 'undefined'
+        # Browser globals
+        root.jQueryHook = factory(root, {}, root.SynapseCore, root.jQuery)
+) @, (root, jQueryHook, core, $) ->
 
     # ### Interfaces Registry
     # Simple module allowing for [un]registering interfaces. The ``get`` and

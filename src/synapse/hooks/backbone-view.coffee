@@ -1,6 +1,21 @@
 # Backbone View Hook
 
-define ['synapse/core', 'synapse/hooks/jquery', 'backbone'], (core, hook) ->
+((root, factory) ->
+    # Hook is not supported in Node/CommonJS environment
+    if typeof define is 'function' and define.amd
+        # AMD
+        define 'synapse/hooks/backbone-view', [
+            'synapse/core'
+            'synapse/hooks/jquery',
+            'backbone'
+            'exports'
+        ], (core, jQueryHook, Backbone, exports) ->
+             factory(root, exports, core, jQueryHook, Backbone)
+    else if typeof exports is 'undefined'
+        # Browser globals
+        root.BackboneViewHook = factory(root, {}, root.SynapseCore, root.jQueryHook, root.Backbone)
+    # Backbone does not use a module syntax and thus will be a global
+) @, (root, BackboneViewHook, core, hook) ->
 
     return {
         typeName: 'Backbone View'

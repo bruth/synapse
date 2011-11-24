@@ -1,4 +1,14 @@
-define ['synapse/core', 'zepto'], (core) ->
+((root, factory) ->
+    # Hook is not supported in Node/CommonJS environment
+    if typeof define is 'function' and define.amd
+        # AMD
+        define 'synapse/hooks/zepto', ['synapse/core', 'zepto', 'exports'], (core, $, exports) ->
+            factory(root, exports, core, $)
+    else if typeof exports is 'undefined'
+        # Browser globals
+        root.ZeptoHook = factory(root, {}, root.SynapseCore, root.Zepto)
+    # Zepto does not use a module syntax and thus will be a global
+) @, (root, ZeptoHook, core) ->
 
     # ### Interfaces Registry
     # Simple module allowing for [un]registering interfaces. The ``get`` and

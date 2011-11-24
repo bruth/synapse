@@ -1,6 +1,14 @@
 var __slice = Array.prototype.slice;
 
-define(['synapse/core', 'zepto'], function(core) {
+(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    return define('synapse/hooks/zepto', ['synapse/core', 'zepto', 'exports'], function(core, $, exports) {
+      return factory(root, exports, core, $);
+    });
+  } else if (typeof exports === 'undefined') {
+    return root.ZeptoHook = factory(root, {}, root.SynapseCore, root.Zepto);
+  }
+})(this, function(root, ZeptoHook, core) {
   var domEvents, elementBindAttributes, elementInterfaces, interfaces;
   interfaces = (function() {
     return {

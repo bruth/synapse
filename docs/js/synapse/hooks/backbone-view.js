@@ -1,5 +1,13 @@
 
-define(['synapse/core', 'synapse/hooks/jquery', 'backbone'], function(core, hook) {
+(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    return define('synapse/hooks/backbone-view', ['synapse/core', 'synapse/hooks/jquery', 'backbone', 'exports'], function(core, jQueryHook, Backbone, exports) {
+      return factory(root, exports, core, jQueryHook, Backbone);
+    });
+  } else if (typeof exports === 'undefined') {
+    return root.BackboneViewHook = factory(root, {}, root.SynapseCore, root.jQueryHook, root.Backbone);
+  }
+})(this, function(root, BackboneViewHook, core, hook) {
   return {
     typeName: 'Backbone View',
     checkObjectType: function(object) {

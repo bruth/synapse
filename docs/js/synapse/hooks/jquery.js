@@ -1,6 +1,14 @@
 var __slice = Array.prototype.slice;
 
-define(['synapse/core', 'jquery'], function(core, $) {
+(function(root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    return define('synapse/hooks/jquery', ['synapse/core', 'jquery', 'exports'], function(core, $, exports) {
+      return factory(root, exports, core, $);
+    });
+  } else if (typeof exports === 'undefined') {
+    return root.jQueryHook = factory(root, {}, root.SynapseCore, root.jQuery);
+  }
+})(this, function(root, jQueryHook, core, $) {
   var domEvents, elementBindAttributes, elementInterfaces, interfaces;
   interfaces = (function() {
     return {
