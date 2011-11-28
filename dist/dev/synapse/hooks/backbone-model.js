@@ -1,5 +1,4 @@
 
-
 (function(root, factory) {
   if (typeof exports !== 'undefined') {
     return factory(root, exports, require('synapse/core'), require('backbone'));
@@ -43,7 +42,9 @@
       return object.trigger(event);
     },
     detectEvent: function(object, interface) {
-      if (interface && !object[interface]) return "change:" + interface;
+      if (interface && !object[interface]) {
+        return "change:" + interface;
+      }
       return 'change';
     }
   };

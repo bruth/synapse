@@ -1,6 +1,5 @@
 
 var __slice = Array.prototype.slice;
-
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     return define('synapse/hooks/zepto', ['synapse/core', 'zepto', 'exports'], function(core, $, exports) {
@@ -24,7 +23,9 @@ var __slice = Array.prototype.slice;
         var args, interface, key, name, object, _ref;
         object = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
         _ref = name.split('.'), name = _ref[0], key = _ref[1];
-        if (key != null) args = [key].concat(args);
+        if (key != null) {
+          args = [key].concat(args);
+        }
         if ((interface = this.registry[name])) {
           return interface.get.apply(object, args);
         }
@@ -33,7 +34,9 @@ var __slice = Array.prototype.slice;
         var args, interface, key, name, object, _ref;
         object = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
         _ref = name.split('.'), name = _ref[0], key = _ref[1];
-        if (key != null) args = [key].concat(args);
+        if (key != null) {
+          args = [key].concat(args);
+        }
         if ((interface = this.registry[name])) {
           return interface.set.apply(object, args);
         }
@@ -43,12 +46,16 @@ var __slice = Array.prototype.slice;
   (function() {
     var getAttribute, getCss, getProperty, setAttribute, setCss, setProperty;
     getProperty = function(key) {
-      if (this.prop != null) return this.prop(key);
+      if (this.prop != null) {
+        return this.prop(key);
+      }
       return getAttribute.call(this, key);
     };
     setProperty = function(key, value) {
       if (this.prop != null) {
-        if (typeof key === 'object') return this.prop(key);
+        if (typeof key === 'object') {
+          return this.prop(key);
+        }
         return this.prop(key, value);
       }
       return setAttribute.call(this, key, value);
@@ -106,7 +113,9 @@ var __slice = Array.prototype.slice;
         return !getProperty.call(this, 'disabled');
       },
       set: function(value) {
-        if (core.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) {
+          value = false;
+        }
         return setProperty.call(this, 'disabled', !Boolean(value));
       }
     });
@@ -116,7 +125,9 @@ var __slice = Array.prototype.slice;
         return getProperty.call(this, 'disabled');
       },
       set: function(value) {
-        if (core.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) {
+          value = false;
+        }
         return setProperty.call(this, 'disabled', Boolean(value));
       }
     });
@@ -126,7 +137,9 @@ var __slice = Array.prototype.slice;
         return getProperty.call(this, 'checked');
       },
       set: function(value) {
-        if (core.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) {
+          value = false;
+        }
         return setProperty.call(this, 'checked', Boolean(value));
       }
     });
@@ -136,7 +149,9 @@ var __slice = Array.prototype.slice;
         return getCss.call(this, 'display') === !'none';
       },
       set: function(value) {
-        if (core.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) {
+          value = false;
+        }
         if (Boolean(value)) {
           return this.show();
         } else {
@@ -150,7 +165,9 @@ var __slice = Array.prototype.slice;
         return getCss.call(this, 'display') === 'none';
       },
       set: function(value) {
-        if (core.isArray(value) && value.length === 0) value = false;
+        if (core.isArray(value) && value.length === 0) {
+          value = false;
+        }
         if (Boolean(value)) {
           return this.hide();
         } else {
@@ -249,7 +266,9 @@ var __slice = Array.prototype.slice;
       for (_i = 0, _len = domEvents.length; _i < _len; _i++) {
         item = domEvents[_i];
         selector = item[0], event = item[1];
-        if (object.is(selector)) return event;
+        if (object.is(selector)) {
+          return event;
+        }
       }
     },
     detectInterface: function(object) {
@@ -257,7 +276,9 @@ var __slice = Array.prototype.slice;
       for (_i = 0, _len = elementInterfaces.length; _i < _len; _i++) {
         item = elementInterfaces[_i];
         selector = item[0], interface = item[1];
-        if (object.is(selector)) return interface;
+        if (object.is(selector)) {
+          return interface;
+        }
       }
       return 'text';
     },
@@ -265,7 +286,9 @@ var __slice = Array.prototype.slice;
       var attr, value, _i, _len;
       for (_i = 0, _len = elementBindAttributes.length; _i < _len; _i++) {
         attr = elementBindAttributes[_i];
-        if ((value = object.attr(attr))) return value;
+        if ((value = object.attr(attr))) {
+          return value;
+        }
       }
     }
   };
