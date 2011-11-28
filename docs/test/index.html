@@ -6,9 +6,8 @@
 	<script src="qunit.js"></script>
 
     <!-- Synapse Core -->
-    <script src="../js/synapse.js"></script>
     <script src="../js/synapse/core.js"></script>
-    <script src="../js/synapse/connect.js"></script>
+    <script src="../js/synapse.js"></script>
 
     <!-- Hook Deps -->
     <script src="../js/underscore.js"></script>
@@ -30,24 +29,7 @@
     <h2 id="qunit-banner"></h2>
 	<div id="qunit-testrunner-toolbar"></div>
 	<h2 id="qunit-userAgent"></h2>
-    <p style="font-weight: bold; color:maroon">Tests were written to work with
-        Chrome only. Since each interface gets/sets attributes and properties
-        using jQuery, we can assume the interfaces work. Since jQuery handles all
-        the cross-browser issues, some tests will fail in other browsers.</p>
 	<ol id="qunit-tests"></ol>
-    <div id="qunit-fixture">
-        <span>Hello World</span>
-        <input id="text-input" type="text" name="text" value="hello world"> 
-        <input type="checkbox" name="checkbox" checked>
-        <input type="radio" name="radio" disabled>
-        <select style="display: none" name="select">
-            <option value="">Choose...</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-        </select>
-        <button name="button">Click Me!</button>
-        <input type="email" name="email">
-        <input class="fancy button" type="submit" name="submit">
-    </div>
+    <div id="qunit-fixture"></div>
 </body>
 </html>

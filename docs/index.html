@@ -29,7 +29,7 @@
         <header class="topbar">
             <div class="topbar-inner">
                 <div class="container-fluid">
-                    <a class="brand" href="#">Synapse</a>
+                    <span class="brand">Synapse <span style="font-size: 15px; color: #999">0.3.2</span></span>
                     <ul>
                         <li><a href="https://github.com/bruth/synapse/">GitHub Repository</a>
                         <li><a href="http://jsfiddle.net/bruth/bufeK/">jsFiddle Demo</a>
@@ -39,10 +39,16 @@
         </header>
 
         <nav id=sidebar>
+            <h3>Get Started</h3>
+            <ul class=unstyled>
+                <li><a href=#dependencies>Dependencies</a>
+                <li><a href=#download>Download</a>
+                <li><a href=#umd>UMD</a>
+             </ul>
+
             <h3>Learn</h3>
             <ul class=unstyled>
                 <li><a href=#background>Background</a>
-                <li><a href=#basics>The Basics</a>
                 <li><a href=#channels>Channels</a>
                 <li><a href=#interfaces>Interfaces</a>
             </ul>
@@ -54,6 +60,8 @@
                     <ul>
                         <li><a href=#object-api-properties>Properties</a>
                         <li><a href=#object-api-channel>Channel Methods</a>
+                        <li><a href=#object-api-channel-configuration>Channel Configuration</a>
+                        <li><a href=#object-api-channel-flow>Channel Flow Methods</a>
                         <li><a href=#object-api-interface>Interface Methods</a>
                     </ul>
                 <li><a href=#hooks>Hook API</a>
@@ -89,6 +97,80 @@
                 be patient while they are being updated.</p>
             </section>
 
+            <h3 id=dependencies>Dependencies</h3>
+
+            <section class=row>
+                <span class=span16>
+                    <p>None</p>
+                </span>
+            </section>
+
+            <h3 id=download>Download</h3>
+
+            <section class=row>
+                <span class=span16>
+                    <p><em>Right-click and save-as</em></p>
+                    <ul>
+                        <li><a href=https://raw.github.com/bruth/synapse/dist/dev/synapse.js>Development Version (0.3.2)</a> - 10K
+                        <li><a href=https://raw.github.com/bruth/synapse/dist/min/synapse.js>Production Version (0.3.2)</a> - 1.6K minified, gzipped
+                    </ul>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Hook Name</th>
+                                <th>Development</th>
+                                <th>Production</th>
+                                <th>Dependencies</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Object
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/dev/synapse/hooks/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/min/synapse/hooks/object.js>Download</a>
+                                <td>(none)
+                            </tr>
+                            <tr>
+                                <td>jQuery
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/dev/synapse/hooks/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/min/synapse/hooks/jquery.js>Download</a>
+                                <td>jQuery
+                            </tr>
+                            <tr>
+                                <td>Zepto
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/dev/synapse/hooks/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/min/synapse/hooks/zepto.js>Download</a>
+                                <td>Zepto
+                            </tr>
+                            <tr>
+                                <td>Backbone Model
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/dev/synapse/hooks/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/min/synapse/hooks/backbone-model.js>Download</a>
+                                <td>Backbone
+                            </tr>
+                            <tr>
+                                <td>Backbone View
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/dev/synapse/hooks/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/dist/min/synapse/hooks/backbone-view.js>Download</a>
+                                <td>jQuery Hook, Backbone
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </span>
+            </section>
+
+            <h3 id=umd>Universal Module Definition (UMD)</h3>
+
+            <section class="row">
+                <span class="span16">
+                    <p>Synapse supports the <a href=https://github.com/umdjs/umd>UMD</a>. It
+                    can load in the CommonJS/Node environment, via AMD in the browser or as
+                    a traditional script.</p>
+                </span> 
+            </section>
+
             <h3 id="background">Background</h3>
 
             <section class="row">
@@ -112,21 +194,6 @@
                     clicks a button, the <code>onclick</code> event is triggered on that DOM
                     element. These actions can cause a cascade of events all of which can be used
                     to respond to the state changes.</p>
-                </span>
-            </section>
-
-            <h3 id="basics">The Basics</h3>
-
-            <h5>AMD &amp; Dependencies</h5>
-            <section class="row">
-                <span class="span5">
-                    <p>Synapse supports the Asynchronous Module Definition
-                    (AMD) and has no dependencies.</p>
-                </span> 
-                <span class="span11">
-<pre class="prettyprint linenums">
-require(['synapse'], function(Synapse) { ... });
-</pre>
                 </span>
             </section>
 
@@ -230,10 +297,9 @@ Synapse(object);
 
             <section class=row>
                 <span class=span16>
-                    <p>To keep things simple, there are only three main 
-                    API methods <code>observe</code>, <code>notify</code>,
-                    and <code>sync</code>. Although other methods are
-                    exposed, there isn't really a need to use them.</p>
+                    <p>There two primary sets of methods, those that creates a
+                    channel between two objects and those that control the
+                    channel <em>flow</em>.</p>
                 </span>
             </section>
 
@@ -243,9 +309,9 @@ Synapse(object);
                 <span class=span5>
                     <ul>
                         <li><code>raw</code> - a reference to the original object.
-                        <strong>Note, if the hook this object is used with has a
+                        <em>Note, if the hook this object is used with has a
                         <code>coerceObject</code> method defined, <code>raw</code>
-                        will be the object that is returned from that function.</strong>
+                        will be the object that is returned from that function.</em>
                     </ul>
                 </span>
 
@@ -265,19 +331,134 @@ wrapped.raw; // reference to `object`
                         <li><code>observe</code> - opens a one-way channel between this
                         object and a subject where this object <em>observes</em> state changes
                         of the subject.
+
                         <li><code>notify</code> - opens a one-way channel between this object
                         and an observer where this object <em>notifies</em> it's state
-                        changes to the observer.
+                        changes to the observer. 
+
                         <li><code>sync</code> - opens a two-way channel between this object
                         and another where each acts as a subject and observer.
                     </ul>
-
-                </span> 
+                </span>
                 <span class="span11">
 <pre class="prettyprint linenums">
 wrapped.observe(subject, [options]);
 wrapped.notify(observer, [options]);
 wrapped.sync(other, [options]);
+</pre>
+
+                </span>
+            </section>
+
+            <h5 id=object-api-channel-configuration>Channel Configuration</h5>
+
+            <section class=row>
+                <span class=span5>
+                    <ul>
+                        <li><code>event</code> - the event that will trigger the
+                        subject to push it's interface value to all observers. this
+                        is variable across hooks. this is optional only if the
+                        subject's hook has a <code>detectEvent</code> method and
+                        can be successfully detected.
+
+                        <li><code>subjectInterface</code> - the interface identifier
+                        of the subject for a given channel. this is variable across hooks.
+                        this is optional only if the subject's hook has a
+                        <code>detectInterface</code> method or the observer's hook has a
+                        <code>detectOtherInterface</code> method and can be successfully
+                        detected.
+
+                        <li><code>observerInterface</code> - the interface identifier
+                        of the observer for a given channel. this is variable across hooks.
+                        this is optional only if the observer's hook has a
+                        <code>detectInterface</code> method or the subject's hook has a
+                        <code>detectOtherInterface</code> method and can be successfully
+                        detected.
+
+                        <li><code>converter</code> - an optional function or method name on
+                        the observer that will take the value(s) provided by the subject and
+                        return a value prior to calling <code>observer.set(...)</code>.
+
+                        <li><code>triggerOnBind</code> - if set to true, when the channel is
+                        initially created the subject will be triggered using the event
+                        supplied or detected.
+                    </ul>
+                </span>
+                <span class="span11">
+<pre class="prettyprint linenums">
+// available configuration options and their defaults
+var options = {
+    event: null,
+    subjectInterface: null,
+    observerInterface: null,
+    converter: null,
+    triggerOnBind: true
+};
+
+// the default, pass in a configuration options object defining
+// any or all of the options
+wrapped.observe(subject, [options]);
+
+// shorthand method signatures
+
+// no options passed, all `null` options will attempt to be detected
+wrapped.observe(subject);
+
+// define the observer and subject interfaces
+wrapped.observe(subject, [subjectInterface], [observerInterface]);
+
+// define just a converter
+wrapped.observe(subject, [converter]);
+
+</pre>
+
+                </span>
+            </section>
+
+            <h5 id=object-api-channel-flow>Channel Flow Methods
+                <span class="label notice">limited api</span></h5>
+
+            <section class=row>
+                <span class=span5>
+                    <ul>
+                        <li><code>stopObserving</code> - stops an object from observing all objects
+                        it is currently observing and removes all event handlers referencing this
+                        object. if a <code>Synapse</code> object is passed, only observing of that
+                        object will be stopped.
+
+                        <li><code>pauseObserving</code> - same as <code>stopObserving</code> except
+                        event handlers are retained to allow for resuming observing. if a
+                        <code>Synapse</code> object is passed, only observing of that object will
+                        be paused.
+
+                        <li><code>resumeObserving</code> - all paused obversing is resumed.
+                        if a <code>Synapse</code> object is passed, only observing of that
+                        object will be resumed.
+
+                        <li><code>stopNotifying</code> - stops an object from notifying all objects
+                        it is currently notifying and removes all event handlers referencing those
+                        object. if a <code>Synapse</code> object is passed, only notifying of that
+                        object will be stopped.
+
+                        <li><code>pauseNotifying</code> - same as <code>stopNotifying</code> except
+                        event handlers are retained to allow for resuming notifying. if a
+                        <code>Synapse</code> object is passed, only notifying of that object will
+                        be paused.
+
+                        <li><code>resumeNotifying</code> - all paused notifying  is resumed. if an
+                        existing <code>Synapse</code> is object passed, only notifying of that object
+                        will be resumed.
+                    </ul>
+
+                </span> 
+                <span class="span11">
+<pre class="prettyprint linenums">
+wrapped.stopObserving([other]);
+wrapped.pauseObserving([other]);
+wrapped.resumeObserving([other]);
+wrapped.stopNotifying([other]);
+wrapped.pauseNotifying([other]);
+wrapped.resumeNotifying([other]);
 </pre>
                 </span>
             </section>
@@ -287,12 +468,10 @@ wrapped.sync(other, [options]);
             <section class=row>
                 <span class=span5>
                     <ul>
-                        <li><code>get</code> - <span class="label success">subject</span>
-                        given an interface identifier, return a representation of this
-                        subject's change in state.
-                        <li><code>set</code> - <span class="label warning">observer</span>
-                        given an interface identifier and a value provided by the subject,
-                        <em>sets</em> the value.
+                        <li><code>get</code> -  given an interface identifier,
+                        return a representation of this subject's change in state.
+                        <li><code>set</code> -  given an interface identifier and
+                        a value provided by the subject, <em>sets</em> the value.
                     </ul>
                 </span>
 

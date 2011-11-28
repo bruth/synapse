@@ -1,7 +1,8 @@
 test('Core', function() {
     expect(1);
+    Synapse.clearHooks();
     raises(function() {
-    Synapse({});
+        Synapse({});
     }, 'No hooks have been added, therefore no objects are supported');
 });
 
@@ -18,7 +19,7 @@ test('getHandler', function() {
     var obj = {
         foo: 'bar',
         baz: function() {
-        return 'qux';
+            return 'qux';
         }
     };
     equal(ObjectHook.getHandler(obj, 'foo'), 'bar', 'property');
@@ -31,7 +32,7 @@ test('setHandler', function() {
     var obj = {
         foo: 'bar',
         baz: function(value) {
-        this._secret = value;
+            this._secret = value;
         }
     };
     ObjectHook.setHandler(obj, 'foo', 3);
@@ -154,7 +155,6 @@ test('detectEvent', function() {
     equal(jQueryHook.detectEvent(obj), 'keyup');
 });
 
-
 module('Backbone View');
 
 test('checkObjectType', function() {
@@ -266,3 +266,129 @@ test('detectEvent', function() {
 });
 
 
+module('Observer Methods');
+
+/* Full examples */
+
+test('Toggle Observing', function() {
+    expect(4);
+    Synapse.clearHooks();
+    Synapse.addHooks(jQueryHook, ObjectHook);
+
+    var input = new Synapse('<input />');
+    var span = new Synapse('<span />');
+
+    span.observe(input);
+
+    input.set('value', 'hello world!');
+    // mimic the event
+    input.raw.trigger('keyup');
+    // ensure the data propagated
+    equal(span.get('text'), 'hello world!');
+    // pause observing
+    span.pauseObserving();
+
+    input.set('value', 'foobar');
+    // mimic the event
+    input.raw.trigger('keyup');
+    // ensure the value has not changed propagated
+    equal(span.get('text'), 'hello world!');
+
+    // resume observing of all weak refs
+    span.resumeObserving();
+
+    // mimic the event
+    input.raw.trigger('keyup');
+    // ensure the value has not changed propagated
+    equal(span.get('text'), 'foobar');
+
+    // detach all event handlers
+    span.stopObserving();
+    equal(input.raw.data('events'), undefined);
+});
+
+test('Toggle Notifying', function() {
+    expect(4);
+    Synapse.clearHooks();
+    Synapse.addHooks(jQueryHook, ObjectHook);
+
+    var input = new Synapse('<input />');
+    var span = new Synapse('<span />');
+
+    span.observe(input);
+
+    input.set('value', 'hello world!');
+    // mimic the event
+    input.raw.trigger('keyup');
+    // ensure the data propagated
+    equal(span.get('text'), 'hello world!');
+    // pause observing
+    input.pauseNotifying();
+
+    input.set('value', 'foobar');
+    // mimic the event
+    input.raw.trigger('keyup');
+    // ensure the value has not changed propagated
+    equal(span.get('text'), 'hello world!');
+
+    // resume observing of all weak refs
+    input.resumeNotifying();
+
+    // mimic the event
+    input.raw.trigger('keyup');
+    // ensure the value has not changed propagated
+    equal(span.get('text'), 'foobar');
+
+    // detach all event handlers
+    input.stopNotifying();
+    equal(input.raw.data('events'), undefined);
+});
+
+
+test('Toggle Single Observer', function() {
+    expect(6);
+    Synapse.clearHooks();
+    Synapse.addHooks(jQueryHook, ObjectHook);
+
+    var input = new Synapse('<input />');
+    var span = new Synapse('<span />');
+    var h1 = new Synapse('<h1 />');
+
+    span.observe(input);
+    h1.observe(input);
+
+    input.set('value', 'hello world!');
+    // mimic the event
+    input.raw.trigger('keyup');
+    // ensure the data propagated
+    equal(span.get('text'), 'hello world!');
+    // pause observing
+    span.pauseObserving();
+
+    input.set('value', 'foobar');
+    // mimic the event
+    input.raw.trigger('keyup');
+    // h1 still updates
+    equal(h1.get('text'), 'foobar');
+    equal(span.get('text'), 'hello world!');
+
+    // resume observing of all weak refs
+    span.resumeObserving();
+    input.pauseNotifying();
+
+    // mimic the event
+    input.raw.trigger('keyup');
+    // ensure the value still hasn't changed
+    equal(span.get('text'), 'hello world!');
+
+    input.resumeNotifying();
+
+    // mimic the event
+    input.raw.trigger('keyup');
+    // the value has now updated
+    equal(span.get('text'), 'foobar');
+
+    // detach all event handlers
+    span.stopObserving();
+    equal(input.raw.data('events'), undefined);
+});

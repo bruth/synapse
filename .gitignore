@@ -1,5 +1,6 @@
 .DS_Store
 .sass-cache
 .watch-pid
-dist
 build
+dist/dev/build.txt
+dist/min/build.txt

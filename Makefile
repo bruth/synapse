@@ -1,5 +1,5 @@
 COFFEE_DIR = ./src
-EXAMPLES_DIR = ./docs
+DOCS_DIR = ./docs
 DIST_DIR = ./dist
 BUILD_DIR = ./build
 PID_FILE = .watch-pid
@@ -7,34 +7,29 @@ PID_FILE = .watch-pid
 SASS_DIR = ./docs/scss
 CSS_DIR = ./docs/css
 
-COMPILE_SASS = `which sass` --scss --style=compressed ${SASS_DIR}:${CSS_DIR}
-COMPILE_COFFEE = `which coffee` -b -o ${BUILD_DIR} -c ${COFFEE_DIR}
-WATCH_COFFEE = `which coffee` -w -b -o ${BUILD_DIR} -c ${COFFEE_DIR}
-REQUIRE_OPTIMIZE = `which node` bin/r.js -o build.js
-
-LATEST_TAG = `git describe --tags \`git rev-list --tags --max-count=1\``
-
 all: build watch
 
 build: sass coffee
-	@cp -r ${BUILD_DIR}/synapse* ${EXAMPLES_DIR}/js
+	@cp -r ${BUILD_DIR}/synapse* ${DOCS_DIR}/js
+	@`which node` bin/r.js -o build.js > /dev/null
 
-dist: build optimize
+dist: clean build optimize
 	@echo 'Creating a source distributions...'
 
 sass:
 	@echo 'Compiling Sass...'
 	@mkdir -p ${CSS_DIR}
-	@${COMPILE_SASS} --update
+	@`which sass` --scss --style=compressed ${SASS_DIR}:${CSS_DIR} --update
 
 coffee:
 	@echo 'Compiling CoffeeScript...'
-	@${COMPILE_COFFEE}
+	@`which coffee` -b -o ${BUILD_DIR} -c ${COFFEE_DIR}
 
 watch: unwatch
 	@echo 'Watching in the background...'
-	@${WATCH_COFFEE} &> /dev/null & echo $$! > ${PID_FILE}
-	@${COMPILE_SASS} --watch &> /dev/null & echo $$! >> ${PID_FILE}
+	@`which coffee` -w -b -o ${BUILD_DIR} -c ${COFFEE_DIR} &> /dev/null & echo $$! > ${PID_FILE}
+	@`which sass` --scss --style=compressed ${SASS_DIR}:${CSS_DIR} \
+		--watch &> /dev/null & echo $$! >> ${PID_FILE}
 
 unwatch:
 	@if [ -f ${PID_FILE} ]; then \
@@ -43,10 +38,10 @@ unwatch:
 		rm ${PID_FILE}; \
 	fi;
 
-optimize: clean
+optimize:
 	@echo 'Optimizing the javascript...'
 	@mkdir -p ${DIST_DIR}
-	@${REQUIRE_OPTIMIZE} > /dev/null
+	@`which node` bin/r.js -o build-optimize.js > /dev/null
 
 clean:
 	@rm -rf ${DIST_DIR}

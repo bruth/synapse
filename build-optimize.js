@@ -7,10 +7,10 @@
 
     // the directory to write the compiled scripts. this will emulate the
     // directory structure of appDir
-    dir: 'dist/dev',
+    dir: 'dist/min',
 
     // explicitly specify the optimization method
-    optimize: 'none',
+    optimize: 'uglify',
 
     // no CSS optimization is necessary since we use the sass optimization tool
     optimizeCss: 'none',
