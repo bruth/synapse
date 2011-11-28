@@ -780,6 +780,46 @@ define('awesome-hook', function() {
                 </span>
             </section>
 
+            <h5 id=jquery-template-view>Template View</h5>
+
+            <section class=row>
+                <span class=span5>
+                    <p><span class="label warning">0.3.3</span> For data-driven user interfaces
+                    it is a common occurence to use JavaScript template libraries such as
+                    <a href=http://api.jquery.com/jquery.tmpl>jQuery.tmpl</a>,
+                    <a href=http://www.handlebarsjs.com>Handlebars</a> or
+                    <a href=http://documentcloud.github.com/underscore/#template>Underscore's template implementation</a>.
+                    These solutions are great for a <em>one-time</em> render, but for dynamic
+                    data (server polling or socket.io), the view would need to be re-rendered each
+                    time causing any other metadata, event handlers, etc. being re-established.</p>
+
+                    <p>The jQuery Hook provides a means of taking an element and binding it and qualifying
+                    descendencts of that element with another data source.</p>
+
+                </span>
+
+                <span class=span11>
+<pre class="prettyprint linenums">
+&lt;div&gt;
+    &lt;strong data-bind="fullName"&gt;&lt;/strong&gt; - &lt;span data-bind="email"&gt;&lt;/span&gt;
+&lt;/div&gt;
+</pre>
+
+<pre class="prettyprint linenums">
+var source = {
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john@doe.com',
+    fullName: function() {
+        return this.firstName + ' ' + this.lastName;
+    }
+};
+</pre>
+
+            </span>
+            </section>
+
+
             <h3 id=zepto>Zepto</h3>
 
             <section class=row>
