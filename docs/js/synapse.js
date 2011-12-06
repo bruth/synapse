@@ -245,7 +245,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     var channel, converter, event, events, handler, key, observerChannels, observerInterface, subjectChannels, subjectInterface, triggerOnBind, value, _i, _len;
     for (key in defaultConnectOptions) {
       value = defaultConnectOptions[key];
-      if (!options[key]) {
+      if (!(options[key] != null)) {
         options[key] = value;
       }
     }

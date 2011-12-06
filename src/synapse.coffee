@@ -233,7 +233,7 @@
     connectOne = (subject, observer, options) ->
 
         for key, value of defaultConnectOptions
-            if not options[key]
+            if not options[key]?
                 options[key] = value
 
         # A converter may be defined as a string which is assumed to be a
