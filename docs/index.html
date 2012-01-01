@@ -29,7 +29,7 @@
         <header class="topbar">
             <div class="topbar-inner">
                 <div class="container-fluid">
-                    <span class="brand">Synapse <span style="font-size: 15px; color: #999">0.3.2</span></span>
+                    <span class="brand">Synapse <span style="font-size: 15px; color: #999">0.4</span></span>
                     <ul>
                         <li><a href="https://github.com/bruth/synapse/">GitHub Repository</a>
                         <li><a href="http://jsfiddle.net/bruth/bufeK/">jsFiddle Demo</a>
@@ -111,8 +111,8 @@
                 <span class=span16>
                     <p><em>Right-click and save-as</em></p>
                     <ul>
-                        <li><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/dev/synapse.js>Development Version (0.3.2)</a> - 13K
-                        <li><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/min/synapse.js>Production Version (0.3.2)</a> - 1.7K minified, gzipped
+                        <li><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse.js>Development Version (0.4)</a> - 13K
+                        <li><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse.js>Production Version (0.4)</a> - 1.7K minified, gzipped
                     </ul>
 
                     <table>
@@ -127,32 +127,32 @@
                         <tbody>
                             <tr>
                                 <td>Object
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/dev/synapse/hooks/object.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/min/synapse/hooks/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/object.js>Download</a>
                                 <td>(none)
                             </tr>
                             <tr>
                                 <td>jQuery
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/dev/synapse/hooks/jquery.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/min/synapse/hooks/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/jquery.js>Download</a>
                                 <td>jQuery
                             </tr>
                             <tr>
                                 <td>Zepto
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/dev/synapse/hooks/zepto.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/min/synapse/hooks/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/zepto.js>Download</a>
                                 <td>Zepto
                             </tr>
                             <tr>
                                 <td>Backbone Model
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/dev/synapse/hooks/backbone-model.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/min/synapse/hooks/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/backbone-model.js>Download</a>
                                 <td>Backbone
                             </tr>
                             <tr>
                                 <td>Backbone View
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/dev/synapse/hooks/backbone-view.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.3.2/dist/min/synapse/hooks/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/backbone-view.js>Download</a>
                                 <td>Backbone
                             </tr>
                         </tbody>
@@ -327,6 +327,10 @@ wrapped.raw; // reference to `object`
 
             <section class=row>
                 <span class=span5>
+                    <p><span class="label warning">0.4</span> The method <code>sync</code>
+                        has been renamed to <code>syncWith</code> to not conflict with
+                        Backbone's <code>Model.sync</code> method when the object is
+                        augmented.</p>
                     <ul>
                         <li><code>observe</code> - opens a one-way channel between this
                         object and a subject where this object <em>observes</em> state changes
@@ -336,7 +340,7 @@ wrapped.raw; // reference to `object`
                         and an observer where this object <em>notifies</em> it's state
                         changes to the observer. 
 
-                        <li><code>sync</code> - opens a two-way channel between this object
+                        <li><code>syncWith</code> - opens a two-way channel between this object
                         and another where each acts as a subject and observer.
                     </ul>
                 </span>
@@ -344,7 +348,7 @@ wrapped.raw; // reference to `object`
 <pre class="prettyprint linenums">
 wrapped.observe(subject, [options]);
 wrapped.notify(observer, [options]);
-wrapped.sync(other, [options]);
+wrapped.syncWith(other, [options]);
 </pre>
 
                 </span>

@@ -1,4 +1,5 @@
 
+
 (function(root, factory) {
   if (typeof exports !== 'undefined') {
     return factory(root, exports);
@@ -34,7 +35,9 @@
     }
   };
 });
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
+
+var __slice = Array.prototype.slice;
+
 (function(root, factory) {
   if (typeof exports !== 'undefined') {
     return factory(root, exports, require('synapse/core'));
@@ -50,23 +53,24 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   objectGuid = 1;
   synapseObjects = {};
   synapseHooks = [];
-  limitedApi = ['observe', 'notify', 'sync', 'stopObserving', 'pauseObserving', 'resumeObserving', 'stopNotifying', 'pauseNotifying', 'resumeNotifying'];
+  limitedApi = ['observe', 'notify', 'syncWith', 'stopObserving', 'pauseObserving', 'resumeObserving', 'stopNotifying', 'pauseNotifying', 'resumeNotifying'];
   Synapse = (function() {
-    Synapse.prototype.version = '0.3.2';
+
+    Synapse.prototype.version = '0.4';
+
     function Synapse(object) {
-      var hook, method, raw, wrapped, _fn, _i, _j, _len, _len2;
-      if (object instanceof Synapse) {
-        return object;
-      }
+      var hook, method, raw, wrapped, _fn, _i, _j, _len, _len2,
+        _this = this;
+      if (object instanceof Synapse) return object;
       if (this.constructor !== Synapse) {
         wrapped = new Synapse(object);
         raw = wrapped.raw;
-        _fn = __bind(function(method) {
+        _fn = function(method) {
           return raw[method] = function() {
             wrapped[method].apply(wrapped, arguments);
             return this;
           };
-        }, this);
+        };
         for (_i = 0, _len = limitedApi.length; _i < _len; _i++) {
           method = limitedApi[_i];
           _fn(method);
@@ -75,9 +79,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       }
       for (_j = 0, _len2 = synapseHooks.length; _j < _len2; _j++) {
         hook = synapseHooks[_j];
-        if (hook.checkObjectType(object)) {
-          break;
-        }
+        if (hook.checkObjectType(object)) break;
         hook = null;
       }
       if (!hook) {
@@ -90,15 +92,18 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       this._notifying = {};
       synapseObjects[this.guid] = this;
     }
+
     Synapse.prototype.get = function() {
       var _ref;
       return (_ref = this.hook).getHandler.apply(_ref, [this.raw].concat(__slice.call(arguments)));
     };
+
     Synapse.prototype.set = function() {
       var _ref;
       (_ref = this.hook).setHandler.apply(_ref, [this.raw].concat(__slice.call(arguments)));
       return this;
     };
+
     Synapse.prototype.observe = function() {
       var args, other;
       other = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -106,6 +111,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       connect.apply(null, [other, this].concat(__slice.call(args)));
       return this;
     };
+
     Synapse.prototype.notify = function() {
       var args, other;
       other = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -113,11 +119,13 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       connect.apply(null, [this, other].concat(__slice.call(args)));
       return this;
     };
-    Synapse.prototype.sync = function(other) {
+
+    Synapse.prototype.syncWith = function(other) {
       other = new Synapse(other);
       this.observe(other).notify(other);
       return this;
     };
+
     Synapse.prototype.stopObserving = function(other) {
       var channels, observerInterface, subject, subjectGuid, thread;
       if (!other) {
@@ -144,6 +152,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       }
       return this;
     };
+
     Synapse.prototype.pauseObserving = function(other) {
       var channels, subjectGuid;
       if (!other) {
@@ -157,12 +166,11 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       }
       return this;
     };
+
     Synapse.prototype.resumeObserving = function(other) {
       var channels, subjectGuid;
       if (other) {
-        if ((channels = this._observing[other.guid])) {
-          channels._open = true;
-        }
+        if ((channels = this._observing[other.guid])) channels._open = true;
       } else {
         for (subjectGuid in this._observing) {
           this._observing[subjectGuid]._open = true;
@@ -170,6 +178,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       }
       return this;
     };
+
     Synapse.prototype.stopNotifying = function(other) {
       var channels, observer, observerGuid, observerInterface, thread;
       if (!other) {
@@ -196,6 +205,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       }
       return this;
     };
+
     Synapse.prototype.pauseNotifying = function(other) {
       var channels, observerGuid;
       if (!other) {
@@ -209,12 +219,11 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       }
       return this;
     };
+
     Synapse.prototype.resumeNotifying = function(other) {
       var channels, observerGuid;
       if (other) {
-        if ((channels = this._notifying[other.guid])) {
-          channels._open = true;
-        }
+        if ((channels = this._notifying[other.guid])) channels._open = true;
       } else {
         for (observerGuid in this._notifying) {
           this._notifying[observerGuid]._open = true;
@@ -222,7 +231,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       }
       return this;
     };
+
     return Synapse;
+
   })();
   Synapse.addHooks = function() {
     return synapseHooks.push.apply(synapseHooks, arguments);
@@ -281,9 +292,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     var channel, converter, event, events, handler, key, observerChannels, observerInterface, subjectChannels, subjectInterface, triggerOnBind, value, _i, _len;
     for (key in defaultConnectOptions) {
       value = defaultConnectOptions[key];
-      if (!(options[key] != null)) {
-        options[key] = value;
-      }
+      if (!(options[key] != null)) options[key] = value;
     }
     if ((converter = options.converter) && !core.isFunction(converter)) {
       converter = observer.object[converter];
@@ -298,21 +307,15 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         throw new Error("An interface for " + observer.hook.typeName + " objects could not be detected");
       }
     }
-    if (!(events = options.event)) {
-      events = detectEvent(subject, subjectInterface);
-    }
-    if (!core.isArray(events)) {
-      events = [events];
-    }
+    if (!(events = options.event)) events = detectEvent(subject, subjectInterface);
+    if (!core.isArray(events)) events = [events];
     triggerOnBind = options.triggerOnBind;
     for (_i = 0, _len = events.length; _i < _len; _i++) {
       event = events[_i];
       handler = function() {
         if (observer._observing[subject.guid]._open === true && subject._notifying[observer.guid]._open === true) {
           value = subject.get(subjectInterface);
-          if (converter) {
-            value = converter(value);
-          }
+          if (converter) value = converter(value);
           return observer.set(observerInterface, value);
         }
       };
@@ -333,9 +336,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       observerChannels[observerInterface] = channel;
       subjectChannels[observerInterface] = channel;
       onEvent(subject, event, handler);
-      if (triggerOnBind) {
-        triggerEvent(subject, event);
-      }
+      if (triggerOnBind) triggerEvent(subject, event);
     }
   };
   connect = function() {
@@ -354,9 +355,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         observerInterface: arg1
       };
     }
-    if (!core.isArray(options)) {
-      options = [options];
-    }
+    if (!core.isArray(options)) options = [options];
     for (_i = 0, _len = options.length; _i < _len; _i++) {
       opt = options[_i];
       connectOne(subject, observer, opt);

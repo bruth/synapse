@@ -1,4 +1,5 @@
 
+
 (function(root, factory) {
   if (typeof exports !== 'undefined') {
     return factory(root, exports, require('synapse/core'));

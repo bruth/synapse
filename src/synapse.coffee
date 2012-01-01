@@ -2,8 +2,8 @@
 # Synapse
 # (c) 2011 Byron Ruth
 # Synapse may be freely distributed under the BSD license
-# Version: 0.3.2
-# Date: November 24, 2011
+# Version: 0.4
+# Date: January 1, 2012
 #
 
 ((root, factory) ->
@@ -22,13 +22,13 @@
     objectGuid = 1
     synapseObjects = {}
     synapseHooks = []
-    limitedApi = ['observe', 'notify', 'sync', 'stopObserving',
+    limitedApi = ['observe', 'notify', 'syncWith', 'stopObserving',
         'pauseObserving', 'resumeObserving', 'stopNotifying', 'pauseNotifying',
         'resumeNotifying']
 
 
     class Synapse
-        version: '0.3.2'
+        version: '0.4'
 
         # ## Constructor
         # Ensure the ``object`` is not already an instance of ``Synapse``.
@@ -92,7 +92,7 @@
 
         # Opens a two-way channel where this and another object notify each
         # other when either have a change in state.
-        sync: (other) ->
+        syncWith: (other) ->
             other = new Synapse(other)
             @observe(other).notify(other)
             return @
