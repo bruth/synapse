@@ -201,6 +201,15 @@
             name: 'data'
             get: (key) -> @data(key)
             set: (key, value) -> @data(key, value)
+
+        # ### _oneClass.FOO_
+        # Reads or adds/removes a single class on the target element using
+        # jQuery hasClass for get and toggleClass for set
+        # (based on the truthiness of the set value)
+        interfaces.register
+            name: 'oneClass'
+            get: (key) -> @hasClass(key)
+            set: (key, value) -> @toggleClass(key, value)
             
 
     # Default DOM events. When a DOM element is declared the subject of a
