@@ -204,6 +204,16 @@
             set: (key, value) -> @data(key, value)
             
 
+        # ### _oneClass.FOO_
+        # Reads or adds/removes a single class on the target element using
+        # Zepto hasClass for get and toggleClass for set
+        # (based on the truthiness of the set value)
+        interfaces.register
+            name: 'oneClass'
+            get: (key) -> @hasClass(key)
+            set: (key, value) -> @toggleClass(key, value)
+
+
     # Default DOM events. When a DOM element is declared the subject of a
     # binding and no event is specified, the element will be compared to
     # each item in this list in order to determine the appropriate DOM
