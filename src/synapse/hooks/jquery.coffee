@@ -192,6 +192,7 @@
             get: (key) -> @data(key)
             set: (key, value) -> @data(key, value)
 
+
         # ### _class.FOO_
         # Reads or adds/removes a single class on the target element using
         # jQuery hasClass for get and toggleClass for set
