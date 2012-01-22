@@ -159,16 +159,6 @@
                 if Boolean(value) then @hide() else @show()
 
 
-        # ### _class_
-        # Gets and sets a CSS class on the target element.
-        interfaces.register
-            name: 'class'
-            get: -> getProperty('className')
-            set: (key, value) ->
-                @removeClass()
-                @addClass(value)
-
-
         # ### Compound interfaces
 
         # ### _prop.FOO_
@@ -204,12 +194,12 @@
             set: (key, value) -> @data(key, value)
             
 
-        # ### _oneClass.FOO_
+        # ### _class.FOO_
         # Reads or adds/removes a single class on the target element using
         # Zepto hasClass for get and toggleClass for set
         # (based on the truthiness of the set value)
         interfaces.register
-            name: 'oneClass'
+            name: 'class'
             get: (key) -> @hasClass(key)
             set: (key, value) -> @toggleClass(key, value)
 
