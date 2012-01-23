@@ -158,16 +158,6 @@ var __slice = Array.prototype.slice;
       }
     });
     interfaces.register({
-      name: 'class',
-      get: function() {
-        return getProperty('className');
-      },
-      set: function(key, value) {
-        this.removeClass();
-        return this.addClass(value);
-      }
-    });
-    interfaces.register({
       name: 'prop',
       get: function(key) {
         return getProperty.call(this, key);
@@ -194,13 +184,22 @@ var __slice = Array.prototype.slice;
         return setCss.call(this, key, value);
       }
     });
-    return interfaces.register({
+    interfaces.register({
       name: 'data',
       get: function(key) {
         return this.data(key);
       },
       set: function(key, value) {
         return this.data(key, value);
+      }
+    });
+    return interfaces.register({
+      name: 'class',
+      get: function(key) {
+        return this.hasClass(key);
+      },
+      set: function(key, value) {
+        return this.toggleClass(key, Boolean(value));
       }
     });
   })();

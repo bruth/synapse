@@ -200,7 +200,7 @@
         interfaces.register
             name: 'class'
             get: (key) -> @hasClass(key)
-            set: (key, value) -> @toggleClass(key, value)
+            set: (key, value) -> @toggleClass(key, Boolean(value))
             
 
     # Default DOM events. When a DOM element is declared the subject of a

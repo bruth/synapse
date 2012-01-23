@@ -29,7 +29,7 @@
         <header class="topbar">
             <div class="topbar-inner">
                 <div class="container-fluid">
-                    <span class="brand">Synapse <span style="font-size: 15px; color: #999">0.4</span></span>
+                    <span class="brand">Synapse <span style="font-size: 15px; color: #999">0.4.1</span></span>
                     <ul>
                         <li><a href="https://github.com/bruth/synapse/">GitHub Repository</a>
                         <li><a href="http://jsfiddle.net/bruth/bufeK/">jsFiddle Demo</a>
@@ -78,6 +78,7 @@
                 <li><a href=#plain-objects>Plain Objects</a>
                 <li><a href=#jquery>jQuery</a>
                     <ul>
+                        <li><a href=#jquery-hook-extensions>Hook Extensions</a>
                         <li><a href=#jquery-simple-interfaces>Simple Interfaces</a>
                         <li><a href=#jquery-compound-interfaces>Compound Interfaces</a>
                     </ul>
@@ -90,12 +91,6 @@
         <div id="content">
 
             <h1>Synapse - Data Binding For The Rest Of Us</h1>
-
-            <section class="span16">
-                <p class="alert-message">
-                <span class="label warning">BETA</span> These docs are missing some significant parts. Please
-                be patient while they are being updated.</p>
-            </section>
 
             <h3 id=dependencies>Dependencies</h3>
 
@@ -111,8 +106,8 @@
                 <span class=span16>
                     <p><em>Right-click and save-as</em></p>
                     <ul>
-                        <li><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse.js>Development Version (0.4)</a> - 13K
-                        <li><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse.js>Production Version (0.4)</a> - 1.7K minified, gzipped
+                        <li><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/dev/synapse.js>Development Version (0.4.1)</a> - 13K
+                        <li><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/min/synapse.js>Production Version (0.4.1)</a> - 1.7K minified, gzipped
                     </ul>
 
                     <table>
@@ -127,32 +122,32 @@
                         <tbody>
                             <tr>
                                 <td>Object
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/object.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/dev/synapse/hooks/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/min/synapse/hooks/object.js>Download</a>
                                 <td>(none)
                             </tr>
                             <tr>
                                 <td>jQuery
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/jquery.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/dev/synapse/hooks/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/min/synapse/hooks/jquery.js>Download</a>
                                 <td>jQuery
                             </tr>
                             <tr>
                                 <td>Zepto
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/zepto.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/dev/synapse/hooks/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/min/synapse/hooks/zepto.js>Download</a>
                                 <td>Zepto
                             </tr>
                             <tr>
                                 <td>Backbone Model
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/backbone-model.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/dev/synapse/hooks/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/min/synapse/hooks/backbone-model.js>Download</a>
                                 <td>Backbone
                             </tr>
                             <tr>
                                 <td>Backbone View
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/dev/synapse/hooks/backbone-view.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4/dist/min/synapse/hooks/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/dev/synapse/hooks/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.4.1/dist/min/synapse/hooks/backbone-view.js>Download</a>
                                 <td>Backbone
                             </tr>
                         </tbody>
@@ -592,9 +587,6 @@ define('awesome-hook', function() {
                         <li><code>coerceObject</code> - takes the raw object passed in
                         to <code>Synapse</code> and coerces the object into a more
                         useful object (think CSS selector &rarr; jQuery object)
-                        <li><code>detectEvent</code> - (subjects only) detects an
-                        appropriate event for the given object which will trigger the
-                        downstream notification to observers
                         <li><code>detectInterface</code> - detects an appropriate interface
                         for the given object
                         <li><code>detectOtherInterface</code> - detects an appropriate
@@ -663,6 +655,56 @@ define('awesome-hook', function() {
                 </span>
             </section>
 
+            <h5 id=jquery-hook-extensions>Hook Extensions</h5>
+
+            <section class=row>
+                <span class=span5>
+                    <p>In addition to implementing the <a href=#hooks>Hook API</a> discussed
+                    above, the jQuery hook exposes additional configurable components for
+                    customizing the default behavior when interfacing with jQuery objects.</p>
+
+                    <ul>
+                        <li><code>jQueryHook.interfaces</code> - contains the registry of all
+                        available interfaces for jQuery objects.
+                        <a href=https://github.com/bruth/synapse/blob/0.4.1/src/synapse/hooks/jquery.coffee#L12-40>code</a>
+
+                        <li><code>jQueryHook.domEvents</code> - an array of [selector, event] pairs
+                        used by <code>detectEvent</code>.
+                        <a href=https://github.com/bruth/synapse/blob/0.4.1/src/synapse/hooks/jquery.coffee#L206-217>code</a>
+
+                        <li><code>jQueryHook.elementInterfaces</code> - an array of [selector,
+                        interface] pairs used by <code>detectInterface</code>.
+                        <a href=https://github.com/bruth/synapse/blob/0.4.1/src/synapse/hooks/jquery.coffee#L219-227>code</a>
+
+                        <li><code>jQueryHook.elementBindAttributes</code> - an array of element
+                        attributes used by <code>detectOtherInterface</code>.
+                        <a href=https://github.com/bruth/synapse/blob/0.4.1/src/synapse/hooks/jquery.coffee#L229-231>code</a>
+                    </ul>
+
+                </span>
+
+                <span class=span11>
+<pre class="prettyprint linenums">
+define(['synapse/hooks/jquery'], function(jQueryHook) {
+
+    // The interface registry object
+    jQueryHook.interfaces.registry
+
+    // Register a new interface (name must be unique)
+    jQueryHook.interfaces.register({
+        name: 'awesomness',
+        get: function() { ... },
+        set: function() { ... }
+    });
+
+    // Unregister interface
+    jQueryHook.interfaces.unregister('awesomness');
+});
+</pre>
+                </span>
+            </section>
+
+
             <h5 id=jquery-simple-interfaces>Simple Interfaces</h5>
 
             <section class=row>
@@ -670,6 +712,10 @@ define('awesome-hook', function() {
 
                     <p>Most of the simple interfaces are relate to value-based or
                     toggle-like properties.</p>
+
+                    <p><span class="label warning">0.4.1</span> The simple <code>class</code>
+                    interface has been removed in favor of an existential compound
+                    <code>class</code> interface.</p>
 
                     <p><span class="label warning">0.3.2</span> The <code>css</code>
                     interface has been renamed to <code>class</code> and demoted to
@@ -719,13 +765,6 @@ define('awesome-hook', function() {
                                 <td><input type=checkbox></td>
                                 <td><input type=text></td>
                             </tr>
-                            <tr>
-                                <td><code>class</code></td>
-                                <td><input class=span3 type=text value="btn primary"><br>
-                                    <em>e.g. btn primary, label success, alert-message error</em></td>
-                                <td><span>new!</span></td>
-                            </tr>
-
                         </tbody>
                     </table>
                 </span>
@@ -778,6 +817,11 @@ define('awesome-hook', function() {
                                     open up the console and type
                                     <code>document.ex3.data('role')</code></span>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td><code>class.stop</code></td>
+                                <td><input type=text value=""></td>
+                                <td><span>DON'T ENTER A VALUE!</span></td>
                             </tr>
                         </tbody>
                     </table>

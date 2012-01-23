@@ -59,6 +59,11 @@ span.label {
     margin-bottom: 5px;
 }
 
+// interface examples
+.stop {
+    color: red;
+}
+
 @media screen and (max-width: 1240px) {
     .span5 { width: 640px; }
     .span16 { width: 640px; }
