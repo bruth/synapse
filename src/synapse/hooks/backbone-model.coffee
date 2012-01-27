@@ -59,8 +59,8 @@
         # the what the interface refers to. Interfaces in the context of
         # Backbone Models are simply data attributes. The interface is checked
         # to ensure it does not represent a method on the model instance.
-        detectEvent: (object, interface) ->
-            if interface and not object[interface]
-                return "change:#{interface}"
+        detectEvent: (object, iface) ->
+            if iface and not object[iface]
+                return "change:#{iface}"
             return 'change' 
     }
