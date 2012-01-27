@@ -35,14 +35,14 @@
         get: (object, name, args...) ->
             [name, key] = name.split '.'
             if key? then args = [key].concat(args)
-            if (interface = @registry[name])
-                return interface.get.apply(object, args)
+            if (iface = @registry[name])
+                return iface.get.apply(object, args)
 
         set: (object, name, args...) ->
             [name, key] = name.split '.'
             if key? then args = [key].concat(args)
-            if (interface = @registry[name])
-                return interface.set.apply(object, args)
+            if (iface = @registry[name])
+                return iface.set.apply(object, args)
 
     # ### Built-In interfaces
     # Each setter and getter for compound interfaces are defined up front
@@ -288,8 +288,8 @@
         detectInterface: (object) ->
             el = object.$(object.el)
             for item in elementInterfaces
-                [selector, interface] = item
-                if el.is(selector) then return interface
+                [selector, iface] = item
+                if el.is(selector) then return iface
             return 'text'
 
         detectOtherInterface: (object) ->
