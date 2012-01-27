@@ -41,8 +41,8 @@
     triggerEventHandler: function(object, event) {
       return object.trigger(event);
     },
-    detectEvent: function(object, interface) {
-      if (interface && !object[interface]) return "change:" + interface;
+    detectEvent: function(object, iface) {
+      if (iface && !object[iface]) return "change:" + iface;
       return 'change';
     }
   };

@@ -56,7 +56,7 @@ var __slice = Array.prototype.slice;
   limitedApi = ['observe', 'notify', 'syncWith', 'stopObserving', 'pauseObserving', 'resumeObserving', 'stopNotifying', 'pauseNotifying', 'resumeNotifying'];
   Synapse = (function() {
 
-    Synapse.prototype.version = '0.4.1';
+    Synapse.prototype.version = '0.4.2';
 
     function Synapse(object) {
       var hook, method, raw, wrapped, _fn, _i, _j, _len, _len2,

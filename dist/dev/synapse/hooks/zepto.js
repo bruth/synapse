@@ -21,22 +21,18 @@ var __slice = Array.prototype.slice;
         return delete this.registry[name];
       },
       get: function() {
-        var args, interface, key, name, object, _ref;
+        var args, iface, key, name, object, _ref;
         object = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
         _ref = name.split('.'), name = _ref[0], key = _ref[1];
         if (key != null) args = [key].concat(args);
-        if ((interface = this.registry[name])) {
-          return interface.get.apply(object, args);
-        }
+        if ((iface = this.registry[name])) return iface.get.apply(object, args);
       },
       set: function() {
-        var args, interface, key, name, object, _ref;
+        var args, iface, key, name, object, _ref;
         object = arguments[0], name = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
         _ref = name.split('.'), name = _ref[0], key = _ref[1];
         if (key != null) args = [key].concat(args);
-        if ((interface = this.registry[name])) {
-          return interface.set.apply(object, args);
-        }
+        if ((iface = this.registry[name])) return iface.set.apply(object, args);
       }
     };
   })();
@@ -252,11 +248,11 @@ var __slice = Array.prototype.slice;
       }
     },
     detectInterface: function(object) {
-      var interface, item, selector, _i, _len;
+      var iface, item, selector, _i, _len;
       for (_i = 0, _len = elementInterfaces.length; _i < _len; _i++) {
         item = elementInterfaces[_i];
-        selector = item[0], interface = item[1];
-        if (object.is(selector)) return interface;
+        selector = item[0], iface = item[1];
+        if (object.is(selector)) return iface;
       }
       return 'text';
     },

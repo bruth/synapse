@@ -2,8 +2,8 @@
 # Synapse
 # (c) 2011 Byron Ruth
 # Synapse may be freely distributed under the BSD license
-# Version: 0.4.1
-# Date: January 22, 2012
+# Version: 0.4.2
+# Date: January 26, 2012
 #
 
 ((root, factory) ->
@@ -28,7 +28,7 @@
 
 
     class Synapse
-        version: '0.4.1'
+        version: '0.4.2'
 
         # ## Constructor
         # Ensure the ``object`` is not already an instance of ``Synapse``.
