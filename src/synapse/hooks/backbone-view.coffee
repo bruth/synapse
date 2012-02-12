@@ -76,7 +76,7 @@
         interfaces.register
             name: 'text'
             get: -> @text()
-            set: (value) -> @text((value or= '').toString())
+            set: (value) -> @text((if value? then value else '').toString())
 
 
         # ### _html_
@@ -84,7 +84,7 @@
         interfaces.register
             name: 'html'
             get: -> @html()
-            set: (value) -> @html((value or= '').toString())
+            set: (value) -> @html((if value? then value else '').toString())
 
 
         # ### _value_
@@ -93,7 +93,7 @@
         interfaces.register
             name: 'value'
             get: -> @val()
-            set: (value) -> @val(value or= '')
+            set: (value) -> @val(if value? then value else '')
 
 
         # ### _enabled_
