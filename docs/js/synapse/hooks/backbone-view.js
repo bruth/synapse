@@ -74,7 +74,7 @@ var __slice = Array.prototype.slice;
         return this.text();
       },
       set: function(value) {
-        return this.text((value || (value = '')).toString());
+        return this.text((value != null ? value : '').toString());
       }
     });
     interfaces.register({
@@ -83,7 +83,7 @@ var __slice = Array.prototype.slice;
         return this.html();
       },
       set: function(value) {
-        return this.html((value || (value = '')).toString());
+        return this.html((value != null ? value : '').toString());
       }
     });
     interfaces.register({
@@ -92,7 +92,7 @@ var __slice = Array.prototype.slice;
         return this.val();
       },
       set: function(value) {
-        return this.val(value || (value = ''));
+        return this.val(value != null ? value : '');
       }
     });
     interfaces.register({
