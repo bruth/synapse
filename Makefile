@@ -19,7 +19,7 @@ dist: clean build optimize
 sass:
 	@echo 'Compiling Sass...'
 	@mkdir -p ${CSS_DIR}
-	@`which sass` --scss --style=compressed ${SASS_DIR}:${CSS_DIR} --update
+	@`which sass` --scss --style=compressed ${SASS_DIR}:${CSS_DIR} -r ${SASS_DIR}/bourbon/lib/bourbon.rb --update
 
 coffee:
 	@echo 'Compiling CoffeeScript...'
@@ -29,7 +29,7 @@ watch: unwatch
 	@echo 'Watching in the background...'
 	@`which coffee` -w -b -o ${BUILD_DIR} -c ${COFFEE_DIR} &> /dev/null & echo $$! > ${PID_FILE}
 	@`which sass` --scss --style=compressed ${SASS_DIR}:${CSS_DIR} \
-		--watch &> /dev/null & echo $$! >> ${PID_FILE}
+		-r ${SASS_DIR}/bourbon/lib/bourbon.rb --watch &> /dev/null & echo $$! >> ${PID_FILE}
 
 unwatch:
 	@if [ -f ${PID_FILE} ]; then \

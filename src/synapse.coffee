@@ -3,7 +3,7 @@
 # (c) 2011-2012 Byron Ruth
 # Synapse may be freely distributed under the BSD license
 # Version: 0.5b
-# Date: March 20, 2012
+# Date: March 21, 2012
 #
 
 ((root, factory) ->
@@ -19,7 +19,7 @@
         root.Synapse = factory(root, {}, root.SynapseCore)
 ) @, (root, Synapse, core) ->
 
-    objectGuid = 1
+    cid = 1
     synapseObjects = {}
     limitedApi = 'observe notify syncWith stopObserving pauseObserving
         resumeObserving stopNotifying pauseNotifying resumeNotifying'.split ' '
@@ -59,7 +59,7 @@
 
             @raw = hook.coerceObject?(object) or object
             @hook = hook
-            @cid = objectGuid++
+            @cid = cid++
             @_observing = {}
             @_notifying = {}
 

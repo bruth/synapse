@@ -49,8 +49,8 @@ var __slice = Array.prototype.slice;
     return root.Synapse = factory(root, {}, root.SynapseCore);
   }
 })(this, function(root, Synapse, core) {
-  var connect, connectOne, defaultConnectOptions, detectEvent, detectInterface, detectOtherInterface, limitedApi, objectGuid, offEvent, onEvent, synapseObjects, triggerEvent;
-  objectGuid = 1;
+  var cid, connect, connectOne, defaultConnectOptions, detectEvent, detectInterface, detectOtherInterface, limitedApi, offEvent, onEvent, synapseObjects, triggerEvent;
+  cid = 1;
   synapseObjects = {};
   limitedApi = 'observe notify syncWith stopObserving pauseObserving\
         resumeObserving stopNotifying pauseNotifying resumeNotifying'.split(' ');
@@ -88,7 +88,7 @@ var __slice = Array.prototype.slice;
       }
       this.raw = (typeof hook.coerceObject === "function" ? hook.coerceObject(object) : void 0) || object;
       this.hook = hook;
-      this.cid = objectGuid++;
+      this.cid = cid++;
       this._observing = {};
       this._notifying = {};
       synapseObjects[this.cid] = this;

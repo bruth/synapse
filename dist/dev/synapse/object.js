@@ -4,7 +4,7 @@
   if (typeof exports !== 'undefined') {
     return factory(root, exports, require('synapse/core'));
   } else if (typeof define === 'function' && define.amd) {
-    return define('synapse/hooks/object', ['synapse/core', 'exports'], function(core, exports) {
+    return define('synapse/object', ['synapse/core', 'exports'], function(core, exports) {
       return factory(root, exports, core);
     });
   } else {
@@ -32,5 +32,3 @@
     }
   };
 });
-
-define("synapse/object", function(){});

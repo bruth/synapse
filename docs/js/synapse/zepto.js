@@ -2,7 +2,7 @@ var __slice = Array.prototype.slice;
 
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
-    return define('synapse/hooks/zepto', ['synapse/core', 'zepto', 'exports'], function(core, $, exports) {
+    return define('synapse/zepto', ['synapse/core', 'zepto', 'exports'], function(core, $, exports) {
       return factory(root, exports, core, $);
     });
   } else if (typeof exports === 'undefined') {

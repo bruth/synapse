@@ -8,7 +8,7 @@
         factory(root, exports, require('synapse/core'))
     else if typeof define is 'function' and define.amd
         # AMD
-        define 'synapse/hooks/object', ['synapse/core', 'exports'], (core, exports) ->
+        define 'synapse/object', ['synapse/core', 'exports'], (core, exports) ->
             factory(root, exports, core)
     else
         # Browser globals

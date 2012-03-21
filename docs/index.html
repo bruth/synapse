@@ -13,20 +13,14 @@
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
+        <nav id=sidenav>
+            <a href=./index.html class="brand">Synapse <span class=version>0.5b</span></a>
+            <ul class=unstyled>
+                <li><a href="https://github.com/bruth/synapse/">GitHub Repository</a>
+                <li><a href="http://jsfiddle.net/bruth/bufeK/">jsFiddle Demo</a>
+                <li><a href="./test/">QUnit Tests</a>
+            </ul>
 
-        <header class="navbar navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container-fluid">
-                    <span class="brand">Synapse <span class=version>0.5</span></span>
-                    <ul class=nav>
-                        <li><a href="https://github.com/bruth/synapse/">GitHub Repository</a>
-                        <li><a href="http://jsfiddle.net/bruth/bufeK/">jsFiddle Demo</a>
-                    </ul>
-                </div>
-            </div>
-        </header>
-
-        <nav id=sidebar>
             <h3><a href=#learn>Learn</a></h3>
             <ul class=unstyled>
                 <li><a href=#background>Background</a>
@@ -1052,6 +1046,7 @@ define(['synapse/jquery'], function(jQueryHook) {
         <script src="js/underscore.js"></script>
         <script src="js/require.js"></script>
         <script src="js/prettify.js"></script>
+        <script src="js/jquery.js"></script>
         <script src="js/docs.js"></script>
 
         <script>

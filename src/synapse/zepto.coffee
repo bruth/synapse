@@ -2,7 +2,7 @@
     # Hook is not supported in Node/CommonJS environment
     if typeof define is 'function' and define.amd
         # AMD
-        define 'synapse/hooks/zepto', ['synapse/core', 'zepto', 'exports'], (core, $, exports) ->
+        define 'synapse/zepto', ['synapse/core', 'zepto', 'exports'], (core, $, exports) ->
             factory(root, exports, core, $)
     else if typeof exports is 'undefined'
         # Browser globals

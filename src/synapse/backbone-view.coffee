@@ -2,11 +2,7 @@
     # Hook is not supported in Node/CommonJS environment
     if typeof define is 'function' and define.amd
         # AMD
-        define 'synapse/hooks/backbone-view', [
-            'synapse/core'
-            'backbone'
-            'exports'
-        ], (core, Backbone, exports) ->
+        define 'synapse/backbone-view', ['synapse/core', 'backbone', 'exports'], (core, Backbone, exports) ->
              factory(root, exports, core, Backbone)
     else if typeof exports is 'undefined'
         # Browser globals

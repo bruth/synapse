@@ -1,11 +1,11 @@
 require([
     'synapse',
-    'synapse/hooks/jquery',
-    'synapse/hooks/object',
-    'synapse/hooks/backbone-model'
+    'synapse/jquery',
+    'synapse/object',
+    'synapse/backbone-model'
 ], function(Synapse, jQueryHook, ObjectHook, BackboneModelHook) {
    
-    Synapse.addHooks(jQueryHook, BackboneModelHook, ObjectHook);
+    Synapse.hooks = [jQueryHook, BackboneModelHook, ObjectHook];
 
     $(function() {
         prettyPrint();

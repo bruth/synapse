@@ -2,7 +2,7 @@ var __slice = Array.prototype.slice;
 
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
-    return define('synapse/hooks/backbone-view', ['synapse/core', 'backbone', 'exports'], function(core, Backbone, exports) {
+    return define('synapse/backbone-view', ['synapse/core', 'backbone', 'exports'], function(core, Backbone, exports) {
       return factory(root, exports, core, Backbone);
     });
   } else if (typeof exports === 'undefined') {

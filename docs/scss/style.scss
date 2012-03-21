@@ -41,22 +41,28 @@ table tbody tr > th:first-child { width: 150px }
 
 .navbar {
     .navbar-inner {
+        @include box-shadow(none);
+        background: none;
+        .brand, a {
+            color: #666;
+        }
+
         .version {
             color: #999;
             font-size: 0.9em;
-            text-shadow: 0 1px 1px #000;
         }
     }
 }
 
 #content {
-    @include box-shadow(-2px 0 3px #dde0e6);
+    @include box-shadow(-2px 0 2px #dde0e6);
+    background-color: hsla(0, 0, 100, 0.7);
     padding: 10px 20px;
     position: fixed;
     left: 240px;
     right: 0;
-    top: 40px;
     bottom: 0;
+    top: 0;
     overflow: auto;
     text-shadow: 0 1px 0 #fff;
 }
@@ -69,15 +75,39 @@ span.label {
     margin-bottom: 20px;
 }
 
-#sidebar {
+#sidenav {
     position: fixed;
-    top: 40px;
+    top: 0;
     bottom: 0;
     left: 0;
     width: 220px;
-    padding-top: 10px;
-    padding-left: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
     overflow: auto;
+
+    .brand {
+        @include transition(text-shadow, 0.2s, ease-in-out);
+        @include box-shadow(0 1px 2px #aaa);
+        display: block;
+        background-color: hsla(201, 100, 60, 0.2);
+        font-weight: 400;
+        font-size: 20px;
+        padding: 20px 10px 10px 10px;
+        margin-bottom: 20px;
+        text-decoration: none;
+
+        &:hover {
+            text-shadow: 0 1px 1px #fff, 0 0 10px #fff;
+        }
+    }
+
+    li {
+        margin-bottom: 5px;
+    }
+
+    h3, > ul {
+        margin-left: 10px;
+    }
 
     a {
         color: #555;

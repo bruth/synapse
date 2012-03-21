@@ -3,7 +3,7 @@ var __slice = Array.prototype.slice;
 
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
-    return define('synapse/hooks/jquery', ['synapse/core', 'jquery', 'exports'], function(core, $, exports) {
+    return define('synapse/jquery',['synapse/core', 'jquery', 'exports'], function(core, $, exports) {
       return factory(root, exports, core, $);
     });
   } else if (typeof exports === 'undefined') {
@@ -265,5 +265,3 @@ var __slice = Array.prototype.slice;
     }
   };
 });
-
-define("synapse/jquery", function(){});
