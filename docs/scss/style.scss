@@ -1,27 +1,57 @@
-body {
-    background: #f3f6fe;
-    font-size: 14px;
-    text-shadow: 0 1px 1px #fff;
-}
+@import "bourbon/bourbon";
 
-p {
+body {
+    background: #eee url(../img/furley.png);
+    text-shadow: 0 1px 1px #fff;
+    color: #555;
     font-size: 14px;
     line-height: 22px;
+    margin-bottom: 12px;
 }
 
-header {
-    box-shadow: 0 2px 3px #ccc;
+body, p {
+    font-size: 14px;
+    line-height: 22px;
+    margin-bottom: 12px;
 }
 
-.topbar-inner {
-    background: #333 url(../img/connect-dark.png);
+h1, h2, h3, h4, h5, h6 {
+    margin: 10px 0;
+}
+
+code.prettyprint {
+    padding: 2px 4px;
+}
+
+#content li {
+    margin-bottom: 12px;
+}
+
+#content .prettyprint li {
+    margin-bottom: 0;
+}
+
+hgroup > * {
+    display: inline;
+}
+
+table input { margin-bottom: 0; }
+
+table tbody tr > th:first-child { width: 150px }
+
+.navbar {
+    .navbar-inner {
+        .version {
+            color: #999;
+            font-size: 0.9em;
+            text-shadow: 0 1px 1px #000;
+        }
+    }
 }
 
 #content {
-    background-color: #fcfcfc;
-    box-shadow: -2px 0 3px #dde0e6;
-    border-left: 1px solid #ccc;
-    padding: 0 20px;
+    @include box-shadow(-2px 0 3px #dde0e6);
+    padding: 10px 20px;
     position: fixed;
     left: 240px;
     right: 0;
@@ -29,11 +59,6 @@ header {
     bottom: 0;
     overflow: auto;
     text-shadow: 0 1px 0 #fff;
-    
-    h1 {
-        color: #999;
-        margin-top: 10px;     
-    }
 }
 
 span.label {
@@ -49,14 +74,14 @@ span.label {
     top: 40px;
     bottom: 0;
     left: 0;
-    width: 240px;
+    width: 220px;
+    padding-top: 10px;
     padding-left: 20px;
     overflow: auto;
-}
 
-#sidebar li, #content li {
-    margin-top: 5px;
-    margin-bottom: 5px;
+    a {
+        color: #555;
+    }
 }
 
 // interface examples

@@ -3,34 +3,22 @@
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        
+
         <title>Synapse</title>
-        
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <link rel="stylesheet" href="css/prettify.css">
         <link rel="stylesheet" href="css/bootstrap.css">
         <link rel="stylesheet" href="css/style.css">
-        
-        <script>
-          var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', 'UA-8483912-3']);
-          _gaq.push(['_trackPageview']);
-
-          (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-          })();
-        </script>
     </head>
     <body>
 
-        <header class="topbar">
-            <div class="topbar-inner">
+        <header class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
                 <div class="container-fluid">
-                    <span class="brand">Synapse <span style="font-size: 15px; color: #999">0.4.2</span></span>
-                    <ul>
+                    <span class="brand">Synapse <span class=version>0.5</span></span>
+                    <ul class=nav>
                         <li><a href="https://github.com/bruth/synapse/">GitHub Repository</a>
                         <li><a href="http://jsfiddle.net/bruth/bufeK/">jsFiddle Demo</a>
                     </ul>
@@ -39,21 +27,21 @@
         </header>
 
         <nav id=sidebar>
-            <h3>Get Started</h3>
-            <ul class=unstyled>
-                <li><a href=#dependencies>Dependencies</a>
-                <li><a href=#download>Download</a>
-                <li><a href=#umd>UMD</a>
-             </ul>
-
-            <h3>Learn</h3>
+            <h3><a href=#learn>Learn</a></h3>
             <ul class=unstyled>
                 <li><a href=#background>Background</a>
                 <li><a href=#channels>Channels</a>
                 <li><a href=#interfaces>Interfaces</a>
             </ul>
 
-            <h3>APIs</h3>
+            <h3><a href=#get-started>Get Started</a></h3>
+            <ul class=unstyled>
+                <li><a href=#dependencies>Dependencies</a>
+                <li><a href=#download>Download</a>
+                <li><a href=#umd>UMD</a>
+             </ul>
+
+            <h3><a href=#apis>APIs</a></h3>
             <ul class=unstyled>
                 <li><a href=#constructor-api>Constructor API</a>
                 <li><a href=#object-api>Object API</a>
@@ -70,10 +58,11 @@
                         <li><a href=#hooks-interfaces>Interfaces</a>
                         <li><a href=#hooks-events>Events</a>
                         <li><a href=#hooks-helpers>Helpers</a>
+                        <li><a href=#hooks-detection>Detection</a>
                     </ul>
             </ul>
 
-            <h3>Supported Hooks</h3>
+            <h3><a href=#supported-hooks>Supported Hooks</a></h3>
             <ul class=unstyled>
                 <li><a href=#plain-objects>Plain Objects</a>
                 <li><a href=#jquery>jQuery</a>
@@ -86,31 +75,165 @@
                 <li><a href=#backbone-view>Backbone View</a>
                 <li><a href=#backbone-model>Backbone Model</a>
             </ul>
+
+            <h3><a href=#examples>Examples</a></h3>
+            <ul class=unstyled>
+                <li><a href=#>Edit multiple objects with one form</a>
+            </ul>
+
+            <h3><a href=#changelog>Change Log</a></h3>
         </nav>
 
         <div id="content">
 
             <h1>Synapse - Data Binding For The Rest Of Us</h1>
 
+            <h2 id=learn>Learn</h2>
+
+            <h3 id="background">Background</h3>
+
+            <section class="row">
+                <span class="span12">
+                    <p>Synapse is a JavaScript data binding library. The API was written
+                    to work <strong>all-in-code</strong>, that is, it does not depend on
+                    any template language (e.g. Handlebars) or special attributes (e.g.
+                    <code class=prettyprint>data-bind</code>) to work.</p>
+                    
+                    <p>The API design focus has been placed on making the requirements and
+                    options of data binding transparent for developers. There should not
+                    be any <em>magic</em> with data binding, since that magic can quickly
+                    turn opaque when debugging. Being pragmatic about the design enables Synapse
+                    to be a modular foundation for writing additional layers of abstraction
+                    on top (such as integration with a template language).</p>
+
+                    <p>Fundamentally, there are two parties involved: <strong>subjects</strong>
+                    and <strong>observers</strong>. Keep the following in mind.</p>
+
+                    <p>Any object can be an observer. It simply waits for the subject's state
+                    to change and then does something as a result. In the context of data
+                    binding, it may store the subject's state that changed or perform an
+                    action as a result of the change.</p>
+
+                    <p>Subjects on the other hand must have a mechanism for being aware of actions
+                    or events that are performed on itself. In the case of the DOM, when a user
+                    clicks a button, the <code class=prettyprint>onclick</code> event is triggered on that DOM
+                    element. These actions can cause a cascade of events all of which can be used
+                    to respond to the state changes.</p>
+                </span>
+            </section>
+
+            <h3 id=channels>Channels</h3>
+
+            <section class="row">
+                <span class="span4">
+                    <p>Synapse provides a mechanism for defining a communication channel
+                    between two objects. In order for two objects to communicate, there
+                    are three components necessary for <code class=prettyprint>A</code>
+                    &rarr; <code class=prettyprint>B</code>:</p>
+                    <ol>
+                        <li>The event that will trigger when <code class=prettyprint>A</code>'s state changes
+                        <li>The function to call on/for <code class=prettyprint>A</code> that returns a
+                        representation of the changed state (typically the data that has
+                        changed)
+                        <li>The function to call on/for <code class=prettyprint>B</code> that handles this
+                        received data from <code class=prettyprint>A</code>
+                    </ol>
+                    <p>The channel can be defined with respect to either the subject <code class=prettyprint>A</code>
+                    or the observer <code class=prettyprint>B</code> depending on the system. In either case, whenever
+                    a change in state occurs in <code class=prettyprint>A</code>, <code class=prettyprint>B</code> (and all other
+                    observers of <code class=prettyprint>A</code>) will be notified.</p>
+                </span>
+                <span class="span8">
+
+<div id="ex1">
+<input type=text value="Hello World!"> <span></span>
+</div>
+
+<pre class="prettyprint linenums">
+var A = $('input'),
+    B = $('span');
+
+A.bind('keyup', function() {
+    B.text(A.val());
+});
+
+// Synapse abstracts away the need to write the spaghetti
+// code above. The following are functionally equivalent
+Synapse(A).notify(B);
+Synapse(B).observe(A);
+</pre>
+                </span>
+            </section>
+
+            <h3 id=interfaces>Interfaces</h3>
+
+            <section class="row">
+                <span class="span4">
+                    <p>The above examples explain the most simple interactions between two
+                    objects. But how is data returned from or sent to each object if they
+                    are of different types?</p>
+
+                    <p>Synapse interfaces provide a way to generically <em>get</em> and
+                    <em>set</em> properties
+                    on supported objects. A Synapse object has <code class=prettyprint>get</code> and
+                    <code class=prettyprint>set</code> methods which allow for a consistent API regardless of the
+                    underlying object type.</p>
+
+                    <p>The <em>properties</em> that are utilized may or may not cleaning
+                    map to the underlying object's properties (or methods). For example,
+                    an available interface for the jQuery hook is <code class=prettyprint>value</code>. As
+                    implied on the right, doing <code class=prettyprint>A.set('value', 5)</code> actually calls
+                    <code class=prettyprint>a.val(5)</code>.</p>
+                </span>
+                <span class="span8">
+
+<pre class="prettyprint linenums">
+// Using Synapse as a constructor exposes the interface
+// methods. We are interfacing three different types of
+// objects: a DOM element (using the jQuery hook), a Backbone
+// model instance and an object primitive.
+var a = jQuery('&lt;input value="hello world!"&gt;'),
+    b = new Backbone.Model(),
+    c = {foo: 5};
+
+var A = new Synapse(a),
+    B = new Synapse(b),
+    C = new Synapse(c);
+
+// These get/set 'interfaces' roughly map the the underlying
+// object's API
+B.set('message', A.get('value'));
+A.set('value', C.get('foo'));
+C.set('bar', 10);
+
+b.get('message');   // 'hello world!'
+a.val();            // '5'
+c.bar;              // 10
+</pre>
+                </span>
+            </section>
+
+            <h2 id=get-started>Get Started</h2>
+
             <h3 id=dependencies>Dependencies</h3>
 
             <section class=row>
-                <span class=span16>
-                    <p>None</p>
+                <span class=span12>
+                    <p>The core Synapse has no dependencies</p>
                 </span>
             </section>
 
             <h3 id=download>Download</h3>
 
             <section class=row>
-                <span class=span16>
+                <span class=span12>
                     <p><em>Right-click and save-as</em></p>
                     <ul>
-                        <li><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/dev/synapse.js>Development Version (0.4.2)</a> - 13K
-                        <li><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/min/synapse.js>Production Version (0.4.2)</a> - 1.7K minified, gzipped
+                        <li><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse.js>Development Version (0.5)</a> - 13K
+                        <li><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse.js>Production Version (0.5)</a> - 1.7K minified, gzipped
                     </ul>
 
-                    <table>
+                    <table class=table>
                         <thead>
                             <tr>
                                 <th>Hook Name</th>
@@ -122,32 +245,32 @@
                         <tbody>
                             <tr>
                                 <td>Object
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/dev/synapse/hooks/object.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/min/synapse/hooks/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/object.js>Download</a>
                                 <td>(none)
                             </tr>
                             <tr>
                                 <td>jQuery
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/dev/synapse/hooks/jquery.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/min/synapse/hooks/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/jquery.js>Download</a>
                                 <td>jQuery
                             </tr>
                             <tr>
                                 <td>Zepto
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/dev/synapse/hooks/zepto.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/min/synapse/hooks/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/zepto.js>Download</a>
                                 <td>Zepto
                             </tr>
                             <tr>
                                 <td>Backbone Model
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/dev/synapse/hooks/backbone-model.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/min/synapse/hooks/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/backbone-model.js>Download</a>
                                 <td>Backbone
                             </tr>
                             <tr>
                                 <td>Backbone View
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/dev/synapse/hooks/backbone-view.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.4.2/dist/min/synapse/hooks/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/backbone-view.js>Download</a>
                                 <td>Backbone
                             </tr>
                         </tbody>
@@ -159,127 +282,37 @@
             <h3 id=umd>Universal Module Definition (UMD)</h3>
 
             <section class="row">
-                <span class="span16">
+                <span class="span4">
                     <p>Synapse supports the <a href=https://github.com/umdjs/umd>UMD</a>. It
                     can load in the CommonJS/Node environment, via AMD in the browser or as
                     a traditional script.</p>
-                </span> 
-            </section>
-
-            <h3 id="background">Background</h3>
-
-            <section class="row">
-                <span class="span16">
-                    <p>Synapse is a JavaScript data binding library. The API was written
-                    to work <strong>all-in-code</strong>, that is, it does not depend on
-                    any template library or special attributes (e.g. <code>data-bind</code>)
-                    to work. The focus has been placed into defining the minimal components
-                    necessary to enable data binding to work across various objects.</p>
-                    
-                    <p>Fundamentally, there are two parties involved: <strong>subjects</strong>
-                    and <strong>observers</strong>. Keep the following in mind.</p>
-                    
-                    <p>Any object can be an observer. It simply waits until the subject's state
-                    changes and then does something with that information. In the context of data
-                    binding, it typically records that change in state in some way or performs an
-                    action as a result of the change.</p>
-
-                    <p>Subjects on the other hand must have a mechanism for being aware of actions
-                    or events that are performed on itself. In the case of the DOM, when a user
-                    clicks a button, the <code>onclick</code> event is triggered on that DOM
-                    element. These actions can cause a cascade of events all of which can be used
-                    to respond to the state changes.</p>
                 </span>
-            </section>
 
-            <h3 id=channels>Channels</h3>
-
-            <section class="row">
-                <span class="span5">
-                    <p>Synapse provides a mechanism for defining a communication channel
-                    between two objects. In order for two objects to communicate, there
-                    are three components needing to be defined for <code>A</code>
-                    &rarr; <code>B</code>:</p>
-                    <ol>
-                        <li>The event that will trigger when <code>A</code>'s state changes
-                        <li>The function to call on/for <code>A</code> that returns a
-                        representation of the changed state (typically the data that has
-                        changed)
-                        <li>The function to call on/for <code>B</code> that handles this
-                        received data from <code>A</code>
-                    </ol>
-                    <p>The channel can be defined with respect to either the subject A or
-                    the observer B depending on the system. In either case, whenever a change
-                    in state occurs in A, B (and all other observers of that event) will be
-                    notified.</p>
-                </span> 
-                <span class="span11">
-
-<pre id="ex1">
-<input type=text value="Hello World!"> <span></span>
-</pre>
-
+<span class="span8">
 <pre class="prettyprint linenums">
-var A = $('input'),
-    B = $('span');
-
-A.bind('keyup', function() {
-    B.text(A.val());
+require(['synapse', 'synapse/jquery'], function(Synapse, jQueryHook) {
+    Synapse.hooks.push(jQueryHook);
 });
-
-// Synapse abstracts away the need to write this spaghetti
-// code. The following are equivalent
-Synapse(A).notify(B);
-Synapse(B).observe(A);
 </pre>
                 </span>
+
             </section>
 
-            <h3 id=interfaces>Interfaces</h3>
-
-            <section class="row">
-                <span class="span5">
-                    <p>The above examples explain the most simple interactions between two
-                    objects. But how is data returned from or sent to each object if they
-                    are of different types?</p>
-
-                    <p>Synapse interfaces provide a way to generically get and set properties
-                    on supported objects. A Synapse object has <code>get</code> and
-                    <code>set</code> methods which allow for a consistent API regardless of the
-                    underlying object type.</p>
-                </span> 
-                <span class="span11">
-
-<pre class="prettyprint linenums">
-// Use Synapse as a constructor exposes the interface
-// methods. We are using the jQuery hook here to detect
-// the type passed in (a CSS selector).
-var A = new Synapse('input'),
-    B = new Synapse('span');
-
-// These 'interfaces' map to jQuery methods on the
-// object, $.fn.val() and $.fn.text()
-A.get('value'); // 'hello world'
-B.set('text', A.get('value'));
-B.get('text'); // 'hello world'
-</pre>
-                </span>
-            </section>
-
+            <h2 id=apis>APIs</h2>
 
             <h3 id="constructor-api">Constructor API</h3>
 
             <section class="row">
-                <span class="span5">
-                    <p><code>Synapse</code> can be used as a constructor or a
+                <span class="span4">
+                    <p><code class=prettyprint>Synapse</code> can be used as a constructor or a
                     function. Using it as a <strong>constructor</strong> <em>wraps</em>
-                    the object and exposes the full <code>Synapse</code> Object API. Using it
+                    the object and exposes the full <code class=prettyprint>Synapse</code> Object API. Using it
                     as a <strong>function</strong> will <em>augment</em> the passed in
-                    <code>object</code> with a limited API.
+                    <code class=prettyprint>object</code> with a limited API.
                     </p>
-                </span> 
+                </span>
 
-                <span class="span11">
+                <span class="span8">
 <pre class="prettyprint linenums">
 var object = $('input');
 var wrapped = new Synapse(object);
@@ -291,55 +324,50 @@ Synapse(object);
             <h3 id=object-api>Object API</h3>
 
             <section class=row>
-                <span class=span16>
+                <span class=span12>
                     <p>There two primary sets of methods, those that creates a
                     channel between two objects and those that control the
                     channel <em>flow</em>.</p>
                 </span>
             </section>
 
-            <h5 id=object-api-properties>Properties</h5>
+            <h4 id=object-api-properties>Properties</h4>
 
             <section class=row>
-                <span class=span5>
+                <span class=span4>
                     <ul>
-                        <li><code>raw</code> - a reference to the original object.
+                        <li><code class=prettyprint>raw</code> - a reference to the original object.
                         <em>Note, if the hook this object is used with has a
-                        <code>coerceObject</code> method defined, <code>raw</code>
+                        <code class=prettyprint>coerceObject</code> method defined, <code class=prettyprint>raw</code>
                         will be the object that is returned from that function.</em>
                     </ul>
                 </span>
 
-                <span class=span11>
+                <span class=span8>
 <pre class="prettyprint linenums">
 wrapped.raw; // reference to `object`
 </pre>
                 </span>
             </section>
 
-            <h5 id=object-api-channel>Channel Methods
-                <span class="label notice">limited api</span></h5>
+            <h4 id=object-api-channel>Channel Methods</h4>
 
             <section class=row>
-                <span class=span5>
-                    <p><span class="label warning">0.4</span> The method <code>sync</code>
-                        has been renamed to <code>syncWith</code> to not conflict with
-                        Backbone's <code>Model.sync</code> method when the object is
-                        augmented.</p>
+                <span class=span4>
                     <ul>
-                        <li><code>observe</code> - opens a one-way channel between this
+                        <li><code class=prettyprint>observe</code> - opens a one-way channel between this
                         object and a subject where this object <em>observes</em> state changes
                         of the subject.
 
-                        <li><code>notify</code> - opens a one-way channel between this object
+                        <li><code class=prettyprint>notify</code> - opens a one-way channel between this object
                         and an observer where this object <em>notifies</em> it's state
-                        changes to the observer. 
+                        changes to the observer.
 
-                        <li><code>syncWith</code> - opens a two-way channel between this object
+                        <li><code class=prettyprint>syncWith</code> - opens a two-way channel between this object
                         and another where each acts as a subject and observer.
                     </ul>
                 </span>
-                <span class="span11">
+                <span class="span8">
 <pre class="prettyprint linenums">
 wrapped.observe(subject, [options]);
 wrapped.notify(observer, [options]);
@@ -349,41 +377,41 @@ wrapped.syncWith(other);
                 </span>
             </section>
 
-            <h5 id=object-api-channel-configuration>Channel Configuration</h5>
+            <h4 id=object-api-channel-configuration>Channel Configuration</h4>
 
             <section class=row>
-                <span class=span5>
+                <span class=span4>
                     <ul>
-                        <li><code>event</code> - the event that will trigger the
+                        <li><code class=prettyprint>event</code> - the event that will trigger the
                         subject to push it's interface value to all observers. this
                         is variable across hooks. this is optional only if the
-                        subject's hook has a <code>detectEvent</code> method and
+                        subject's hook has a <code class=prettyprint>detectEvent</code> method and
                         can be successfully detected.
 
-                        <li><code>subjectInterface</code> - the interface identifier
+                        <li><code class=prettyprint>subjectInterface</code> - the interface identifier
                         of the subject for a given channel. this is variable across hooks.
                         this is optional only if the subject's hook has a
-                        <code>detectInterface</code> method or the observer's hook has a
-                        <code>detectOtherInterface</code> method and can be successfully
+                        <code class=prettyprint>detectInterface</code> method or the observer's hook has a
+                        <code class=prettyprint>detectOtherInterface</code> method and can be successfully
                         detected.
 
-                        <li><code>observerInterface</code> - the interface identifier
+                        <li><code class=prettyprint>observerInterface</code> - the interface identifier
                         of the observer for a given channel. this is variable across hooks.
                         this is optional only if the observer's hook has a
-                        <code>detectInterface</code> method or the subject's hook has a
-                        <code>detectOtherInterface</code> method and can be successfully
+                        <code class=prettyprint>detectInterface</code> method or the subject's hook has a
+                        <code class=prettyprint>detectOtherInterface</code> method and can be successfully
                         detected.
 
-                        <li><code>converter</code> - an optional function or method name on
+                        <li><code class=prettyprint>converter</code> - an optional function or method name on
                         the observer that will take the value(s) provided by the subject and
-                        return a value prior to calling <code>observer.set(...)</code>.
+                        return a value prior to calling <code class=prettyprint>observer.set(...)</code>.
 
-                        <li><code>triggerOnBind</code> - if set to true, when the channel is
+                        <li><code class=prettyprint>triggerOnBind</code> - if set to true, when the channel is
                         initially created the subject will be triggered using the event
                         supplied or detected.
                     </ul>
                 </span>
-                <span class="span11">
+                <span class="span8">
 <pre class="prettyprint linenums">
 // available configuration options and their defaults
 var options = {
@@ -414,67 +442,66 @@ wrapped.observe(subject, [converter]);
                 </span>
             </section>
 
-            <h5 id=object-api-channel-flow>Channel Flow Methods
-                <span class="label notice">limited api</span></h5>
+            <h4 id=object-api-channel-flow>Channel Flow Methods</h4>
 
             <section class=row>
-                <span class=span5>
+                <span class=span4>
                     <ul>
-                        <li><code>stopObserving</code> - stops an object from observing all objects
+                        <li><code class=prettyprint>stopObserving</code> - stops an object from observing all objects
                         it is currently observing and removes all event handlers referencing this
-                        object. if a <code>Synapse</code> object is passed, only observing of that
+                        object. if a <code class=prettyprint>Synapse</code> object is passed, only observing of that
                         object will be stopped.
 
-                        <li><code>pauseObserving</code> - same as <code>stopObserving</code> except
+                        <li><code class=prettyprint>pauseObserving</code> - same as <code class=prettyprint>stopObserving</code> except
                         event handlers are retained to allow for resuming observing. if a
-                        <code>Synapse</code> object is passed, only observing of that object will
+                        <code class=prettyprint>Synapse</code> object is passed, only observing of that object will
                         be paused.
 
-                        <li><code>resumeObserving</code> - all paused obversing is resumed.
-                        if a <code>Synapse</code> object is passed, only observing of that
+                        <li><code class=prettyprint>resumeObserving</code> - all paused obversing is resumed.
+                        if a <code class=prettyprint>Synapse</code> object is passed, only observing of that
                         object will be resumed.
 
-                        <li><code>stopNotifying</code> - stops an object from notifying all objects
+                        <li><code class=prettyprint>stopNotifying</code> - stops an object from notifying all objects
                         it is currently notifying and removes all event handlers referencing those
-                        object. if a <code>Synapse</code> object is passed, only notifying of that
+                        object. if a <code class=prettyprint>Synapse</code> object is passed, only notifying of that
                         object will be stopped.
 
-                        <li><code>pauseNotifying</code> - same as <code>stopNotifying</code> except
+                        <li><code class=prettyprint>pauseNotifying</code> - same as <code class=prettyprint>stopNotifying</code> except
                         event handlers are retained to allow for resuming notifying. if a
-                        <code>Synapse</code> object is passed, only notifying of that object will
+                        <code class=prettyprint>Synapse</code> object is passed, only notifying of that object will
                         be paused.
 
-                        <li><code>resumeNotifying</code> - all paused notifying  is resumed. if an
-                        existing <code>Synapse</code> is object passed, only notifying of that object
+                        <li><code class=prettyprint>resumeNotifying</code> - all paused notifying  is resumed. if an
+                        existing <code class=prettyprint>Synapse</code> is object passed, only notifying of that object
                         will be resumed.
                     </ul>
 
-                </span> 
-                <span class="span11">
+                </span>
+                <span class="span8">
 <pre class="prettyprint linenums">
-wrapped.stopObserving([other]);
-wrapped.pauseObserving([other]);
-wrapped.resumeObserving([other]);
-wrapped.stopNotifying([other]);
-wrapped.pauseNotifying([other]);
-wrapped.resumeNotifying([other]);
+wrapped.stopObserving([subject]);
+wrapped.pauseObserving([subject]);
+wrapped.resumeObserving([subject]);
+wrapped.stopNotifying([observer]);
+wrapped.pauseNotifying([observer]);
+wrapped.resumeNotifying([observer]);
 </pre>
                 </span>
             </section>
 
-            <h5 id=object-api-interface>Interface Methods</h5>
+            <h4 id=object-api-interface>Interface Methods</h4>
 
             <section class=row>
-                <span class=span5>
+                <span class=span4>
                     <ul>
-                        <li><code>get</code> -  given an interface identifier,
-                        return a representation of this subject's change in state.
-                        <li><code>set</code> -  given an interface identifier and
-                        a value provided by the subject, <em>sets</em> the value.
+                        <li><code class=prettyprint>get</code> - returns a representation
+                        of the object's data for the given interface.
+                        <li><code class=prettyprint>set</code> - sets a value relative to
+                        the given interface for the object.
                     </ul>
                 </span>
 
-                <span class=span11>
+                <span class=span8>
 <pre class="prettyprint linenums">
 wrapped.get(interface);
 wrapped.set(interface, value);
@@ -485,7 +512,7 @@ wrapped.set(interface, value);
             <h3 id=hooks>Hook API</h3>
 
             <section class="row">
-                <span class="span16">
+                <span class="span12">
                     <p>Synapse relies on <strong>hooks</strong> being defined to
                     perform the <em>under-the-hood</em> operations. The Synapse
                     constructor is simply an abstraction for these hooks which are
@@ -495,22 +522,22 @@ wrapped.set(interface, value);
                 </span>
             </section>
 
-            <h5 id=hooks-base>Base</h5>
+            <h4 id=hooks-base>Base</h4>
 
             <section class="row">
-                <span class="span5">
+                <span class="span4">
                     <p>A hook is simply an object. To make it distributable, it is recommended
                     to define it as a standalone module. The base parts of a hook include.</p>
                     <ul>
-                        <li><code>typeName</code> - name of the object type this hook
+                        <li><code class=prettyprint>typeName</code> - name of the object type this hook
                         represents
-                        <li><code>checkObjectType</code> - a method which checks if the
+                        <li><code class=prettyprint>checkObjectType</code> - a method which checks if the
                         object is applicable for this hook
                     </ul>
                 </span>
-                <span class=span11>
+                <span class=span8>
 <pre class="prettyprint linenums">
-define('awesome-hook', function() {
+define(function() {
     return {
         // the name of the type this hook represents
         typeName: 'The Awesome Type',
@@ -521,20 +548,20 @@ define('awesome-hook', function() {
                 </span>
             </section>
 
-            <h5 id=hooks-interfaces>Interfaces</h5>
+            <h4 id=hooks-interfaces>Interfaces</h4>
 
             <section class=row>
-                <span class=span5>
+                <span class=span4>
                     <p>The following methods are required for an object to an observer.</p>
                     <ul>
-                        <li><code>getHandler</code> - a method which takes an object
+                        <li><code class=prettyprint>getHandler</code> - a method which takes an object
                         and an interface identifier and returns a value
-                        <li><code>setHandler</code> - a method which takes an object,
+                        <li><code class=prettyprint>setHandler</code> - a method which takes an object,
                         an interface identifier, and a value and sets the value
                     </ul>
                 </span>
 
-                <span class=span11>
+                <span class=span8>
 <pre class="prettyprint linenums">
         ...
         // takes an object and a interface identifier and returns a value
@@ -547,22 +574,22 @@ define('awesome-hook', function() {
                 </span>
             </section>
 
-            <h5 id=hooks-events>Events</h5>
+            <h4 id=hooks-events>Events</h4>
 
             <section class=row>
-                <span class=span5>
+                <span class=span4>
                     <p>The following methods are required for an object to a subject.</p>
                     <ul>
-                        <li><code>onEventHandler</code> - a method which attaches an
+                        <li><code class=prettyprint>onEventHandler</code> - a method which attaches an
                         event handler to an object
-                        <li><code>offEventHandler</code> - a method which detaches an
+                        <li><code class=prettyprint>offEventHandler</code> - a method which detaches an
                         event handler from an object
-                        <li><code>triggerEventHandler</code> - a method which triggers
+                        <li><code class=prettyprint>triggerEventHandler</code> - a method which triggers
                         and event on an object
                     </ul>
                 </span>
 
-                <span class=span11>
+                <span class=span8>
 <pre class="prettyprint linenums">
         ...
         // takes an object, event and handler and attaches the handler
@@ -578,39 +605,57 @@ define('awesome-hook', function() {
                 </span>
             </section>
 
-            <h5 id=hooks-helpers>Helpers</h5>
+            <h4 id=hooks-helpers>Helpers</h4>
 
             <section class=row>
-                <span class=span5>
-                    <p>The following methods are optional, but can be very useful.</p>
+                <span class=span4>
+                    <p>The following methods are optional, but may be useful.</p>
                     <ul>
-                        <li><code>coerceObject</code> - takes the raw object passed in
-                        to <code>Synapse</code> and coerces the object into a more
+                        <li><code class=prettyprint>coerceObject</code> - takes the raw object passed in
+                        to <code class=prettyprint>Synapse</code> and coerces the object into a more
                         useful object (think CSS selector &rarr; jQuery object)
-                        <li><code>detectInterface</code> - detects an appropriate interface
+                    </ul>
+                </span>
+
+<span class="span8">
+<pre class="prettyprint linenums">
+        ...
+        // takes the raw object passed in to Synapse and coerces the object
+        // into a more useful object (think CSS selector --> jQuery object)
+        coerceObject: function(object) {},
+        ...
+</pre>
+</span>
+            </section>
+
+            <h4 id=hooks-detection>Detection</h4>
+
+            <section class=row>
+                <span class=span4>
+                    <p>These methods add much of desired <em>magic</em> for automatic binding
+                    between objects.</p>
+                    <ul>
+                        <li><code class=prettyprint>detectInterface</code> - detects an appropriate interface
                         for the given object
-                        <li><code>detectOtherInterface</code> - detects an appropriate
+                        <li><code class=prettyprint>detectOtherInterface</code> - detects an appropriate
                         interface for the other object involved (either subject or observer)
-                        <li><code>detectEvent</code> - (subjects only) detects an
+                        <li><code class=prettyprint>detectEvent</code> - (subjects only) detects an
                         appropriate event for the given object which will trigger the
                         downstream notification to observers
                     </ul>
-                </span> 
-                <span class="span11">
+                </span>
+                <span class="span8">
 <pre class="prettyprint linenums">
-        // takes the raw object passed in to Synapse and coerces the object into
-        // a more useful object (think CSS selector --> jQuery object)
-        coerceObject: function(object) {},
-
+        ...
         // detects an appropriate interface for the given object
         detectInterface: function(object) {},
 
-        // detects an appropriate interface for the other object involved (either
-        // subject or observer)
+        // detects an appropriate interface for the other object involved
+        // (either subject or observer)
         detectOtherInterface: function(object) {},
 
-        // detects an appropriate event for the given object which will trigger
-        // the downstream notification to observers
+        // detects an appropriate event for the given object which will
+        // trigger the downstream notification to observers
         detectEvent: function(object, [interface]) {}
     };
 });
@@ -618,23 +663,36 @@ define('awesome-hook', function() {
                 </span>
             </section>
 
+            <h2 id=supported-hooks>Supported Hooks</h2>
 
             <h3 id=plain-objects>Plain Objects</h3>
 
             <section class=row>
-                <span class=span16>
-                    <p><strong>Supported Type.</strong> Plain objects are typically just
-                    object primitives, e.g. <code>{}</code>, or objects created from the
-                    <code>Object</code> constructor, e.g. <code>new Object()</code>.</p>
-
-                    <p><strong>Events.</strong> These objects are assumed to <em>not</em> have
+                <span class=span12>
+                    <table class=table>
+                        <tbody>
+                            <tr>
+                                <th>Supported Types</th>
+                                <td>Plain objects are typically just
+                    object primitives, e.g. <code class=prettyprint>{}</code>, or objects created from the
+                    <code class=prettyprint>Object</code> constructor, e.g. <code class=prettyprint>new Object()</code>.</td>
+                            </tr>
+                            <tr>
+                                <th>Events</th>
+                                <td>These objects are assumed to <em>not</em> have
                     support for events and thus can only be observers. As a result, using this
                     hook alone is pretty useless since it has nothing to observe.. it is a lonely
-                    object.</p>
+                    object.</td>
+                            </tr>
+                            <tr>
 
-                    <p><strong>Interfaces.</strong> The interfaces available for plain objects
+                                <th>Interfaces</th>
+                                <td>The interfaces available for plain objects
                     are simply, their properties and methods. Methods always take precedence over
-                    properties.</p>
+                    properties.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </span>
 
             </section>
@@ -642,50 +700,61 @@ define('awesome-hook', function() {
             <h3 id=jquery>jQuery</h3>
 
             <section class=row>
-                <span class=span16>
-                    <p><strong>Supported Type.</strong> jQuery objects, CSS selectors,
-                    and DOM elements.</p>
+                <span class=span12>
+                     <table class=table>
+                        <tbody>
+                            <tr>
+                                <th>Supported Types</th>
+                                <td>jQuery objects, CSS selectors, and DOM elements.</td>
+                            </tr>
+                            <tr>
+                                <th>Events</th>
+                                <td>DOM events via jQuery's <code class=prettyprint>on</code>, <code class=prettyprint>off</code>,
+                                and <code class=prettyprint>trigger</code> methods</td>
+                            </tr>
+                            <tr>
 
-                    <p><strong>Events.</strong> DOM events via jQuery's <code>on</code>,
-                    <code>off</code>, and <code>trigger</code> methods</p>
-
-                    <p><strong>Interfaces.</strong> jQuery provides a very nice
-                    API which encapsulates cross-browser inconsistencies with a
-                    few other niceties. Full list below.</p>
+                                <th>Interfaces</th>
+                                <td>jQuery provides a very nice API which encapsulates
+                                cross-browser inconsistencies with a few other niceties. Full list
+                                below.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </span>
             </section>
 
-            <h5 id=jquery-hook-extensions>Hook Extensions</h5>
+            <h4 id=jquery-hook-extensions>Hook Extensions</h4>
 
             <section class=row>
-                <span class=span5>
+                <span class=span4>
                     <p>In addition to implementing the <a href=#hooks>Hook API</a> discussed
                     above, the jQuery hook exposes additional configurable components for
                     customizing the default behavior when interfacing with jQuery objects.</p>
 
                     <ul>
-                        <li><code>jQueryHook.interfaces</code> - contains the registry of all
+                        <li><code class=prettyprint>jQueryHook.interfaces</code> - contains the registry of all
                         available interfaces for jQuery objects.
-                        <a href=https://github.com/bruth/synapse/blob/0.4.2/src/synapse/hooks/jquery.coffee#L12-40>code</a>
+                        <a href=https://github.com/bruth/synapse/blob/0.5/src/synapse/jquery.coffee#L12-40>code</a>
 
-                        <li><code>jQueryHook.domEvents</code> - an array of [selector, event] pairs
-                        used by <code>detectEvent</code>.
-                        <a href=https://github.com/bruth/synapse/blob/0.4.2/src/synapse/hooks/jquery.coffee#L206-217>code</a>
+                        <li><code class=prettyprint>jQueryHook.domEvents</code> - an array of
+                        <code class=prettyprint>[selector, event]</code> pairs used by <code class=prettyprint>detectEvent</code>.
+                        <a href=https://github.com/bruth/synapse/blob/0.5/src/synapse/jquery.coffee#L206-217>code</a>
 
-                        <li><code>jQueryHook.elementInterfaces</code> - an array of [selector,
-                        interface] pairs used by <code>detectInterface</code>.
-                        <a href=https://github.com/bruth/synapse/blob/0.4.2/src/synapse/hooks/jquery.coffee#L219-227>code</a>
+                        <li><code class=prettyprint>jQueryHook.elementInterfaces</code> - an array of <code class=prettyprint>[selector,
+                        interface]</code> pairs used by <code class=prettyprint>detectInterface</code>.
+                        <a href=https://github.com/bruth/synapse/blob/0.5/src/synapse/jquery.coffee#L219-227>code</a>
 
-                        <li><code>jQueryHook.elementBindAttributes</code> - an array of element
-                        attributes used by <code>detectOtherInterface</code>.
-                        <a href=https://github.com/bruth/synapse/blob/0.4.2/src/synapse/hooks/jquery.coffee#L229-231>code</a>
+                        <li><code class=prettyprint>jQueryHook.elementBindAttributes</code> - an array of element
+                        attributes used by <code class=prettyprint>detectOtherInterface</code>.
+                        <a href=https://github.com/bruth/synapse/blob/0.5/src/synapse/jquery.coffee#L229-231>code</a>
                     </ul>
 
                 </span>
 
-                <span class=span11>
+                <span class=span8>
 <pre class="prettyprint linenums">
-define(['synapse/hooks/jquery'], function(jQueryHook) {
+define(['synapse/jquery'], function(jQueryHook) {
 
     // The interface registry object
     jQueryHook.interfaces.registry
@@ -705,63 +774,53 @@ define(['synapse/hooks/jquery'], function(jQueryHook) {
             </section>
 
 
-            <h5 id=jquery-simple-interfaces>Simple Interfaces</h5>
+            <h4 id=jquery-simple-interfaces>Simple Interfaces</h4>
 
             <section class=row>
-                <span class=span16>
+                <span class=span12>
 
-                    <p>Most of the simple interfaces are relate to value-based or
+                    <p>Most of the simple interfaces are value-based or
                     toggle-like properties.</p>
 
-                    <p><span class="label warning">0.4.2</span> The simple <code>class</code>
-                    interface has been removed in favor of an existential compound
-                    <code>class</code> interface.</p>
-
-                    <p><span class="label warning">0.3.2</span> The <code>css</code>
-                    interface has been renamed to <code>class</code> and demoted to
-                    a simple interface. As a result, the <code>style</code>
-                    interface has been renamed to <code>css</code> for consistency
-                    with jQuery and Zepto.</p>
-
-                    <table id=ex2>
+                    <table class=table id=ex2>
                         <tbody>
                             <tr>
-                                <td><code>text</code></td>
+                                <td><code class=prettyprint>text</code></td>
                                 <td><input type=text value="Hello World!"></td>
                                 <td><span></span></td>
                             </tr>
                             <tr>
-                                <td><code>html</code></td>
+                                <td><code class=prettyprint>html</code></td>
                                 <td><input type=text value="<strong>Hello World!</strong>"></td>
                                 <td><span></span></td>
                             </tr>
                             <tr>
-                                <td><code>value</code></td>
+                                <td><code class=prettyprint>value</code></td>
                                 <td><input type=text value="Hello World!"></td>
                                 <td><input type=text></td>
                             </tr>
                             <tr>
-                                <td><code>enabled</code></td>
+                                <td><code class=prettyprint>enabled</code></td>
                                 <td><input type=checkbox></td>
                                 <td><input type=text></td>
                             </tr>
                             <tr>
-                                <td><code>disabled</code></td>
+                                <td><code class=prettyprint>disabled</code></td>
                                 <td><input type=checkbox checked></td>
                                 <td><input type=text></td>
                             </tr>
                             <tr>
-                                <td><code>checked</code></td>
+                                <td><code class=prettyprint>checked</code></td>
                                 <td><input type=checkbox></td>
                                 <td><input type=checkbox></td>
                             </tr>
                             <tr>
-                                <td><code>visible</code></td>
+                                <td><code class=prettyprint>visible</code></td>
                                 <td><input type=checkbox checked></td>
                                 <td><input type=text></td>
                             </tr>
                             <tr>
-                                <td><code>hidden</code></td>
+                                <td><code class=prettyprint>hidden</code></td>
                                 <td><input type=checkbox></td>
                                 <td><input type=text></td>
                             </tr>
@@ -770,21 +829,10 @@ define(['synapse/hooks/jquery'], function(jQueryHook) {
                 </span>
             </section>
 
-            <h5 id=jquery-compound-interfaces>Compound Interfaces</h5>
+            <h4 id=jquery-compound-interfaces>Compound Interfaces</h4>
 
             <section class=row>
-                <span class=span16>
-                    <p><span class="label warning">0.3.2</span> The <code>css</code>
-                    interface has been renamed to <code>class</code> and demoted to
-                    a simple interface. As a result, the <code>style</code>
-                    interface has been renamed to <code>css</code> for consistency
-                    with jQuery and Zepto.</p>
-
-                    <p><span class="label warning">0.3</span> Breaking change, the delimiter
-                    between compond interface keys is now a period (.) rather than
-                    a colon (:). This mentally maps better to it's multi-method/property
-                    traversal on the object.</p>
-
+                <span class=span12>
                     <p>Compound intefaces map more directly to the underlying object API
                     and exposes more granular control.</p>
 
@@ -793,33 +841,33 @@ define(['synapse/hooks/jquery'], function(jQueryHook) {
                     a method on the object in which it itself takes a key (thus being
                     compound).</p>
 
-                    <table id=ex3>
+                    <table class=table id=ex3>
                         <tbody>
                             <tr>
-                                <td><code>prop.value</code></td>
+                                <td><code class=prettyprint>prop.value</code></td>
                                 <td><input type=text value="Hello World!"></td>
                                 <td><input type=text></td>
                             </tr>
                             <tr>
-                                <td><code>attr.href</code></td>
+                                <td><code class=prettyprint>attr.href</code></td>
                                 <td><input type=text value="http://example.com"></td>
                                 <td><a href="#">Variable Link</a></td>
                             </tr>
                             <tr>
-                                <td><code>css.color</code></td>
+                                <td><code class=prettyprint>css.color</code></td>
                                 <td><input type=text value="red"></td>
                                 <td><strong>Color</strong></td>
                             </tr>
                             <tr>
-                                <td><code>data.role</code></td>
+                                <td><code class=prettyprint>data.role</code></td>
                                 <td><input type=text value="nothing"></td>
                                 <td><span>Nothing to show, but for the curious
                                     open up the console and type
-                                    <code>document.ex3.data('role')</code></span>
+                                    <code class=prettyprint>document.ex3.data('role')</code></span>
                                 </td>
                             </tr>
                             <tr>
-                                <td><code>class.stop</code></td>
+                                <td><code class=prettyprint>class.stop</code></td>
                                 <td><input type=text value=""></td>
                                 <td><span>DON'T ENTER A VALUE!</span></td>
                             </tr>
@@ -831,59 +879,173 @@ define(['synapse/hooks/jquery'], function(jQueryHook) {
             <h3 id=zepto>Zepto</h3>
 
             <section class=row>
-                <span class=span16>
-                    <p><strong>Supported Type.</strong> Zepto arrays, CSS selectors,
-                    and DOM elements.</p>
+                <span class=span12>
+                     <table class=table>
+                        <tbody>
+                            <tr>
+                                <th>Supported Types</th>
+                                <td>Zepto arrays, CSS selectors, and DOM elements.</td>
+                            </tr>
+                            <tr>
+                                <th>Events</th>
+                                <td>DOM events via Zepto's <code class=prettyprint>bind</code>, <code class=prettyprint>unbind</code>,
+                                and <code class=prettyprint>trigger</code> methods</td>
+                            </tr>
+                            <tr>
 
-                    <p><strong>Events.</strong> DOM events via Zepto's <code>bind</code>,
-                    <code>unbind</code>, and <code>trigger</code> methods</p>
-
-                    <p><strong>Interfaces.</strong> The Zepto hook implements the
-                    same interfaces as the jQuery hook with the exception of the
-                    <code>prop.&lt;key&gt;</code> compound interface since Zepto
-                    does not differentiate between properties and attributes in
-                    the API.</p>
+                                <th>Interfaces</th>
+                                <td>The Zepto hook implements the same interfaces as the jQuery
+                                    hook with the exception of the <code class=prettyprint>prop.&lt;key&gt;</code>
+                                    compound interface since Zepto does not differentiate between
+                                    properties and attributes in the API.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </span>
             </section>
 
             <h3 id=backbone-view>Backbone View</h3>
 
             <section class=row>
-                <span class=span16>
-                    <p><strong>Supported Type.</strong> <code>Backbone.View</code>
-                    objects</p>
+                <span class=span12>
+                     <table class=table>
+                        <tbody>
+                            <tr>
+                                <th>Supported Types</th>
+                                <td><code class=prettyprint>Backbone.View</code> objects</td>
+                            </tr>
+                            <tr>
+                                <th>Events</th>
+                                <td>Similar to the jQuery hook under the
+                                    hood, therefore using the DOM events mentioned above.</td>
+                            </tr>
+                            <tr>
 
-                    <p><strong>Events.</strong> Similar to the jQuery hook under the
-                    hood, therefore using the DOM events mentioned above.</p>
-
-                    <p><strong>Interfaces.</strong> Similar to the jQuery hook under the
-                    hood, therefore all interfaces above work for these objects. In
-                    addition, interface identifier that reference a method name on
-                    the <code>Backbone.View</code> object directly may be used. Note,
-                    this will take precedence over the above jQuery interfaces of the
-                    same name.</p>
+                                <th>Interfaces</th>
+                                <td>Similar to the jQuery hook under the
+                                    hood, therefore all interfaces above work for these objects. In
+                                    addition, interface identifier that reference a method name on
+                                    the <code class=prettyprint>Backbone.View</code> object directly may be used. Note,
+                                    this will take precedence over the above jQuery interfaces of the
+                                    same name.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </span>
             </section>
 
             <h3 id=backbone-model>Backbone Model</h3>
 
             <section class=row>
-                <span class=span16>
-                    <p><strong>Supported Type.</strong> <code>Backbone.Model</code>
-                    objects</p>
+                <span class=span12>
+                     <table class=table>
+                        <tbody>
+                            <tr>
+                                <th>Supported Types</th>
+                                <td><code class=prettyprint>Backbone.Model</code> objects</td>
+                            </tr>
+                            <tr>
+                                <th>Events</th>
+                                <td>Uses the built-in event system Backbone provides</td>
+                            </tr>
+                            <tr>
 
-                    <p><strong>Events.</strong> Uses the built-in event system Backbone
-                    provides.</p>
-
-                    <p><strong>Interfaces.</strong> Similar to the plain objects
-                    above, the interface identifiers correspond to properties and
-                    methods. Under the hood, getting and setting the properties
-                    will be done via the object's native <code>get</code> and
-                    <code>set</code> methods (this ensures when a property is
-                    set, the change events fire).</p>
+                                <th>Interfaces</th>
+                                <td>Similar to the plain objects above, the interface identifiers
+                                    correspond to properties and methods. Under the hood, getting
+                                    and setting the properties will be done via the object's
+                                    native <code class=prettyprint>get</code> and <code class=prettyprint>set</code> methods (this ensures
+                                    when a property is set, the change events fire).</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </span>
             </section>
 
+            <h2 id=examples>Examples</h2>
+
+            <section class=row>
+            </section>
+
+            <h2 id=changelog>Change Log</h2>
+
+            <section class=row>
+                <span class=span12>
+                    <hgroup>
+                        <h3>0.5</h3>
+                        - <a href=https://github.com/bruth/synapse/compare/0.4.2...0.5>Diff</a>
+                    </hgroup>
+                    <ul>
+                        <li>Remove <code class=prettyprint>hooks</code> directory, so hooks can be required using
+                        <code class=prettyprint>require(['synapse', 'synapse/jquery'], ... );</code>
+
+                        <li>Method <code class=prettyprint>addHooks</code> and <code class=prettyprint>clearHooks</code> have been
+                        removed in favor of exposing the raw <code class=prettyprint>Synapse.hooks</code> array. Add
+                        or remove hooks by using the native array methods such as <code class=prettyprint>push</code>
+                        and <code class=prettyprint>shift</code>.
+
+                        <li>Internal property <code class=prettyprint>guid</code> was renamed to <code class=prettyprint>cid</code>.
+                    </ul>
+
+                    <hgroup>
+                        <h3>0.4.2</h3>
+                        - <a href=https://github.com/bruth/synapse/compare/0.4...0.4.2>Diff</a>
+                    </hgroup>
+                    <ul>
+                        <li>The simple <code class=prettyprint>class</code> interface has been removed in favor of
+                        an existential compound <code class=prettyprint>class</code> interface.
+                    </ul>
+
+                    <hgroup>
+                        <h3>0.4</h3>
+                        - <a href=https://github.com/bruth/synapse/compare/0.3.2...0.4>Diff</a>
+                    </hgroup>
+                    <ul>
+                        <li>The method <code class=prettyprint>sync</code> has been renamed to <code class=prettyprint>syncWith</code>
+                        to not conflict with Backbone's <code class=prettyprint>Model.sync</code> method when the
+                        object is augmented.
+                    </ul>
+
+                    <hgroup>
+                        <h3>0.3.2</h3>
+                        - <a href=https://github.com/bruth/synapse/compare/0.3...0.3.2>Diff</a>
+                    </hgroup>
+                    <ul>
+                        <li>The <code class=prettyprint>css</code> interface has been renamed to <code class=prettyprint>class</code>
+                        and demoted to a simple interface. As a result, the <code class=prettyprint>style</code>
+                        interface has been renamed to <code class=prettyprint>css</code> for consistency
+                        with jQuery and Zepto.
+                    </ul>
+
+                    <hgroup>
+                        <h3>0.3</h3>
+                        - <a href=https://github.com/bruth/synapse/compare/0.2...0.3>Diff</a>
+                    </hgroup>
+                    <ul>
+                        <li>Breaking change, the delimiter between compond interface keys is now a
+                        period (.) rather than a colon (:). This mentally maps better to it's
+                        multi-method/property traversal on the object.
+                    </ul>
+
+                    <hgroup>
+                        <h3>0.2</h3>
+                        - <a href=https://github.com/bruth/synapse/compare/0.1...0.2>Diff</a>
+                    </hgroup>
+                    <ul>
+                        <li>Breaking change, the delimiter between compond interface keys is now a
+                        period (.) rather than a colon (:). This mentally maps better to it's
+                        multi-method/property traversal on the object.
+                    </ul>
+
+                    <hgroup>
+                        <h3>0.1</h3>
+                        - <a href=https://github.com/bruth/synapse/compare/ad087f52ed...0.1>Diff</a>
+                    </hgroup>
+                    <ul>
+                        <li>Initial release
+                    </ul>
+                </span>
+            </section>
         </div>
 
         <script>var require = { baseUrl: 'js/' };</script>
@@ -891,6 +1053,18 @@ define(['synapse/hooks/jquery'], function(jQueryHook) {
         <script src="js/require.js"></script>
         <script src="js/prettify.js"></script>
         <script src="js/docs.js"></script>
+
+        <script>
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-8483912-3']);
+            _gaq.push(['_trackPageview']);
+
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
     </body>
 </html>
 

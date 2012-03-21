@@ -11,17 +11,17 @@ var __slice = Array.prototype.slice;
     return root.Synapse = factory(root, {}, root.SynapseCore);
   }
 })(this, function(root, Synapse, core) {
-  var connect, connectOne, defaultConnectOptions, detectEvent, detectInterface, detectOtherInterface, limitedApi, objectGuid, offEvent, onEvent, synapseHooks, synapseObjects, triggerEvent;
+  var connect, connectOne, defaultConnectOptions, detectEvent, detectInterface, detectOtherInterface, limitedApi, objectGuid, offEvent, onEvent, synapseObjects, triggerEvent;
   objectGuid = 1;
   synapseObjects = {};
-  synapseHooks = [];
-  limitedApi = ['observe', 'notify', 'syncWith', 'stopObserving', 'pauseObserving', 'resumeObserving', 'stopNotifying', 'pauseNotifying', 'resumeNotifying'];
+  limitedApi = 'observe notify syncWith stopObserving pauseObserving\
+        resumeObserving stopNotifying pauseNotifying resumeNotifying'.split(' ');
   Synapse = (function() {
 
-    Synapse.prototype.version = '0.4.2';
+    Synapse.prototype.version = '0.5b';
 
     function Synapse(object) {
-      var hook, method, raw, wrapped, _fn, _i, _j, _len, _len2,
+      var hook, method, raw, wrapped, _fn, _i, _j, _len, _len2, _ref,
         _this = this;
       if (object instanceof Synapse) return object;
       if (this.constructor !== Synapse) {
@@ -39,20 +39,21 @@ var __slice = Array.prototype.slice;
         }
         return raw;
       }
-      for (_j = 0, _len2 = synapseHooks.length; _j < _len2; _j++) {
-        hook = synapseHooks[_j];
+      _ref = Synapse.hooks;
+      for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
+        hook = _ref[_j];
         if (hook.checkObjectType(object)) break;
         hook = null;
       }
       if (!hook) {
-        throw new Error("No hook exists for " + (core.getType(object)) + " types");
+        throw new Error("An appropriate hook was not determined for                    " + (core.getType(object)) + " types");
       }
       this.raw = (typeof hook.coerceObject === "function" ? hook.coerceObject(object) : void 0) || object;
       this.hook = hook;
-      this.guid = objectGuid++;
+      this.cid = objectGuid++;
       this._observing = {};
       this._notifying = {};
-      synapseObjects[this.guid] = this;
+      synapseObjects[this.cid] = this;
     }
 
     Synapse.prototype.get = function() {
@@ -103,12 +104,12 @@ var __slice = Array.prototype.slice;
           };
         }
       } else {
-        channels = this._observing[other.guid];
+        channels = this._observing[other.cid];
         for (observerInterface in channels) {
           thread = channels[observerInterface];
           offEvent(other, thread.event, thread.handler);
         }
-        this._observing[other.guid] = {
+        this._observing[other.cid] = {
           _open: true
         };
       }
@@ -123,7 +124,7 @@ var __slice = Array.prototype.slice;
           channels._open = false;
         }
       } else {
-        channels = this._observing[other.guid];
+        channels = this._observing[other.cid];
         channels._open = false;
       }
       return this;
@@ -132,7 +133,7 @@ var __slice = Array.prototype.slice;
     Synapse.prototype.resumeObserving = function(other) {
       var channels, subjectGuid;
       if (other) {
-        if ((channels = this._observing[other.guid])) channels._open = true;
+        if ((channels = this._observing[other.cid])) channels._open = true;
       } else {
         for (subjectGuid in this._observing) {
           this._observing[subjectGuid]._open = true;
@@ -156,12 +157,12 @@ var __slice = Array.prototype.slice;
           };
         }
       } else {
-        channels = this._notifying[other.guid];
+        channels = this._notifying[other.cid];
         for (observerInterface in channels) {
           thread = channels[observerInterface];
           offEvent(this, thread.event, thread.handler);
         }
-        this._notifying[other.guid] = {
+        this._notifying[other.cid] = {
           _open: true
         };
       }
@@ -176,7 +177,7 @@ var __slice = Array.prototype.slice;
           channels._open = false;
         }
       } else {
-        channels = this._notifying[other.guid];
+        channels = this._notifying[other.cid];
         channels._open = false;
       }
       return this;
@@ -185,7 +186,7 @@ var __slice = Array.prototype.slice;
     Synapse.prototype.resumeNotifying = function(other) {
       var channels, observerGuid;
       if (other) {
-        if ((channels = this._notifying[other.guid])) channels._open = true;
+        if ((channels = this._notifying[other.cid])) channels._open = true;
       } else {
         for (observerGuid in this._notifying) {
           this._notifying[observerGuid]._open = true;
@@ -197,12 +198,7 @@ var __slice = Array.prototype.slice;
     return Synapse;
 
   })();
-  Synapse.addHooks = function() {
-    return synapseHooks.push.apply(synapseHooks, arguments);
-  };
-  Synapse.clearHooks = function() {
-    return synapseHooks = [];
-  };
+  Synapse.hooks = [];
   detectEvent = function() {
     var args, object, value, _ref;
     object = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -275,19 +271,19 @@ var __slice = Array.prototype.slice;
     for (_i = 0, _len = events.length; _i < _len; _i++) {
       event = events[_i];
       handler = function() {
-        if (observer._observing[subject.guid]._open === true && subject._notifying[observer.guid]._open === true) {
+        if (observer._observing[subject.cid]._open === true && subject._notifying[observer.cid]._open === true) {
           value = subject.get(subjectInterface);
           if (converter) value = converter(value);
           return observer.set(observerInterface, value);
         }
       };
-      if (!(observerChannels = observer._observing[subject.guid])) {
-        observerChannels = observer._observing[subject.guid] = {
+      if (!(observerChannels = observer._observing[subject.cid])) {
+        observerChannels = observer._observing[subject.cid] = {
           _open: true
         };
       }
-      if (!(subjectChannels = subject._notifying[observer.guid])) {
-        subjectChannels = subject._notifying[observer.guid] = {
+      if (!(subjectChannels = subject._notifying[observer.cid])) {
+        subjectChannels = subject._notifying[observer.cid] = {
           _open: true
         };
       }

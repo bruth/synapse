@@ -1,6 +1,6 @@
 test('Core', function() {
     expect(1);
-    Synapse.clearHooks();
+    Synapse.hooks = [];
     raises(function() {
         Synapse({});
     }, 'No hooks have been added, therefore no objects are supported');
@@ -272,8 +272,8 @@ module('Observer Methods');
 
 test('Toggle Observing', function() {
     expect(4);
-    Synapse.clearHooks();
-    Synapse.addHooks(jQueryHook, ObjectHook);
+    Synapse.hooks = [];
+    Synapse.hooks = [jQueryHook, ObjectHook];
 
     var input = new Synapse('<input />');
     var span = new Synapse('<span />');
@@ -309,8 +309,8 @@ test('Toggle Observing', function() {
 
 test('Toggle Notifying', function() {
     expect(4);
-    Synapse.clearHooks();
-    Synapse.addHooks(jQueryHook, ObjectHook);
+    Synapse.hooks = [];
+    Synapse.hooks = [jQueryHook, ObjectHook];
 
     var input = new Synapse('<input />');
     var span = new Synapse('<span />');
@@ -347,8 +347,8 @@ test('Toggle Notifying', function() {
 
 test('Toggle Single Observer', function() {
     expect(6);
-    Synapse.clearHooks();
-    Synapse.addHooks(jQueryHook, ObjectHook);
+    Synapse.hooks = [];
+    Synapse.hooks = [jQueryHook, ObjectHook];
 
     var input = new Synapse('<input />');
     var span = new Synapse('<span />');

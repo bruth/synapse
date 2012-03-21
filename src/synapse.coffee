@@ -1,9 +1,9 @@
 #
 # Synapse
-# (c) 2011 Byron Ruth
+# (c) 2011-2012 Byron Ruth
 # Synapse may be freely distributed under the BSD license
-# Version: 0.4.2
-# Date: January 26, 2012
+# Version: 0.5b
+# Date: March 20, 2012
 #
 
 ((root, factory) ->
@@ -21,14 +21,11 @@
 
     objectGuid = 1
     synapseObjects = {}
-    synapseHooks = []
-    limitedApi = ['observe', 'notify', 'syncWith', 'stopObserving',
-        'pauseObserving', 'resumeObserving', 'stopNotifying', 'pauseNotifying',
-        'resumeNotifying']
-
+    limitedApi = 'observe notify syncWith stopObserving pauseObserving
+        resumeObserving stopNotifying pauseNotifying resumeNotifying'.split ' '
 
     class Synapse
-        version: '0.4.2'
+        version: '0.5b'
 
         # ## Constructor
         # Ensure the ``object`` is not already an instance of ``Synapse``.
@@ -50,22 +47,23 @@
                             return @
                 return raw
 
-            for hook in synapseHooks
+            for hook in Synapse.hooks
                 if hook.checkObjectType object
                     break
                 hook = null
 
             # No hook was found for this object type
             if not hook
-                throw new Error "No hook exists for #{core.getType(object)} types"
+                throw new Error "An appropriate hook was not determined for
+                    #{ core.getType(object) } types"
 
             @raw = hook.coerceObject?(object) or object
             @hook = hook
-            @guid = objectGuid++
+            @cid = objectGuid++
             @_observing = {}
             @_notifying = {}
 
-            synapseObjects[@guid] = @
+            synapseObjects[@cid] = @
 
         # Gets a value for a given interface.
         get: ->
@@ -107,11 +105,11 @@
                         offEvent(subject, thread.event, thread.handler)
                     @_observing = _open: true
             else
-                channels = @_observing[other.guid]
+                channels = @_observing[other.cid]
                 for observerInterface of channels
                     thread = channels[observerInterface]
                     offEvent(other, thread.event, thread.handler)
-                @_observing[other.guid] = _open: true
+                @_observing[other.cid] = _open: true
             return @
 
         pauseObserving: (other) ->
@@ -120,13 +118,13 @@
                     channels = @_observing[subjectGuid]
                     channels._open = false
             else
-                channels = @_observing[other.guid]
+                channels = @_observing[other.cid]
                 channels._open = false
             return @
 
         resumeObserving: (other) ->
             if other
-                if (channels = @_observing[other.guid])
+                if (channels = @_observing[other.cid])
                     channels._open = true
             else
                 for subjectGuid of @_observing
@@ -143,11 +141,11 @@
                         offEvent(@, thread.event, thread.handler)
                     @_notifying = _open: true
             else
-                channels = @_notifying[other.guid]
+                channels = @_notifying[other.cid]
                 for observerInterface of channels
                     thread = channels[observerInterface]
                     offEvent(@, thread.event, thread.handler)
-                @_notifying[other.guid] = _open: true
+                @_notifying[other.cid] = _open: true
             return @
 
         pauseNotifying: (other) ->
@@ -156,13 +154,13 @@
                     channels = @_notifying[observerGuid]
                     channels._open = false
             else
-                channels = @_notifying[other.guid]
+                channels = @_notifying[other.cid]
                 channels._open = false
             return @
 
         resumeNotifying: (other) ->
             if other
-                if (channels = @_notifying[other.guid])
+                if (channels = @_notifying[other.cid])
                     channels._open = true
             else
                 for observerGuid of @_notifying
@@ -170,12 +168,7 @@
             return @
 
 
-    Synapse.addHooks = ->
-        synapseHooks.push.apply synapseHooks, arguments
-
-    Synapse.clearHooks = ->
-        synapseHooks = []
-
+    Synapse.hooks = []
 
     # Detects an appropriate event to attach an event handler to. This
     # applies only to subjects.
@@ -260,16 +253,16 @@
 
         for event in events
             handler = ->
-                if observer._observing[subject.guid]._open is true and subject._notifying[observer.guid]._open is true
+                if observer._observing[subject.cid]._open is true and subject._notifying[observer.cid]._open is true
                     value = subject.get subjectInterface
                     if converter then value = converter(value)
                     observer.set observerInterface, value
 
-            if not (observerChannels = observer._observing[subject.guid])
-                observerChannels = observer._observing[subject.guid] = _open: true
+            if not (observerChannels = observer._observing[subject.cid])
+                observerChannels = observer._observing[subject.cid] = _open: true
 
-            if not (subjectChannels = subject._notifying[observer.guid])
-                subjectChannels = subject._notifying[observer.guid] = _open: true
+            if not (subjectChannels = subject._notifying[observer.cid])
+                subjectChannels = subject._notifying[observer.cid] = _open: true
 
             # An observer interface can only be set once, thus we can store
             # the channel information relative to the observerInterface.

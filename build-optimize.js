@@ -28,19 +28,19 @@
     modules: [{
         name: 'synapse'
     }, {
-        name: 'synapse/hooks/jquery',
+        name: 'synapse/jquery',
         exclude: ['synapse/core', 'jquery']
     }, {
-        name: 'synapse/hooks/zepto',
+        name: 'synapse/zepto',
         exclude: ['synapse/core', 'zepto']
     }, {
-        name: 'synapse/hooks/backbone-model',
+        name: 'synapse/backbone-model',
         exclude: ['synapse/core', 'backbone']
     }, {
-        name: 'synapse/hooks/backbone-view',
-        exclude: ['synapse/core', 'synapse/hooks/jquery', 'backbone']
+        name: 'synapse/backbone-view',
+        exclude: ['synapse/core', 'backbone']
     }, {
-        name: 'synapse/hooks/object',
+        name: 'synapse/object',
         exclude: ['synapse/core']
     }]
 })
