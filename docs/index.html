@@ -400,7 +400,7 @@ wrapped.syncWith(other);
                         the observer that will take the value(s) provided by the subject and
                         return a value prior to calling <code class=prettyprint>observer.set(...)</code>.
 
-                        <li><code class=prettyprint>triggerOnBind</code> - if set to true, when the channel is
+                        <li><code class=prettyprint>triggerOnBind</code> - if true, when the channel is
                         initially created the subject will be triggered using the event
                         supplied or detected.
                     </ul>
@@ -679,7 +679,6 @@ define(function() {
                     object.</td>
                             </tr>
                             <tr>
-
                                 <th>Interfaces</th>
                                 <td>The interfaces available for plain objects
                     are simply, their properties and methods. Methods always take precedence over
@@ -687,6 +686,45 @@ define(function() {
                             </tr>
                         </tbody>
                     </table>
+
+                    <div class="alert alert-info">
+                        <h4 class=alert-heading>Sanitize Plain Objects</h4>
+                        <p>Synapse uses an internal expando property to keep track of
+                        all managed objects to prevent defining duplicate channels.
+                        This means plain objects will obtain a property that looks something
+                        like <code class=prettyprint>Synapse0508635553480125964</code>. It may be desirable for
+                        downstream processing to remove this property. <code class=prettyprint>Synapse.expando</code>
+                        contains the property name so the property can be removed.</p>
+
+<pre class=prettyprint>
+var obj = {};
+// wrapped, expando property is added to the object
+var wrapped = new Synapse(obj);
+console.log(obj);
+{
+    Synapse0508635553480125964: 29
+}
+
+// The expando property ensures if the object gets wrapped again,
+// it won't created a new object
+var wrapped2 = new Synapse(obj);
+wrapped2 === wrapped; // true
+
+// It is recommended to create a copy of the object to perform
+// post-processing (delete the expando property)
+
+// using Underscore
+var clone = _.clone(obj);
+// or using jQuery
+var clone = $.extend({}, obj);
+
+delete clone[Synapse.expando];
+
+// do downstream processing with the clone..
+</pre>
+
+                    </div>
+
                 </span>
 
             </section>

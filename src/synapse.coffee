@@ -12,17 +12,20 @@
         factory(root, exports, require('synapse/core'))
     else if typeof define is 'function' and define.amd
         # AMD
-        define 'synapse', ['synapse/core', 'exports'], (core, exports) ->
+        define ['synapse/core', 'exports'], (core, exports) ->
             factory(root, exports, core)
     else
         # Browser globals
         root.Synapse = factory(root, {}, root.SynapseCore)
 ) @, (root, Synapse, core) ->
 
-    cid = 1
-    synapseObjects = {}
-    limitedApi = 'observe notify syncWith stopObserving pauseObserving
-        resumeObserving stopNotifying pauseNotifying resumeNotifying'.split ' '
+    # Internal unique client-side id for internal API
+    guid = 1
+    # Internal cache of all raw and Synapse objects
+    cache = {}
+
+    # Limited API method names
+    limitedApi = 'observe notify syncWith stopObserving pauseObserving resumeObserving stopNotifying pauseNotifying resumeNotifying'.split ' '
 
     class Synapse
         version: '0.5b'
@@ -30,21 +33,22 @@
         # ## Constructor
         # Ensure the ``object`` is not already an instance of ``Synapse``.
         constructor: (object) ->
-            if object instanceof Synapse
-                return object
+            # Check if already an instance..
+            if object instanceof Synapse then return object
+            # Check if this object is already cached..
+            if (cached = cache[object[Synapse.expando]]) then return cached
 
             # If called with `new`, process as normal which returns the wrapped
-            # object. Otherwise, augment the object with the primary methods.
+            # object. Otherwise, augment the object with the limited API methods.
             if @constructor isnt Synapse
                 wrapped = new Synapse(object)
                 raw = wrapped.raw
-
                 # Extend the object with the limited API
                 for method in limitedApi
-                    do (method) =>
+                    do (method) ->
                         raw[method] = ->
                             wrapped[method].apply wrapped, arguments
-                            return @
+                            return raw
                 return raw
 
             for hook in Synapse.hooks
@@ -59,11 +63,11 @@
 
             @raw = hook.coerceObject?(object) or object
             @hook = hook
-            @cid = cid++
+            # Cache the object with the corresponding Synapse object to prevent
+            # redundant objects and prevent memory leaks.
+            cache[@guid = object[Synapse.expando] = guid++] = @
             @_observing = {}
             @_notifying = {}
-
-            synapseObjects[@cid] = @
 
         # Gets a value for a given interface.
         get: ->
@@ -78,14 +82,14 @@
         # object for changes in state.
         observe: (other, args...) ->
             other = new Synapse(other)
-            connect(other, @, args...)
+            connect other, @, args...
             return @
 
         # Opens a one-way channel where another object is being notified by
         # this object when it's state changes.
         notify: (other, args...) ->
             other = new Synapse(other)
-            connect(@, other, args...)
+            connect @, other, args...
             return @
 
         # Opens a two-way channel where this and another object notify each
@@ -95,79 +99,82 @@
             @observe(other).notify(other)
             return @
 
-        stopObserving: (other) ->
-            if not other
-                for subjectGuid of @_observing
-                    channels = @_observing[subjectGuid]
-                    subject = synapseObjects[subjectGuid]
-                    for observerInterface of channels
-                        thread = channels[observerInterface]
-                        offEvent(subject, thread.event, thread.handler)
-                    @_observing = _open: true
+        stopObserving: (subject) ->
+            # Find all channels established with the subject and remove the
+            # corresponding event handler relative to this observer.
+            if subject
+                if (meta = @_observing[subject.guid])
+                    for observerInterface of meta.channels
+                        chan = channels[observerInterface]
+                        offEvent(subject, chan.event, chan.handler)
+                    # Deference everything associated with the subject
+                    delete @_observing[subject.guid]
             else
-                channels = @_observing[other.cid]
-                for observerInterface of channels
-                    thread = channels[observerInterface]
-                    offEvent(other, thread.event, thread.handler)
-                @_observing[other.cid] = _open: true
+                for subjectCid of @_observing
+                    meta = @_observing[subjectCid]
+                    subject = cache[subjectCid]
+                    for observerInterface of meta.channels
+                        chan = meta.channels[observerInterface]
+                        offEvent(subject, chan.event, chan.handler)
+                @_observing = {}
             return @
 
-        pauseObserving: (other) ->
-            if not other
-                for subjectGuid of @_observing
-                    channels = @_observing[subjectGuid]
-                    channels._open = false
+        # Temporarily close the channels for the subject or for all subjects
+        pauseObserving: (subject) ->
+            if subject
+                if (meta = @_observing[subject.guid])
+                    meta.open = false
             else
-                channels = @_observing[other.cid]
-                channels._open = false
+                for subjectCid of @_observing
+                    @_observing[subjectCid].open = false
             return @
 
-        resumeObserving: (other) ->
-            if other
-                if (channels = @_observing[other.cid])
-                    channels._open = true
+        resumeObserving: (subject) ->
+            if subject
+                if (meta = @_observing[subject.guid])
+                    meta.open = true
             else
-                for subjectGuid of @_observing
-                    @_observing[subjectGuid]._open = true
+                for subjectCid of @_observing
+                    @_observing[subjectCid].open = true
             return @
 
-        stopNotifying: (other) ->
-            if not other
-                for observerGuid of @_notifying
-                    channels = @_notifying[observerGuid]
-                    observer = synapseObjects[observerGuid]
-                    for observerInterface of channels
-                        thread = channels[observerInterface]
-                        offEvent(@, thread.event, thread.handler)
-                    @_notifying = _open: true
+        stopNotifying: (observer) ->
+            if observer
+                if (meta = @_notifying[observer.guid])
+                    for observerInterface of meta.channels
+                        chan = meta.channels[observerInterface]
+                        offEvent(@, chan.event, chan.handler)
+                    delete @_notifying[observer.guid]
             else
-                channels = @_notifying[other.cid]
-                for observerInterface of channels
-                    thread = channels[observerInterface]
-                    offEvent(@, thread.event, thread.handler)
-                @_notifying[other.cid] = _open: true
+                for observerCid of @_notifying
+                    meta = @_notifying[observerCid]
+                    observer = cache[observerCid]
+                    for observerInterface of meta.channels
+                        chan = meta.channels[observerInterface]
+                        offEvent(@, chan.event, chan.handler)
+                @_notifying = {}
             return @
 
-        pauseNotifying: (other) ->
-            if not other
-                for observerGuid of @_notifying
-                    channels = @_notifying[observerGuid]
-                    channels._open = false
+        pauseNotifying: (observer) ->
+            if observer
+                if (meta = @_notifying[observer.guid])
+                    meta.open = false
             else
-                channels = @_notifying[other.cid]
-                channels._open = false
+                for observerCid of @_notifying
+                    @_notifying[observerCid].open = false
             return @
 
-        resumeNotifying: (other) ->
-            if other
-                if (channels = @_notifying[other.cid])
-                    channels._open = true
+        resumeNotifying: (observer) ->
+            if observer
+                if (meta = @_notifying[observer.guid])
+                    meta.open = true
             else
-                for observerGuid of @_notifying
-                    @_notifying[observerGuid]._open = true
+                for observerCid of @_notifying
+                    @_notifying[observerCid].open = true
             return @
 
 
+    Synapse.expando = 'Synapse' + (Synapse::version + Math.random()).replace /\D/g, ''
     Synapse.hooks = []
 
     # Detects an appropriate event to attach an event handler to. This
@@ -175,25 +182,25 @@
     detectEvent = (object, args...) ->
         if (value = object.hook.detectEvent object.raw, args...)
             return value
-        throw new Error "#{object.hook.typeName} types do not support events"
+        throw new Error "#{ object.hook.typeName } types do not support events"
 
     # Attaches an event handler. This applies only to subjects.
     onEvent = (object, args...) ->
         if (value = object.hook.onEventHandler? object.raw, args...)
             return object
-        throw new Error "#{object.hook.typeName} types do not support events"
+        throw new Error "#{ object.hook.typeName } types do not support events"
 
     # Detaches an event handler. This applies only to subjects.
     offEvent = (object, args...) ->
         if (value = object.hook.offEventHandler? object.raw, args...)
             return object
-        throw new Error "#{object.hook.typeName} types do not support events"
+        throw new Error "#{ object.hook.typeName } types do not support events"
 
     # Triggers an event handler. This applies only to subjects.
     triggerEvent = (object, args...) ->
         if (value = object.hook.triggerEventHandler? object.raw, args...)
             return object
-        throw new Error "#{object.hook.typeName} types do not support events"
+        throw new Error "#{ object.hook.typeName } types do not support events"
 
     # Detects an appropriate interface (property or method) to use as a
     # data source for a given communication channel.
@@ -253,16 +260,21 @@
 
         for event in events
             handler = ->
-                if observer._observing[subject.cid]._open is true and subject._notifying[observer.cid]._open is true
+                # Ensure both the observer and the subject channels are open
+                if observer._observing[subject.guid]?.open is true and subject._notifying[observer.guid]?.open is true
                     value = subject.get subjectInterface
                     if converter then value = converter(value)
                     observer.set observerInterface, value
 
-            if not (observerChannels = observer._observing[subject.cid])
-                observerChannels = observer._observing[subject.cid] = _open: true
+            if not (observerMeta = observer._observing[subject.guid])
+                observerMeta = observer._observing[subject.guid] =
+                    open: true
+                    channels: {}
 
-            if not (subjectChannels = subject._notifying[observer.cid])
-                subjectChannels = subject._notifying[observer.cid] = _open: true
+            if not (subjectMeta = subject._notifying[observer.guid])
+                subjectMeta = subject._notifying[observer.guid] =
+                    open: true
+                    channels: {}
 
             # An observer interface can only be set once, thus we can store
             # the channel information relative to the observerInterface.
@@ -270,8 +282,8 @@
                 event: event
                 handler: handler
 
-            observerChannels[observerInterface] = channel
-            subjectChannels[observerInterface] = channel
+            observerMeta.channels[observerInterface] = channel
+            subjectMeta.channels[observerInterface] = channel
 
             onEvent(subject, event, handler)
             if triggerOnBind then triggerEvent(subject, event)
