@@ -19,6 +19,28 @@ h1, h2, h3, h4, h5, h6 {
     margin: 10px 0;
 }
 
+h1, h2, h3 {
+    color: #2f4964;
+    font-weight: 400;
+}
+
+a {
+    @include transition(color, 0.2s, ease-in-out);
+    color: #777;
+
+    &:hover {
+        color: #2f4964;
+    }
+}
+
+header {
+    > * { margin: 0; }
+    h3 {
+        color: #555;
+        font-weight: bold;
+    }
+}
+
 code.prettyprint {
     padding: 2px 4px;
 }
@@ -79,6 +101,8 @@ span.label {
         @include box-shadow(0 1px 2px #aaa);
         display: block;
         background-color: rgba(255, 150, 0, 0.3);
+
+        color: #643b00;
         font-weight: 400;
         font-size: 20px;
         padding: 20px 10px 10px 10px;
@@ -94,12 +118,14 @@ span.label {
         margin-bottom: 5px;
     }
 
-    h3, > ul {
-        margin-left: 10px;
+    ul ul li {
+        font-size: 12px;
+        margin-bottom: 0;
+        list-style: circle;
     }
 
-    a {
-        color: #555;
+    h3, > ul {
+        margin-left: 10px;
     }
 }
 

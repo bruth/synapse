@@ -35,24 +35,71 @@
                 <li><a href=#umd>UMD</a>
              </ul>
 
-            <h3><a href=#apis>APIs</a></h3>
+            <h3><a href=#constructor-api>Constructor</a></h3>
+
+            <h3><a href=#object-api>Object API</a></h3>
             <ul class=unstyled>
-                <li><a href=#constructor-api>Constructor API</a>
-                <li><a href=#object-api>Object API</a>
+                <li><a href=#object-api-properties>Properties</a>
                     <ul>
-                        <li><a href=#object-api-properties>Properties</a>
-                        <li><a href=#object-api-channel>Channel Methods</a>
-                        <li><a href=#object-api-channel-configuration>Channel Configuration</a>
-                        <li><a href=#object-api-channel-flow>Channel Flow Methods</a>
-                        <li><a href=#object-api-interface>Interface Methods</a>
+                        <li><a href=#object-api-raw>raw</a>
                     </ul>
-                <li><a href=#hooks>Hook API</a>
+                <li><a href=#object-api-channel>Channel Methods</a>
                     <ul>
-                        <li><a href=#hooks-base>Base</a>
-                        <li><a href=#hooks-interfaces>Interfaces</a>
-                        <li><a href=#hooks-events>Events</a>
-                        <li><a href=#hooks-helpers>Helpers</a>
-                        <li><a href=#hooks-detection>Detection</a>
+                        <li><a href=#object-api-observe>observe</a>
+                        <li><a href=#object-api-notify>notify</a>
+                        <li><a href=#object-api-syncWith>syncWith</a>
+                    </ul>
+                <li><a href=#channel-api>Channel Configuration</a>
+                    <ul>
+                        <li><a href=#channel-api-event>event</a>
+                        <li><a href=#channel-api-subjectInterface>subjectInterface</a>
+                        <li><a href=#channel-api-observerInterface>observerInterface</a>
+                        <li><a href=#channel-api-converter>converter</a>
+                        <li><a href=#channel-api-triggerOnBind>triggerOnBind</a>
+                    </ul>
+                <li><a href=#channel-flow>Channel Flow Methods</a>
+                    <ul>
+                        <li><a href=#channel-flow-stopObserving>stopObserving</a>
+                        <li><a href=#channel-flow-pauseObserving>pauseObserving</a>
+                        <li><a href=#channel-flow-resumeObserving>resumeObserving</a>
+                        <li><a href=#channel-flow-stopNotifying>stopNotifying</a>
+                        <li><a href=#channel-flow-pauseNotifying>pauseNotifying</a>
+                        <li><a href=#channel-flow-resumeNotifying>resumeNotifying</a>
+                    </ul>
+                <li><a href=#interface-api>Interface Methods</a>
+                    <ul>
+                        <li><a href=#interface-api-get>get</a>
+                        <li><a href=#interface-api-set>set</a>
+                    </ul>
+            </ul>
+
+            <h3><a href=#hooks>Hook API</h3>
+            <ul class=unstyled>
+                <li><a href=#hooks-base>Base</a>
+                    <ul>
+                        <li><a href=#hooks-typeName>typeName</a>
+                        <li><a href=#hooks-checkObjectType>checkObjectType</a>
+                    </ul>
+                <li><a href=#hooks-interfaces>Interfaces</a>
+                    <ul>
+                        <li><a href=#hooks-getHandler>getHandler</a>
+                        <li><a href=#hooks-setHandler>setHandler</a>
+                    </ul>
+                <li><a href=#hooks-events>Events</a>
+                    <ul>
+                        <li><a href=#hooks-onEventHandler>onEventHandler</a>
+                        <li><a href=#hooks-offEventHandler>offEventHandler</a>
+                        <li><a href=#hooks-triggerEventHandler>triggerEventHandler</a>
+                    </ul>
+                <li><a href=#hooks-helpers>Helpers</a>
+                    <ul>
+                        <li><a href=#hooks-coerceObject>coerceObject</a>
+                    </ul>
+                <li><a href=#hooks-detection>Detection</a>
+                    <ul>
+                        <li><a href=#hooks-detectInterface>detectInterface</a>
+                        <li><a href=#hooks-detectOtherInterface>detectOtherInterface</a>
+                        <li><a href=#hooks-detectEvent>detectEvent</a>
                     </ul>
             </ul>
 
@@ -80,7 +127,10 @@
 
         <div id="content">
 
-            <h1>Synapse - Data Binding For The Rest Of Us</h1>
+            <header>
+                <h1>Synapse</h1>
+                <h3>Data Binding For The Rest Of Us</h3>
+            </header>
 
             <h2 id=learn>Learn</h2>
 
@@ -294,7 +344,7 @@ require(['synapse', 'synapse/jquery'], function(Synapse, jQueryHook) {
 
             <h2 id=apis>APIs</h2>
 
-            <h3 id="constructor-api">Constructor API</h3>
+            <h3 id="constructor-api">Constructor</h3>
 
             <section class="row">
                 <span class="span4">
@@ -330,7 +380,7 @@ Synapse(object);
             <section class=row>
                 <span class=span4>
                     <ul>
-                        <li><code class=prettyprint>raw</code> - a reference to the original object.
+                        <li><code id=object-api-raw class=prettyprint>raw</code> - a reference to the original object.
                         <em>Note, if the hook this object is used with has a
                         <code class=prettyprint>coerceObject</code> method defined, <code class=prettyprint>raw</code>
                         will be the object that is returned from that function.</em>
@@ -349,15 +399,15 @@ wrapped.raw; // reference to `object`
             <section class=row>
                 <span class=span4>
                     <ul>
-                        <li><code class=prettyprint>observe</code> - opens a one-way channel between this
+                        <li><code id=object-api-observe class=prettyprint>observe</code> - opens a one-way channel between this
                         object and a subject where this object <em>observes</em> state changes
                         of the subject.
 
-                        <li><code class=prettyprint>notify</code> - opens a one-way channel between this object
+                        <li><code id=object-api-notify class=prettyprint>notify</code> - opens a one-way channel between this object
                         and an observer where this object <em>notifies</em> it's state
                         changes to the observer.
 
-                        <li><code class=prettyprint>syncWith</code> - opens a two-way channel between this object
+                        <li><code id=object-api-syncWith class=prettyprint>syncWith</code> - opens a two-way channel between this object
                         and another where each acts as a subject and observer.
                     </ul>
                 </span>
@@ -371,36 +421,36 @@ wrapped.syncWith(other);
                 </span>
             </section>
 
-            <h4 id=object-api-channel-configuration>Channel Configuration</h4>
+            <h4 id=channel-api>Channel Configuration</h4>
 
             <section class=row>
                 <span class=span4>
                     <ul>
-                        <li><code class=prettyprint>event</code> - the event that will trigger the
+                        <li><code id=channel-api-event class=prettyprint>event</code> - the event that will trigger the
                         subject to push it's interface value to all observers. this
                         is variable across hooks. this is optional only if the
                         subject's hook has a <code class=prettyprint>detectEvent</code> method and
                         can be successfully detected.
 
-                        <li><code class=prettyprint>subjectInterface</code> - the interface identifier
+                        <li><code id=channel-api-subjectInterface class=prettyprint>subjectInterface</code> - the interface identifier
                         of the subject for a given channel. this is variable across hooks.
                         this is optional only if the subject's hook has a
                         <code class=prettyprint>detectInterface</code> method or the observer's hook has a
                         <code class=prettyprint>detectOtherInterface</code> method and can be successfully
                         detected.
 
-                        <li><code class=prettyprint>observerInterface</code> - the interface identifier
+                        <li><code id=channel-api-observerInterface class=prettyprint>observerInterface</code> - the interface identifier
                         of the observer for a given channel. this is variable across hooks.
                         this is optional only if the observer's hook has a
                         <code class=prettyprint>detectInterface</code> method or the subject's hook has a
                         <code class=prettyprint>detectOtherInterface</code> method and can be successfully
                         detected.
 
-                        <li><code class=prettyprint>converter</code> - an optional function or method name on
+                        <li><code id=channel-api-converter class=prettyprint>converter</code> - an optional function or method name on
                         the observer that will take the value(s) provided by the subject and
                         return a value prior to calling <code class=prettyprint>observer.set(...)</code>.
 
-                        <li><code class=prettyprint>triggerOnBind</code> - if true, when the channel is
+                        <li><code id=channel-api-triggerOnBind class=prettyprint>triggerOnBind</code> - if true, when the channel is
                         initially created the subject will be triggered using the event
                         supplied or detected.
                     </ul>
@@ -436,36 +486,36 @@ wrapped.observe(subject, [converter]);
                 </span>
             </section>
 
-            <h4 id=object-api-channel-flow>Channel Flow Methods</h4>
+            <h4 id=channel-flow>Channel Flow Methods</h4>
 
             <section class=row>
                 <span class=span4>
                     <ul>
-                        <li><code class=prettyprint>stopObserving</code> - stops an object from observing all objects
+                        <li><code id=channel-flow-stopObserving class=prettyprint>stopObserving</code> - stops an object from observing all objects
                         it is currently observing and removes all event handlers referencing this
                         object. if a <code class=prettyprint>Synapse</code> object is passed, only observing of that
                         object will be stopped.
 
-                        <li><code class=prettyprint>pauseObserving</code> - same as <code class=prettyprint>stopObserving</code> except
+                        <li><code id=channel-flow-pauseObserving class=prettyprint>pauseObserving</code> - same as <code class=prettyprint>stopObserving</code> except
                         event handlers are retained to allow for resuming observing. if a
                         <code class=prettyprint>Synapse</code> object is passed, only observing of that object will
                         be paused.
 
-                        <li><code class=prettyprint>resumeObserving</code> - all paused obversing is resumed.
+                        <li><code id=channel-flow-resumeObserving class=prettyprint>resumeObserving</code> - all paused obversing is resumed.
                         if a <code class=prettyprint>Synapse</code> object is passed, only observing of that
                         object will be resumed.
 
-                        <li><code class=prettyprint>stopNotifying</code> - stops an object from notifying all objects
+                        <li><code id=channel-flow-stopNotifying class=prettyprint>stopNotifying</code> - stops an object from notifying all objects
                         it is currently notifying and removes all event handlers referencing those
                         object. if a <code class=prettyprint>Synapse</code> object is passed, only notifying of that
                         object will be stopped.
 
-                        <li><code class=prettyprint>pauseNotifying</code> - same as <code class=prettyprint>stopNotifying</code> except
+                        <li><code id=channel-flow-pauseNotifying class=prettyprint>pauseNotifying</code> - same as <code class=prettyprint>stopNotifying</code> except
                         event handlers are retained to allow for resuming notifying. if a
                         <code class=prettyprint>Synapse</code> object is passed, only notifying of that object will
                         be paused.
 
-                        <li><code class=prettyprint>resumeNotifying</code> - all paused notifying  is resumed. if an
+                        <li><code id=channel-flow-resumeNotifying class=prettyprint>resumeNotifying</code> - all paused notifying  is resumed. if an
                         existing <code class=prettyprint>Synapse</code> is object passed, only notifying of that object
                         will be resumed.
                     </ul>
@@ -483,14 +533,14 @@ wrapped.resumeNotifying([observer]);
                 </span>
             </section>
 
-            <h4 id=object-api-interface>Interface Methods</h4>
+            <h4 id=interface-api>Interface Methods</h4>
 
             <section class=row>
                 <span class=span4>
                     <ul>
-                        <li><code class=prettyprint>get</code> - returns a representation
+                        <li><code id=interface-api-get class=prettyprint>get</code> - returns a representation
                         of the object's data for the given interface.
-                        <li><code class=prettyprint>set</code> - sets a value relative to
+                        <li><code id=interface-api-set class=prettyprint>set</code> - sets a value relative to
                         the given interface for the object.
                     </ul>
                 </span>
@@ -523,9 +573,9 @@ wrapped.set(interface, value);
                     <p>A hook is simply an object. To make it distributable, it is recommended
                     to define it as a standalone module. The base parts of a hook include.</p>
                     <ul>
-                        <li><code class=prettyprint>typeName</code> - name of the object type this hook
+                        <li><code id=hooks-typeName class=prettyprint>typeName</code> - name of the object type this hook
                         represents
-                        <li><code class=prettyprint>checkObjectType</code> - a method which checks if the
+                        <li><code id=hooks-checkObjectType class=prettyprint>checkObjectType</code> - a method which checks if the
                         object is applicable for this hook
                     </ul>
                 </span>
@@ -548,9 +598,9 @@ define(function() {
                 <span class=span4>
                     <p>The following methods are required for an object to an observer.</p>
                     <ul>
-                        <li><code class=prettyprint>getHandler</code> - a method which takes an object
+                        <li><code id=hooks-getHandler class=prettyprint>getHandler</code> - a method which takes an object
                         and an interface identifier and returns a value
-                        <li><code class=prettyprint>setHandler</code> - a method which takes an object,
+                        <li><code id=hooks-setHandler class=prettyprint>setHandler</code> - a method which takes an object,
                         an interface identifier, and a value and sets the value
                     </ul>
                 </span>
@@ -574,11 +624,11 @@ define(function() {
                 <span class=span4>
                     <p>The following methods are required for an object to a subject.</p>
                     <ul>
-                        <li><code class=prettyprint>onEventHandler</code> - a method which attaches an
+                        <li><code id=hooks-onEventHandler class=prettyprint>onEventHandler</code> - a method which attaches an
                         event handler to an object
-                        <li><code class=prettyprint>offEventHandler</code> - a method which detaches an
+                        <li><code id=hooks-offEventHandler class=prettyprint>offEventHandler</code> - a method which detaches an
                         event handler from an object
-                        <li><code class=prettyprint>triggerEventHandler</code> - a method which triggers
+                        <li><code id=hooks-triggerEventHandler class=prettyprint>triggerEventHandler</code> - a method which triggers
                         and event on an object
                     </ul>
                 </span>
@@ -605,7 +655,7 @@ define(function() {
                 <span class=span4>
                     <p>The following methods are optional, but may be useful.</p>
                     <ul>
-                        <li><code class=prettyprint>coerceObject</code> - takes the raw object passed in
+                        <li><code id=hooks-coerceObject class=prettyprint>coerceObject</code> - takes the raw object passed in
                         to <code class=prettyprint>Synapse</code> and coerces the object into a more
                         useful object (think CSS selector &rarr; jQuery object)
                     </ul>
@@ -629,11 +679,11 @@ define(function() {
                     <p>These methods add much of desired <em>magic</em> for automatic binding
                     between objects.</p>
                     <ul>
-                        <li><code class=prettyprint>detectInterface</code> - detects an appropriate interface
+                        <li><code id=hooks-detectInterface class=prettyprint>detectInterface</code> - detects an appropriate interface
                         for the given object
-                        <li><code class=prettyprint>detectOtherInterface</code> - detects an appropriate
+                        <li><code id=hooks-detectOtherInterface class=prettyprint>detectOtherInterface</code> - detects an appropriate
                         interface for the other object involved (either subject or observer)
-                        <li><code class=prettyprint>detectEvent</code> - (subjects only) detects an
+                        <li><code id=hooks-detectEvent class=prettyprint>detectEvent</code> - (subjects only) detects an
                         appropriate event for the given object which will trigger the
                         downstream notification to observers
                     </ul>
@@ -1016,7 +1066,13 @@ define(['synapse/jquery'], function(jQueryHook) {
                         or remove hooks by using the native array methods such as <code class=prettyprint>push</code>
                         and <code class=prettyprint>shift</code>.
 
-                        <li>Internal property <code class=prettyprint>guid</code> was renamed to <code class=prettyprint>cid</code>.
+                        <li>Add <em>expando</em> property to prevent duplication of channels between objects.
+                        This will reduce the number of objects initialized. The passed in object will receive
+                        a property that looks like <code class=prettyprint>Synapse0508635553480125964</code>.
+                        Caution should be taken when using Synapse with plain objects to prevent exposing this
+                        property during downstream processing. See the above warning.
+
+                        <li>Refresh documentation, simplify style.
                     </ul>
 
                     <hgroup>
