@@ -2,8 +2,8 @@
 # Synapse
 # (c) 2011-2012 Byron Ruth
 # Synapse may be freely distributed under the BSD license
-# Version: 0.5b
-# Date: March 21, 2012
+# Version: 0.5
+# Date: March 30, 2012
 #
 
 ((root, factory) ->
@@ -28,7 +28,7 @@
     limitedApi = 'observe notify syncWith stopObserving pauseObserving resumeObserving stopNotifying pauseNotifying resumeNotifying'.split ' '
 
     class Synapse
-        version: '0.5b'
+        version: '0.5'
 
         # ## Constructor
         # Ensure the ``object`` is not already an instance of ``Synapse``.
