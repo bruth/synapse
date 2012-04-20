@@ -346,7 +346,7 @@ test('Toggle Notifying', function() {
 
 
 test('Toggle Single Observer', function() {
-    expect(6);
+    expect(8);
     Synapse.hooks = [];
     Synapse.hooks = [jQueryHook, ObjectHook];
 
@@ -390,5 +390,9 @@ test('Toggle Single Observer', function() {
 
     // detach all event handlers
     span.stopObserving();
+    // One event for the h1
+    equal(input.raw.data('events')['keyup'].length, 1)
+    input.stopNotifying();
     equal(input.raw.data('events'), undefined);
+    deepEqual(h1._observing, {});
 });

@@ -2,8 +2,8 @@
 # Synapse
 # (c) 2011-2012 Byron Ruth
 # Synapse may be freely distributed under the BSD license
-# Version: 0.5
-# Date: March 30, 2012
+# Version: 0.5.1
+# Date: April 20, 2012
 #
 
 ((root, factory) ->
@@ -28,7 +28,7 @@
     limitedApi = 'observe notify syncWith stopObserving pauseObserving resumeObserving stopNotifying pauseNotifying resumeNotifying'.split ' '
 
     class Synapse
-        version: '0.5'
+        version: '0.5.1'
 
         # ## Constructor
         # Ensure the ``object`` is not already an instance of ``Synapse``.
@@ -104,18 +104,20 @@
             # corresponding event handler relative to this observer.
             if subject
                 if (meta = @_observing[subject.guid])
-                    for observerInterface of meta.channels
-                        chan = channels[observerInterface]
-                        offEvent(subject, chan.event, chan.handler)
+                    for channel in meta.channels
+                        for event in channel.events
+                            offEvent(subject, event, channel.handler)
                     # Deference everything associated with the subject
                     delete @_observing[subject.guid]
+                    delete subject._notifying[@guid]
             else
-                for subjectCid of @_observing
-                    meta = @_observing[subjectCid]
-                    subject = cache[subjectCid]
-                    for observerInterface of meta.channels
-                        chan = meta.channels[observerInterface]
-                        offEvent(subject, chan.event, chan.handler)
+                for guid of @_observing
+                    meta = @_observing[guid]
+                    subject = cache[guid]
+                    for channel in meta.channels
+                        for event in channel.events
+                            offEvent(subject, event, channel.handler)
+                    delete subject._notifying[@guid]
                 @_observing = {}
             return @
 
@@ -125,8 +127,8 @@
                 if (meta = @_observing[subject.guid])
                     meta.open = false
             else
-                for subjectCid of @_observing
-                    @_observing[subjectCid].open = false
+                for guid of @_observing
+                    @_observing[guid].open = false
             return @
 
         resumeObserving: (subject) ->
@@ -134,24 +136,26 @@
                 if (meta = @_observing[subject.guid])
                     meta.open = true
             else
-                for subjectCid of @_observing
-                    @_observing[subjectCid].open = true
+                for guid of @_observing
+                    @_observing[guid].open = true
             return @
 
         stopNotifying: (observer) ->
             if observer
                 if (meta = @_notifying[observer.guid])
-                    for observerInterface of meta.channels
-                        chan = meta.channels[observerInterface]
-                        offEvent(@, chan.event, chan.handler)
+                    for channel in meta.channels
+                        for event in channel.events
+                            offEvent(@, event, channel.handler)
                     delete @_notifying[observer.guid]
+                    delete observer._observing[@guid]
             else
-                for observerCid of @_notifying
-                    meta = @_notifying[observerCid]
-                    observer = cache[observerCid]
-                    for observerInterface of meta.channels
-                        chan = meta.channels[observerInterface]
-                        offEvent(@, chan.event, chan.handler)
+                for guid of @_notifying
+                    meta = @_notifying[guid]
+                    observer = cache[guid]
+                    for channel in meta.channels
+                        for event in channel.events
+                            offEvent(@, event, channel.handler)
+                    delete observer._observing[@guid]
                 @_notifying = {}
             return @
 
@@ -160,8 +164,8 @@
                 if (meta = @_notifying[observer.guid])
                     meta.open = false
             else
-                for observerCid of @_notifying
-                    @_notifying[observerCid].open = false
+                for guid of @_notifying
+                    @_notifying[guid].open = false
             return @
 
         resumeNotifying: (observer) ->
@@ -169,8 +173,8 @@
                 if (meta = @_notifying[observer.guid])
                     meta.open = true
             else
-                for observerCid of @_notifying
-                    @_notifying[observerCid].open = true
+                for guid of @_notifying
+                    @_notifying[guid].open = true
             return @
 
 
@@ -232,60 +236,96 @@
     # and ``observer``. Note, the ``subject`` and ``observer``
     connectOne = (subject, observer, options) ->
 
+        # Fill in `options` with the defaults
         for key, value of defaultConnectOptions
             if not options[key]?
                 options[key] = value
 
         # A converter may be defined as a string which is assumed to be a
-        # method name on the original object
+        # method name on the observer object
         if (converter = options.converter) and not core.isFunction(converter)
-            converter = observer.object[converter]
+            if not (converter = observer.raw[converter])
+                throw Error "Property #{options.coverter} is undefined on #{observer.raw}"
 
         # Detect the interface for the subject if not defined
         if not (subjectInterface = options.subjectInterface)
-            if not (subjectInterface = detectInterface(subject) or detectOtherInterface(observer)) and not converter
+            # Attempt to detect the interface for the subject and fallback to detecting the interface
+            # relative to the observer
+            if not (subjectInterface = (detectInterface(subject) or detectOtherInterface(observer)))
                 throw new Error "An interface for #{subject.hook.typeName} objects could not be detected"
 
         # Detect the interface for the observer if not defined
         if not (observerInterface = options.observerInterface)
-            if not (observerInterface = detectInterface(observer) or detectOtherInterface(subject))
+            # Attempt to detect the interface for the observer and fallback to detecting the interface
+            # relative to the subject
+            if not (observerInterface = (detectInterface(observer) or detectOtherInterface(subject)))
                 throw new Error "An interface for #{observer.hook.typeName} objects could not be detected"
 
-        # Get the events that trigger the subject's change in state
+        # Get the events that trigger the subject's change in state.
         if not (events = options.event)
             events = detectEvent(subject, subjectInterface)
         if not core.isArray(events) then events = [events]
 
+        # When handlers are bound to the subject, the events are explicitly triggered
         triggerOnBind = options.triggerOnBind
 
-        for event in events
-            handler = ->
-                # Ensure both the observer and the subject channels are open
-                if observer._observing[subject.guid]?.open is true and subject._notifying[observer.guid]?.open is true
+        # Ensure the necessary caches are defined for each direction
+        if not (observerMeta = observer._observing[subject.guid])
+            observerMeta = observer._observing[subject.guid] =
+                open: true
+                channels: []
+
+        if not (subjectMeta = subject._notifying[observer.guid])
+            subjectMeta = subject._notifying[observer.guid] =
+                open: true
+                channels: []
+
+        # Event handler specific to the `subject`, `observer`, `subjectInterface`,
+        # `observerInterface`, and `converter`. This will be used for each event
+        handler = ->
+            # Ensure both the observer and the subject channels are open
+            if observer._observing[subject.guid]?.open is true and subject._notifying[observer.guid]?.open is true
+                # Interfaces can be functions for custom handling for the
+                # `get` and `set` steps. The `subjectInterface` will receive the
+                # `subject` as the first argument.
+                if core.isFunction subjectInterface
+                    value = subjectInterface subject
+                else
                     value = subject.get subjectInterface
-                    if converter then value = converter(value)
+
+                # Apply the converter prior to the observer performing the
+                # set operation. This can be used for cleaning, transforming,
+                # or validating the value prior to the observer receiving
+                # the value. A converter receives the _raw_ value from the subject
+                # the `observer` instance, and the `observerInterface` that will
+                # be used downstream.
+                if converter then value = converter(value, observer, observerInterface)
+
+                # The `observerInterface` will receive the `observer` and the
+                # value from the subject.
+                if core.isFunction observerInterface
+                    observerInterface observer, value
+                else
                     observer.set observerInterface, value
 
-            if not (observerMeta = observer._observing[subject.guid])
-                observerMeta = observer._observing[subject.guid] =
-                    open: true
-                    channels: {}
+        # An observer interface can only be set once, thus we can store
+        # the channel information relative to the observerInterface.
+        channel =
+            subjectInterface: subjectInterface
+            observerInterface: observerInterface
+            events: events
+            handler: handler
 
-            if not (subjectMeta = subject._notifying[observer.guid])
-                subjectMeta = subject._notifying[observer.guid] =
-                    open: true
-                    channels: {}
+        observerMeta.channels.push channel
+        subjectMeta.channels.push channel
 
-            # An observer interface can only be set once, thus we can store
-            # the channel information relative to the observerInterface.
-            channel =
-                event: event
-                handler: handler
-
-            observerMeta.channels[observerInterface] = channel
-            subjectMeta.channels[observerInterface] = channel
-
+        # Bind handler for each event
+        for event in events
+            # Bind the handler for the given event on the handler
             onEvent(subject, event, handler)
+            # TODO conceptually this is useful, but if there are multiple
+            # events defined, then the same handler will get excuted multiple
+            # times. Should this be left up to the implementor to deal with?
             if triggerOnBind then triggerEvent(subject, event)
 
         return

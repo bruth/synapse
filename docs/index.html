@@ -14,7 +14,7 @@
     </head>
     <body>
         <nav id=sidenav>
-            <a href=./index.html class="brand">Synapse <span class=version>0.5</span></a>
+            <a href=./index.html class="brand">Synapse <span class=version>0.5.1</span></a>
             <ul class=unstyled>
                 <li><a href="https://github.com/bruth/synapse/">GitHub Repository</a>
                 <li><a href="http://jsfiddle.net/bruth/bufeK/">jsFiddle Demo</a>
@@ -268,8 +268,8 @@ c.bar;              // 10
                 <span class=span12>
                     <p><em>Right-click and save-as</em></p>
                     <ul>
-                        <li><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse.js>Development Version (0.5)</a> - 12K
-                        <li><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse.js>Production Version (0.5)</a> - 1.8K minified, gzipped
+                        <li><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/dev/synapse.js>Development Version (0.5.1)</a> - 12K
+                        <li><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/min/synapse.js>Production Version (0.5.1)</a> - 1.8K minified, gzipped
                     </ul>
 
                     <table class=table>
@@ -284,32 +284,32 @@ c.bar;              // 10
                         <tbody>
                             <tr>
                                 <td>Object
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/object.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/dev/synapse/object.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/min/synapse/object.js>Download</a>
                                 <td>(none)
                             </tr>
                             <tr>
                                 <td>jQuery
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/jquery.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/dev/synapse/jquery.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/min/synapse/jquery.js>Download</a>
                                 <td>jQuery
                             </tr>
                             <tr>
                                 <td>Zepto
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/zepto.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/dev/synapse/zepto.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/min/synapse/zepto.js>Download</a>
                                 <td>Zepto
                             </tr>
                             <tr>
                                 <td>Backbone Model
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/backbone-model.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/dev/synapse/backbone-model.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/min/synapse/backbone-model.js>Download</a>
                                 <td>Backbone
                             </tr>
                             <tr>
                                 <td>Backbone View
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/dev/synapse/backbone-view.js>Download</a>
-                                <td><a href=https://raw.github.com/bruth/synapse/0.5/dist/min/synapse/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/dev/synapse/backbone-view.js>Download</a>
+                                <td><a href=https://raw.github.com/bruth/synapse/0.5.1/dist/min/synapse/backbone-view.js>Download</a>
                                 <td>Backbone
                             </tr>
                         </tbody>
@@ -428,14 +428,14 @@ wrapped.syncWith(other);
                         can be successfully detected.
 
                         <li><code id=channel-api-subjectInterface class=prettyprint>subjectInterface</code> - the interface identifier
-                        of the subject for a given channel. this is variable across hooks.
+                        of the subject for a given channel or a function. this varies across hooks.
                         this is optional only if the subject's hook has a
                         <code class=prettyprint>detectInterface</code> method or the observer's hook has a
                         <code class=prettyprint>detectOtherInterface</code> method and can be successfully
                         detected.
 
                         <li><code id=channel-api-observerInterface class=prettyprint>observerInterface</code> - the interface identifier
-                        of the observer for a given channel. this is variable across hooks.
+                        of the observer for a given channel or a function. this varies across hooks.
                         this is optional only if the observer's hook has a
                         <code class=prettyprint>detectInterface</code> method or the subject's hook has a
                         <code class=prettyprint>detectOtherInterface</code> method and can be successfully
@@ -812,19 +812,19 @@ delete clone[Synapse.expando];
                     <ul>
                         <li><code class=prettyprint>jQueryHook.interfaces</code> - contains the registry of all
                         available interfaces for jQuery objects.
-                        <a href=https://github.com/bruth/synapse/blob/0.5/src/synapse/jquery.coffee#L12-40>code</a>
+                        <a href=https://github.com/bruth/synapse/blob/0.5.1/src/synapse/jquery.coffee#L12-40>code</a>
 
                         <li><code class=prettyprint>jQueryHook.domEvents</code> - an array of
                         <code class=prettyprint>[selector, event]</code> pairs used by <code class=prettyprint>detectEvent</code>.
-                        <a href=https://github.com/bruth/synapse/blob/0.5/src/synapse/jquery.coffee#L206-217>code</a>
+                        <a href=https://github.com/bruth/synapse/blob/0.5.1/src/synapse/jquery.coffee#L206-217>code</a>
 
                         <li><code class=prettyprint>jQueryHook.elementInterfaces</code> - an array of <code class=prettyprint>[selector,
                         interface]</code> pairs used by <code class=prettyprint>detectInterface</code>.
-                        <a href=https://github.com/bruth/synapse/blob/0.5/src/synapse/jquery.coffee#L219-227>code</a>
+                        <a href=https://github.com/bruth/synapse/blob/0.5.1/src/synapse/jquery.coffee#L219-227>code</a>
 
                         <li><code class=prettyprint>jQueryHook.elementBindAttributes</code> - an array of element
                         attributes used by <code class=prettyprint>detectOtherInterface</code>.
-                        <a href=https://github.com/bruth/synapse/blob/0.5/src/synapse/jquery.coffee#L229-231>code</a>
+                        <a href=https://github.com/bruth/synapse/blob/0.5.1/src/synapse/jquery.coffee#L229-231>code</a>
                     </ul>
 
                 </span>
@@ -1043,6 +1043,18 @@ define(['synapse/jquery'], function(jQueryHook) {
 
             <section class=row>
                 <span class=span12>
+                    <hgroup id=v0.5.1>
+                        <h3>0.5.1</h3>
+                        - <a href=https://github.com/bruth/synapse/compare/0.5...0.5.1>Diff</a>
+                    </hgroup>
+                    <ul>
+                        <li>Fix clean up of channels when either <code class=prettyprint>stopNotifying</code> or
+                        <code class=prettyprint>stopObserving</code>
+                        <li>Allow functions to be passed in as interfaces
+                        <li>Converter functions are now passed the value, the observer and the
+                        observer's interface
+                    </ul>
+
                     <hgroup id=v0.5>
                         <h3>0.5</h3>
                         - <a href=https://github.com/bruth/synapse/compare/0.4.2...0.5>Diff</a>
