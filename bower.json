@@ -1,0 +1,25 @@
+{
+  "name": "synapse-bind",
+  "version": "0.5.1",
+  "license": "BSD",
+  "description": "Data Binding For The Rest Of Us",
+  "homepage": "http://bruth.github.io/synapse/",
+  "repo": "bruth/synapse",
+  "keywords": [
+    "binding",
+    "data",
+    "notify",
+    "sync",
+    "events"
+  ],
+  "author": {
+    "name": "Byron Ruth",
+    "email": "b@devel.io",
+    "url": "http://devel.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bruth/synapse.git"
+  },
+  "main": "dist/dev/synapse.js"
+}

@@ -1,7 +1,7 @@
-*.swp
+*.sw?
 .DS_Store
 .sass-cache
 .watch-pid
 build
-dist/dev/build.txt
-dist/min/build.txt
+build.txt
+npm-debug.log
