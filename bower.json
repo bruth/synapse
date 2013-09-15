@@ -1,6 +1,6 @@
 {
   "name": "synapse-bind",
-  "version": "0.5.1",
+  "version": "0.5.2-beta",
   "license": "BSD",
   "description": "Data Binding For The Rest Of Us",
   "homepage": "http://bruth.github.io/synapse/",

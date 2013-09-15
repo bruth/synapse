@@ -1,9 +1,9 @@
 ###
 Synapse
-(c) 2011-2012 Byron Ruth
+(c) 2011-2013 Byron Ruth
 Synapse may be freely distributed under the BSD license
-Version: 0.5.1
-Date: April 20, 2012
+Version: 0.5.2-beta
+Date: September 14, 2013
 ###
 
 ((root, factory) ->
