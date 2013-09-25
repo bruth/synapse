@@ -1,5 +1,7 @@
 # Synapse
 
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/bruth/synapse/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
 BSD 2-clause License
 
 Read the docs: http://bruth.github.io/synapse/docs/
